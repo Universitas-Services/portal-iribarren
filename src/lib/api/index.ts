@@ -1,6 +1,16 @@
 import "server-only";
+import { cacheLife } from "next/cache";
+import sanitizeHtml from "sanitize-html";
 import { banners, posts, processStatus } from "@/lib/mocks/data";
-import type { Banner, PostSummary, ProcessStatus } from "./types";
+import { consultarNoticias, relacionadas } from "@/lib/noticias/consultas";
+import type {
+  Banner,
+  FiltrosNoticias,
+  PaginaNoticias,
+  Post,
+  PostSummary,
+  ProcessStatus,
+} from "./types";
 
 /*
  * Capa de datos del portal. Hoy devuelve datos de ejemplo; cuando exista plataforma-api,
@@ -18,6 +28,22 @@ async function simularRed(factor = 1) {
   }
 }
 
+/** HTML permitido en el cuerpo de una noticia (lo que produce el editor del admin). */
+const HTML_PERMITIDO: sanitizeHtml.IOptions = {
+  allowedTags: ["p", "h2", "h3", "h4", "ul", "ol", "li", "strong", "em", "a", "blockquote", "br"],
+  allowedAttributes: { a: ["href", "title"] },
+  allowedSchemes: ["https", "mailto"],
+  transformTags: {
+    // Los enlaces externos se abren en otra pestaña sin dar acceso a window.opener.
+    a: (tagName, attribs) => ({
+      tagName,
+      attribs: attribs.href?.startsWith("/")
+        ? attribs
+        : { ...attribs, target: "_blank", rel: "noopener noreferrer" },
+    }),
+  },
+};
+
 export async function getProcess(): Promise<ProcessStatus> {
   await simularRed(0.6);
   return processStatus;
@@ -30,7 +56,42 @@ export async function getBanners(): Promise<Banner[]> {
 
 export async function getLatestPosts(limit = 3): Promise<PostSummary[]> {
   await simularRed(1.4);
-  return [...posts].sort((a, b) => b.publicadoEl.localeCompare(a.publicadoEl)).slice(0, limit);
+  return consultarNoticias(posts, { pagina: 1 }, limit).items;
 }
 
-export type { Banner, PostSummary, ProcessStatus } from "./types";
+/*
+ * Las noticias son contenido público: se cachean para que el detalle se prerenderice y
+ * la navegación sea instantánea. Con la API real, cacheLife define cada cuánto se refrescan.
+ */
+
+export async function getPosts(filtros: FiltrosNoticias): Promise<PaginaNoticias> {
+  "use cache";
+  cacheLife("minutes");
+  await simularRed(1);
+  return consultarNoticias(posts, filtros);
+}
+
+export async function getPost(slug: string): Promise<Post | undefined> {
+  "use cache";
+  cacheLife("minutes");
+  await simularRed(1);
+  const post = posts.find((p) => p.slug === slug);
+  return post && { ...post, cuerpo: sanitizeHtml(post.cuerpo, HTML_PERMITIDO) };
+}
+
+export async function getRelatedPosts(slug: string): Promise<PostSummary[]> {
+  "use cache";
+  cacheLife("minutes");
+  await simularRed(1.2);
+  const post = posts.find((p) => p.slug === slug);
+  return post ? relacionadas(posts, post) : [];
+}
+
+/** Slugs publicados, para prerenderizar el detalle y para el sitemap. */
+export async function getPostSlugs(): Promise<{ slug: string; publicadoEl: string }[]> {
+  "use cache";
+  cacheLife("minutes");
+  return posts.map(({ slug, publicadoEl }) => ({ slug, publicadoEl }));
+}
+
+export type { Banner, Post, PostSummary, ProcessStatus } from "./types";

@@ -29,3 +29,12 @@ export function env(): Env {
   }
   return cached;
 }
+
+/**
+ * URL pública del portal, para metadatos, Open Graph y sitemap. No es secreta y tiene
+ * valor por defecto, así que no exige las variables del BFF.
+ */
+export function siteUrl(): URL {
+  const parsed = z.url().safeParse(process.env.SITE_URL);
+  return new URL(parsed.success ? parsed.data : "http://localhost:3000");
+}

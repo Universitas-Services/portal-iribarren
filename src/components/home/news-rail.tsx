@@ -1,66 +1,8 @@
-import {
-  ArrowRight,
-  ClipboardList,
-  Images,
-  Megaphone,
-  Mic,
-  Newspaper,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { NewsCard } from "@/components/noticias/news-card";
 import { getLatestPosts } from "@/lib/api";
-import type { PostCategory, PostSummary } from "@/lib/api/types";
 import { RailControls } from "./rail-controls";
-
-const CATEGORIA: Record<PostCategory, { Icon: LucideIcon; fondo: string; icono: string }> = {
-  Avances: { Icon: Newspaper, fondo: "bg-rojo", icono: "text-papel/25" },
-  Minutas: { Icon: ClipboardList, fondo: "bg-naranja", icono: "text-noche/20" },
-  Comunicados: { Icon: Megaphone, fondo: "bg-noche", icono: "text-papel/15" },
-  Entrevistas: { Icon: Mic, fondo: "bg-amarillo", icono: "text-noche/20" },
-  Galería: { Icon: Images, fondo: "bg-rojo-oscuro", icono: "text-papel/20" },
-};
-
-const fecha = new Intl.DateTimeFormat("es-VE", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  timeZone: "America/Caracas",
-});
-
-const formatear = (iso: string) => fecha.format(new Date(`${iso}T12:00:00-04:00`));
-
-function NewsCard({ post }: { post: PostSummary }) {
-  const c = CATEGORIA[post.categoria];
-  return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-tarjeta bg-papel shadow-tarjeta transition-[transform,box-shadow] duration-300 ease-out-expo hover:-translate-y-1 hover:shadow-elevada">
-      <div aria-hidden="true" className={`relative aspect-[16/10] overflow-hidden ${c.fondo}`}>
-        <c.Icon
-          strokeWidth={1}
-          className={`absolute -right-6 -bottom-8 size-48 transition-transform duration-500 ease-out-expo group-hover:scale-105 ${c.icono}`}
-        />
-      </div>
-      <div className="flex flex-1 flex-col p-6">
-        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-tinta/75">
-          <span className="rounded-full bg-rojo/10 px-2.5 py-0.5 font-display text-xs font-bold text-rojo">
-            {post.categoria}
-          </span>
-          {post.parroquia && <span>{post.parroquia}</span>}
-          <span aria-hidden="true">·</span>
-          <time dateTime={post.publicadoEl}>{formatear(post.publicadoEl)}</time>
-        </p>
-        <h3 className="mt-3 font-display text-xl leading-snug font-extrabold text-noche">
-          <Link
-            href={`/noticias/${post.slug}`}
-            className="group-hover:text-rojo after:absolute after:inset-0"
-          >
-            {post.titulo}
-          </Link>
-        </h3>
-        <p className="mt-2 leading-relaxed text-tinta">{post.resumen}</p>
-      </div>
-    </article>
-  );
-}
 
 /** Noticias en carril horizontal: se desliza con el dedo, la rueda o las flechas. */
 export async function NewsRail() {

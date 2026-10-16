@@ -61,6 +61,13 @@ Todo bajo `prefers-reduced-motion: no-preference`; las animaciones ligadas al sc
   - `BannersTile`/`BannerCarousel`: autoplay de 7 s, pausa con hover, foco o un botón.
   - `NewsRail` + `RailControls`
   - `ActorsSection`, `ValuesSection`
+- Noticias (`src/components/noticias/`):
+  - `EncabezadoPagina`: banda oscura con migas y título; el contenido se monta encima, como en el Inicio.
+  - `FiltrosNoticias`: búsqueda, categoría y fechas sincronizadas con la URL, más pestañas por formato con conteos; funcionan sin JavaScript.
+  - `MosaicoNoticias`: cada formato tiene pieza y tamaño propios (galería 2×2, foto 1×2, texto 2×1, documento 1×1). `src/lib/noticias/mosaico.ts` las acomoda en 4 columnas (2 en tablet) y estira las vecinas para que nunca queden huecos. En teléfono, una columna.
+  - Detalle por formato: `FiguraNoticia`, `Galeria` (visor con `<dialog>`, teclado y deslizamiento), `VisorDocumento` + `VistaPdf` (solo si el navegador tiene visor de PDF) y `CuerpoNoticia` (`.prosa`, HTML saneado en el servidor).
+  - `NewsCard`: tarjeta uniforme para el carril del Inicio y «Más noticias».
+  - Toda foto que no sea de la Alcaldía muestra `CreditoImagen` (autor, licencia y fuente).
 - Estados:
   - `src/components/ui/skeleton.tsx` (`Skeleton`, `SkeletonText`, `SkeletonCard`, `LoadingStatus`);
   - skeletons a medida en `home/skeletons.tsx`;

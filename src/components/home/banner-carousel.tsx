@@ -10,6 +10,7 @@ import {
   Play,
   type LucideIcon,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Banner, BannerTone } from "@/lib/api/types";
@@ -84,7 +85,8 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
   }, [autoplay, index, goTo]);
 
   if (banners.length === 0) return null;
-  const controles = banners[index]?.tono === "calido" ? "text-noche" : "text-papel";
+  const actual = banners[index];
+  const controles = actual?.tono === "calido" && !actual.imagen ? "text-noche" : "text-papel";
 
   return (
     <div
@@ -109,13 +111,30 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
               aria-roledescription="anuncio"
               aria-label={`${i + 1} de ${banners.length}`}
               aria-hidden={i !== index}
-              className={`relative flex w-full shrink-0 snap-start flex-col overflow-hidden px-6 pt-8 pb-24 sm:px-10 sm:pt-10 lg:justify-end lg:pb-28 ${t.panel}`}
+              className={`relative flex w-full shrink-0 snap-start flex-col overflow-hidden px-6 pt-8 pb-24 sm:px-10 sm:pt-10 lg:justify-end lg:pb-28 ${b.imagen ? "justify-end bg-noche text-papel" : t.panel}`}
             >
-              <t.Icon
-                aria-hidden="true"
-                strokeWidth={1}
-                className={`pointer-events-none absolute -right-8 -bottom-6 size-64 lg:-top-12 lg:-right-16 lg:bottom-auto lg:size-[30rem] ${t.icono}`}
-              />
+              {b.imagen ? (
+                <>
+                  <Image
+                    src={b.imagen.src}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1024px) 700px, 100vw"
+                    className="object-cover"
+                  />
+                  {/* Velo para que el texto blanco cumpla el contraste sobre cualquier foto. */}
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-[linear-gradient(0deg,rgb(35_42_54/0.95)_0%,rgb(35_42_54/0.75)_45%,rgb(35_42_54/0.25)_100%)]"
+                  />
+                </>
+              ) : (
+                <t.Icon
+                  aria-hidden="true"
+                  strokeWidth={1}
+                  className={`pointer-events-none absolute -right-8 -bottom-6 size-64 lg:-top-12 lg:-right-16 lg:bottom-auto lg:size-[30rem] ${t.icono}`}
+                />
+              )}
               <h3 className="relative max-w-lg font-display text-[clamp(1.5rem,3vw,2.25rem)] leading-[1.1] font-extrabold">
                 {b.titulo}
               </h3>

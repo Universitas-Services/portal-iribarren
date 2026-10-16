@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Montserrat, Roboto } from "next/font/google";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { siteUrl } from "@/env";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -19,6 +20,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
+  metadataBase: siteUrl(),
   title: {
     default: "PDUL YA · Planificación Urbana Participativa para la Ciudad Humana",
     template: "%s · PDUL YA",

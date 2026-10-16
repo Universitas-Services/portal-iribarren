@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CATEGORIAS, type FiltrosNoticias, type PostFormat } from "@/lib/api/types";
 import {
   aceptacionSchema,
   archivoSchema,
@@ -106,3 +107,57 @@ export type LoginInput = z.infer<typeof loginSchema>;
 export type PerfilInput = z.infer<typeof perfilSchema>;
 export type OrganizacionInput = z.infer<typeof organizacionSchema>;
 export type ParticipacionInput = z.infer<typeof participacionSchema>;
+
+/** Toma el primer valor cuando el parámetro llega repetido (?a=1&a=2). */
+const primero = (v: unknown) => (Array.isArray(v) ? v[0] : v);
+
+const fechaIso = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine(
+    (v) =>
+      !Number.isNaN(Date.parse(`${v}T00:00:00Z`)) &&
+      new Date(`${v}T00:00:00Z`).toISOString().startsWith(v),
+  );
+
+/** En la URL el formato va en minúsculas y sin tilde: ?formato=galeria */
+export const FORMATO_EN_URL = {
+  texto: "TEXTO",
+  imagen: "IMAGEN",
+  galeria: "GALERIA",
+  documento: "DOCUMENTO",
+} as const satisfies Record<string, PostFormat>;
+
+export const formatoAUrl = (f: PostFormat) =>
+  Object.entries(FORMATO_EN_URL).find(([, v]) => v === f)![0];
+
+/**
+ * Filtros del listado de noticias leídos de la URL. Nunca lanza error: un valor inválido
+ * se descarta para que un enlace mal copiado muestre resultados en lugar de fallar.
+ */
+export const filtrosNoticiasSchema = z
+  .object({
+    q: z.preprocess(primero, z.string().trim().max(100).optional()).catch(undefined),
+    categoria: z.preprocess(primero, z.enum(CATEGORIAS).optional()).catch(undefined),
+    formato: z
+      .preprocess(
+        primero,
+        z
+          .enum(Object.keys(FORMATO_EN_URL) as [keyof typeof FORMATO_EN_URL])
+          .transform((f) => FORMATO_EN_URL[f])
+          .optional(),
+      )
+      .catch(undefined),
+    desde: z.preprocess(primero, fechaIso.optional()).catch(undefined),
+    hasta: z.preprocess(primero, fechaIso.optional()).catch(undefined),
+    pagina: z.preprocess(primero, z.coerce.number().int().min(1).max(10_000)).catch(1),
+  })
+  .transform(({ q, categoria, formato, desde, hasta, pagina }): FiltrosNoticias => {
+    // Si el rango llega al revés, se invierte en lugar de devolver cero resultados.
+    const [d, h] = desde && hasta && desde > hasta ? [hasta, desde] : [desde, hasta];
+    return { q: q || undefined, categoria, formato, desde: d, hasta: h, pagina };
+  });
+
+export function parseFiltrosNoticias(params: Record<string, string | string[] | undefined>) {
+  return filtrosNoticiasSchema.parse(params);
+}
