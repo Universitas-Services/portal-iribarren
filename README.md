@@ -40,6 +40,13 @@ Next.js (App Router) · TypeScript · Tailwind CSS · Zod · ESLint · Prettier 
 - **Validaciones:** `src/lib/validation/common.ts` reúne las reglas compartidas (cédula, RIF, teléfono, correo, contraseña y archivos) y debe mantenerse idéntico en `plataforma-admin` y `portal-iribarren`. Los formularios de este proyecto están en `src/lib/validation/schemas.ts`.
 - **Variables de entorno:** `src/env.ts` las valida con Zod en el servidor (`env()`), y solo se importa desde código de servidor.
 
+## Estados de carga, error y 404
+
+- Toda página nueva lleva su `loading.tsx` con un skeleton de la misma forma que el contenido (primitivas en `src/components/ui/skeleton.tsx`).
+- Los bloques que piden datos se envuelven en `<Suspense>` con su propio skeleton, para que la página cargue por partes (ver `src/app/page.tsx`).
+- Las rutas inexistentes usan `src/app/not-found.tsx` y los fallos `src/app/error.tsx` (con «Reintentar»).
+- Para ver los skeletons con los datos de ejemplo, define `MOCK_DELAY_MS=1500` en `.env.local` (solo en desarrollo).
+
 ## Integración continua
 
 `.github/workflows/ci.yml` se ejecuta en cada pull request y en cada push a `main`: Prettier, ESLint, TypeScript, Vitest y `next build`. Dependabot propone actualizaciones semanales de dependencias y de acciones.
