@@ -92,6 +92,89 @@ export const CATEGORIAS = [
 ] as const;
 export type PostCategory = (typeof CATEGORIAS)[number];
 
+/* ---------- Catálogos de participación y perfil (Propuesta v3, formularios 1 a 3) ---------- */
+
+/** Las 10 parroquias del Municipio Iribarren. */
+export const PARROQUIAS = [
+  "Concepción",
+  "Catedral",
+  "El Cují",
+  "Tamaca",
+  "Ana Soto",
+  "Santa Rosa",
+  "Unión",
+  "Juárez",
+  "Buena Vista",
+  "Águedo Felipe Alvarado",
+] as const;
+export type Parroquia = (typeof PARROQUIAS)[number];
+
+/** Categorías técnicas del plan para clasificar opiniones y propuestas. */
+export const CATEGORIAS_TECNICAS = [
+  "Zonificación y Uso de Suelo",
+  "Servicios Públicos y Redes",
+  "Vialidad y Transporte",
+  "Equipamiento Urbano",
+  "Medio Ambiente y Riesgos",
+  "Patrimonio y Renovación Urbana",
+] as const;
+export type CategoriaTecnica = (typeof CATEGORIAS_TECNICAS)[number];
+
+export const OCUPACIONES = [
+  "Comerciante",
+  "Profesional Independiente",
+  "Estudiante",
+  "Empleado Público",
+  "Empleado Privado",
+  "Ama de Casa",
+  "Jubilado/Pensionado",
+  "Otro",
+] as const;
+
+/** En qué condición actúa quien completa el perfil de una organización. */
+export const CONDICIONES_REPRESENTANTE = [
+  "Representante legal",
+  "Vocero o vocera oficial",
+  "Persona autorizada para actuar en nombre de la organización",
+  "Persona de contacto institucional, sin representación legal",
+  "Otro",
+] as const;
+
+/** ¿Tiene un documento que acredite su condición? */
+export const ACREDITACION_REPRESENTANTE = ["Sí", "No", "No aplica"] as const;
+
+/** Estado de la revisión de identidad que hace el Revisor desde el admin. */
+export const ESTADOS_VERIFICACION = [
+  "PENDIENTE",
+  "VERIFICADO",
+  "RECHAZADO",
+  "REQUIERE_CORRECCION",
+] as const;
+export type EstadoVerificacion = (typeof ESTADOS_VERIFICACION)[number];
+
+export const TIPOS_PARTICIPACION = [
+  "OPINION_GENERAL",
+  "OPINION_NOTICIA",
+  "PROPUESTA_FORMAL",
+] as const;
+export type TipoParticipacion = (typeof TIPOS_PARTICIPACION)[number];
+
+export const NOMBRE_TIPO_PARTICIPACION: Record<TipoParticipacion, string> = {
+  OPINION_GENERAL: "Opinión general",
+  OPINION_NOTICIA: "Opinión sobre una noticia",
+  PROPUESTA_FORMAL: "Propuesta formal",
+};
+
+/** Ciclo de vida de una participación (v3, sección 5.1). */
+export const ESTADOS_PARTICIPACION = [
+  "PENDIENTE",
+  "EN_REVISION",
+  "APROBADA",
+  "RECHAZADA",
+  "PUBLICADA",
+] as const;
+export type EstadoParticipacion = (typeof ESTADOS_PARTICIPACION)[number];
+
 export type PostSummary = {
   slug: string;
   titulo: string;

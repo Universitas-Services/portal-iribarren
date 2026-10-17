@@ -20,6 +20,18 @@ const aFecha = (iso: string) => new Date(`${iso}T12:00:00-04:00`);
 export const formatearFecha = (iso: string) => fechaCorta.format(aFecha(iso));
 export const formatearFechaLarga = (iso: string) => fechaLarga.format(aFecha(iso));
 
+const fechaHora = new Intl.DateTimeFormat("es-VE", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: "America/Caracas",
+});
+
+/** Marca de tiempo completa (ISO con hora), en hora de Caracas. */
+export const formatearFechaHora = (iso: string) => fechaHora.format(new Date(iso));
+
 export function formatearPeso(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   const kb = bytes / 1024;

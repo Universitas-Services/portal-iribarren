@@ -2,15 +2,28 @@
 
 import { redirect } from "next/navigation";
 import type { z } from "zod";
+import { getPost } from "@/lib/api";
 import {
+  acreditacionSchema,
+  datosNaturalSchema,
+  documentoPerfilSchema,
   loginSchema,
+  participacionSchema,
   recuperarSchema,
   registroNaturalSchema,
   registroOrganizacionSchema,
+  representanteSchema,
   restablecerSchema,
 } from "@/lib/validation/schemas";
 import {
+  abandonarPortal,
+  cargarDocumento,
   cerrarSesion,
+  cuentaDeSesion,
+  enviarParticipacion,
+  guardarPerfil,
+  perfilCompleto,
+  solicitarBaja,
   iniciarSesion,
   recuperar,
   reenviarVerificacion,
@@ -40,7 +53,7 @@ export type EstadoFormulario = {
   noVerificado?: boolean;
 };
 
-const CASILLAS = ["aceptaTerminos", "aceptaPoliticaDatos"];
+const CASILLAS = ["aceptaTerminos", "aceptaPoliticaDatos", "mostrarNombre"];
 const SECRETOS = ["contrasena", "confirmarContrasena"];
 
 /** Convierte el FormData en objeto: casillas a booleano y prefijos de cédula/RIF unidos. */
@@ -50,6 +63,10 @@ function leer(fd: FormData) {
   for (const c of CASILLAS) datos[c] = fd.get(c) === "on";
   if (fd.has("cedulaNumero")) datos.cedula = `${fd.get("cedulaPrefijo")}-${fd.get("cedulaNumero")}`;
   if (fd.has("rifNumero")) datos.rif = `${fd.get("rifPrefijo")}-${fd.get("rifNumero")}`;
+  if (fd.has("cedulaRepresentanteNumero"))
+    datos.cedulaRepresentante = `${fd.get("cedulaRepresentantePrefijo")}-${fd.get("cedulaRepresentanteNumero")}`;
+  // Un <input type="file"> vacío llega como un archivo de 0 bytes: se trata como «sin archivo».
+  for (const [k, v] of fd.entries()) if (v instanceof File && v.size > 0) datos[k] = v;
   return datos;
 }
 
@@ -243,4 +260,152 @@ export async function restablecerAccion(
         ? "Este enlace ya se usó. Si necesitas cambiar la contraseña otra vez, pide uno nuevo."
         : "El enlace no es válido.";
   return { mensaje: { tipo: "error", texto } };
+}
+
+/* ---------- Perfil ---------- */
+
+const metadatos = (f: File) => ({ nombre: f.name, mime: f.type, tamano: f.size });
+
+const BLOQUEADO: EstadoFormulario = {
+  mensaje: {
+    tipo: "error",
+    texto: "Mientras tu perfil está en corrección solo puedes reemplazar el documento señalado.",
+  },
+};
+
+/** Tras guardar vuelve a «Mi cuenta»; si el perfil quedó completo, con el aviso para participar. */
+async function trasGuardar(estabaCompleto: boolean): Promise<never> {
+  const c = cuentaDeSesion(almacen(), await idSesion());
+  redirect(
+    !estabaCompleto && c && perfilCompleto(c)
+      ? "/mi-cuenta?guardado=completo"
+      : "/mi-cuenta?guardado=1",
+  );
+}
+
+async function cuentaActual() {
+  const sesion = await idSesion();
+  const c = cuentaDeSesion(almacen(), sesion);
+  if (!c) redirect("/ingresar?volver=/mi-cuenta");
+  return { sesion, completo: perfilCompleto(c) };
+}
+
+export async function guardarDatosNaturalAccion(
+  _prev: EstadoFormulario,
+  fd: FormData,
+): Promise<EstadoFormulario> {
+  const { sesion, completo } = await cuentaActual();
+  const datos = leer(fd);
+  const p = datosNaturalSchema.safeParse(datos);
+  if (!p.success) return conErrores(p.error, datos);
+  if (guardarPerfil(almacen(), sesion, p.data) === "BLOQUEADO") return BLOQUEADO;
+  return trasGuardar(completo);
+}
+
+export async function guardarRepresentanteAccion(
+  _prev: EstadoFormulario,
+  fd: FormData,
+): Promise<EstadoFormulario> {
+  const { sesion, completo } = await cuentaActual();
+  const datos = leer(fd);
+  const p = representanteSchema.safeParse(datos);
+  if (!p.success) return conErrores(p.error, datos);
+  if (guardarPerfil(almacen(), sesion, p.data) === "BLOQUEADO") return BLOQUEADO;
+  return trasGuardar(completo);
+}
+
+/** «¿Dispone de un documento que acredite su condición?» y, si es «Sí», el documento. */
+export async function guardarAcreditacionAccion(
+  _prev: EstadoFormulario,
+  fd: FormData,
+): Promise<EstadoFormulario> {
+  const { sesion, completo } = await cuentaActual();
+  const datos = leer(fd);
+  const p = acreditacionSchema.safeParse(datos);
+  if (!p.success) return conErrores(p.error, datos);
+  const yaTiene = !!cuentaDeSesion(almacen(), sesion)?.documentos.REPRESENTACION;
+  if (p.data.acreditacion === "Sí") {
+    if (!datos.archivo && !yaTiene)
+      return {
+        errores: { archivo: "Adjunta el documento que acredita tu condición." },
+        valores: valoresDe(datos),
+      };
+    if (datos.archivo) {
+      const d = documentoPerfilSchema.safeParse({
+        documento: "REPRESENTACION",
+        archivo: datos.archivo,
+      });
+      if (!d.success) return conErrores(d.error, datos);
+      if (
+        cargarDocumento(almacen(), sesion, "REPRESENTACION", metadatos(d.data.archivo)) ===
+        "BLOQUEADO"
+      )
+        return BLOQUEADO;
+    }
+  }
+  if (guardarPerfil(almacen(), sesion, p.data) === "BLOQUEADO") return BLOQUEADO;
+  return trasGuardar(completo);
+}
+
+/** Sube un documento del perfil o lo reemplaza con una versión nueva. */
+export async function cargarDocumentoAccion(
+  _prev: EstadoFormulario,
+  fd: FormData,
+): Promise<EstadoFormulario> {
+  const { sesion, completo } = await cuentaActual();
+  const datos = leer(fd);
+  const p = documentoPerfilSchema.safeParse(datos);
+  if (!p.success) return conErrores(p.error, datos);
+  const r = cargarDocumento(almacen(), sesion, p.data.documento, metadatos(p.data.archivo));
+  if (r === "BLOQUEADO") return BLOQUEADO;
+  return trasGuardar(completo);
+}
+
+export async function abandonarAccion() {
+  abandonarPortal(almacen(), await idSesion());
+  await borrarSesion();
+  redirect("/ingresar?aviso=abandono");
+}
+
+export async function solicitarBajaAccion() {
+  if (!solicitarBaja(almacen(), await idSesion())) redirect("/ingresar");
+  redirect("/mi-cuenta?guardado=baja");
+}
+
+/* ---------- Participación ---------- */
+
+export async function enviarParticipacionAccion(
+  _prev: EstadoFormulario,
+  fd: FormData,
+): Promise<EstadoFormulario> {
+  const sesion = await idSesion();
+  if (!cuentaDeSesion(almacen(), sesion)) redirect("/ingresar?volver=/participa&motivo=participar");
+  const datos = leer(fd);
+  const p = participacionSchema.safeParse(datos);
+  if (!p.success) return conErrores(p.error, datos);
+  const { idempotencia, noticia: slug, adjunto, ...resto } = p.data;
+
+  let noticia: { slug: string; titulo: string } | undefined;
+  if (resto.tipo === "OPINION_NOTICIA" && slug) {
+    const post = await getPost(slug);
+    if (!post)
+      return {
+        errores: { noticia: "Esa noticia ya no está publicada." },
+        valores: valoresDe(datos),
+      };
+    noticia = { slug: post.slug, titulo: post.titulo };
+  }
+
+  const r = enviarParticipacion(almacen(), sesion, idempotencia, {
+    ...resto,
+    noticia,
+    adjunto: adjunto ? { ...metadatos(adjunto), subidoEl: new Date().toISOString() } : undefined,
+  });
+  if (r.estado === "SIN_SESION") redirect("/ingresar?volver=/participa&motivo=participar");
+  if (r.estado === "PERFIL_INCOMPLETO")
+    return {
+      valores: valoresDe(datos),
+      mensaje: { tipo: "error", texto: "Completa tu perfil en Mi cuenta antes de enviar." },
+    };
+  redirect(`/participa/enviada?folio=${r.folio}`);
 }

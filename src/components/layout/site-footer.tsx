@@ -19,7 +19,7 @@ const enlace = "transition-colors duration-150 hover:text-rojo hover:underline";
  */
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-linea bg-papel text-tinta">
+    <footer className="mt-auto border-t border-linea bg-papel text-tinta print:hidden">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-5 sm:px-6 sm:py-8 lg:flex-nowrap lg:gap-10 lg:px-8">
         <Image
           src="/brand/pdul-ya-horizontal.png"

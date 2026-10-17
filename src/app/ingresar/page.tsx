@@ -47,6 +47,16 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
           Tu contraseña se cambió. Inicia sesión con la nueva.
         </p>
       )}
+      {sp.aviso === "abandono" && (
+        <p
+          role="status"
+          className="mb-6 flex items-start gap-3 rounded-2xl bg-superficie p-4 text-sm text-noche"
+        >
+          <CircleCheck size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-exito-oscuro" />
+          Saliste del portal de Iribarren. Tu cuenta sigue activa en otros portales y puedes volver
+          a unirte cuando quieras iniciando sesión.
+        </p>
+      )}
       <FormIngreso volver={volver} />
       <p className="mt-8 border-t border-linea pt-6 text-center text-sm text-tinta">
         ¿No tienes cuenta?{" "}

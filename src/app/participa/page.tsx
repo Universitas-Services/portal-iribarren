@@ -1,9 +1,12 @@
-import { ClipboardCheck, MessageSquareText } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
+import { randomUUID } from "node:crypto";
 import { Suspense } from "react";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
+import { FormParticipacion } from "@/components/cuenta/participacion";
+import { getLatestPosts } from "@/lib/api";
+import type { TipoParticipacion } from "@/lib/api/types";
 import { getUsuario } from "@/lib/auth/sesion";
 
 export const metadata: Metadata = {
@@ -11,51 +14,57 @@ export const metadata: Metadata = {
   description: "Envía tu opinión o una propuesta formal al PDUL de Iribarren.",
 };
 
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+/** Atajos que llegan desde otras páginas: ?tipo=opinion-noticia&noticia=slug, ?tipo=propuesta. */
+const TIPO_URL: Record<string, TipoParticipacion> = {
+  opinion: "OPINION_GENERAL",
+  "opinion-noticia": "OPINION_NOTICIA",
+  propuesta: "PROPUESTA_FORMAL",
+};
+
 /*
- * Puerta de «Participa» (v3, rol 1, paso 5): sin sesión, lleva a iniciar sesión con el aviso.
- * Con sesión muestra el estado del perfil; el formulario de participación es el punto 3.10.
+ * Formulario de participación (backlog 3.10; v3, formulario 3). Sin sesión lleva a iniciar
+ * sesión con el aviso; con el perfil incompleto el envío queda bloqueado y dice qué falta.
  */
-export default function ParticipaPage() {
+export default function ParticipaPage({ searchParams }: { searchParams: SearchParams }) {
   return (
     <MarcoCuenta
       migas={[{ href: "/", label: "Inicio" }, { label: "Participa" }]}
       titulo="Participa en el PDUL"
-      bajada="Envía una opinión general, opina sobre una noticia o presenta una propuesta formal con su soporte."
-      ancho="max-w-2xl"
+      bajada="Envía una opinión general, opina sobre una noticia o presenta una propuesta formal. Cada aporte recibe un folio único."
+      ancho="max-w-3xl"
     >
-      <Suspense fallback={<FormularioSkeleton campos={2} />}>
-        <Contenido />
+      <Suspense fallback={<FormularioSkeleton campos={5} />}>
+        <Contenido searchParams={searchParams} />
       </Suspense>
     </MarcoCuenta>
   );
 }
 
-async function Contenido() {
+async function Contenido({ searchParams }: { searchParams: SearchParams }) {
   const u = await getUsuario();
   if (!u) redirect("/ingresar?volver=/participa&motivo=participar");
+  // La clave de idempotencia es única por visita: se genera siempre al pedir la página.
+  await connection();
+  const sp = await searchParams;
+  const posts = await getLatestPosts(50);
+  const noticias = posts.map((p) => ({ slug: p.slug, titulo: p.titulo }));
+  const noticia = typeof sp.noticia === "string" ? sp.noticia : undefined;
+  const tipo =
+    (typeof sp.tipo === "string" && TIPO_URL[sp.tipo]) ||
+    (noticia ? "OPINION_NOTICIA" : "OPINION_GENERAL");
 
   return (
-    <div>
-      <span className="grid size-14 place-items-center rounded-full bg-rojo/10 text-rojo">
-        <MessageSquareText size={26} aria-hidden="true" />
-      </span>
-      <h2 className="mt-5 font-display text-2xl font-extrabold text-noche">
-        {u.perfilCompleto
-          ? "Todo listo para participar"
-          : "Antes de participar, completa tu perfil"}
-      </h2>
-      <p className="mt-3 leading-relaxed text-tinta">
-        {u.perfilCompleto
-          ? "El formulario de participación llega en la próxima entrega. Cada aporte recibirá un folio único y un acuse por correo."
-          : "Necesitamos algunos datos más para que tu aporte llegue con respaldo. Puedes verlos en Mi cuenta."}
-      </p>
-      <Link
-        href="/mi-cuenta"
-        className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-xl bg-rojo px-6 font-display font-bold text-papel transition-[background-color,transform] duration-150 hover:bg-rojo-oscuro active:scale-[0.98]"
-      >
-        <ClipboardCheck size={18} aria-hidden="true" />
-        Ir a Mi cuenta
-      </Link>
-    </div>
+    <FormParticipacion
+      noticias={noticias}
+      tipoInicial={tipo}
+      noticiaInicial={noticias.some((n) => n.slug === noticia) ? noticia : undefined}
+      puedeEnviar={u.puedeParticipar}
+      faltantes={u.faltantes}
+      // Una clave por formulario abierto: un doble clic o un reintento no crean dos folios.
+      idempotencia={randomUUID()}
+      autor={u.nombre}
+    />
   );
 }

@@ -1,7 +1,15 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { almacenDemo } from "./fixtures";
-import { cuentaDeSesion, resumenCuenta, type Almacen, type ResumenCuenta } from "./servicio";
+import {
+  cuentaDeSesion,
+  participacionPropia,
+  resumenCuenta,
+  vistaPerfil,
+  type Almacen,
+  type ResumenCuenta,
+  type VistaPerfil,
+} from "./servicio";
 
 /*
  * Sesión del portal sobre la autenticación simulada. Con plataforma-api, estas funciones
@@ -30,6 +38,19 @@ export async function getUsuario(): Promise<ResumenCuenta | null> {
   const id = (await cookies()).get(COOKIE_SESION)?.value;
   const cuenta = cuentaDeSesion(almacen(), id);
   return cuenta ? resumenCuenta(cuenta) : null;
+}
+
+/** Todo lo que muestra «Mi cuenta», o null sin sesión. */
+export async function getPerfil(): Promise<VistaPerfil | null> {
+  const id = (await cookies()).get(COOKIE_SESION)?.value;
+  const cuenta = cuentaDeSesion(almacen(), id);
+  return cuenta ? vistaPerfil(cuenta) : null;
+}
+
+/** Una participación de la cuenta en sesión (nunca la de otra persona). */
+export async function getParticipacion(folio: string) {
+  const id = (await cookies()).get(COOKIE_SESION)?.value;
+  return participacionPropia(almacen(), id, folio);
 }
 
 export async function idSesion() {

@@ -142,8 +142,11 @@ export function CampoDocumento({
   valorNumero,
   placeholder,
   ayuda,
+  tipo,
 }: {
-  id: "cedula" | "rif";
+  /** «cedula», «rif» u otro nombre (por ejemplo «cedulaRepresentante») con `tipo`. */
+  id: string;
+  tipo?: "cedula" | "rif";
   etiqueta: string;
   prefijos: readonly string[];
   error?: string;
@@ -152,7 +155,8 @@ export function CampoDocumento({
   placeholder: string;
   ayuda: string;
 }) {
-  const doc = DOCUMENTOS[id];
+  const clase = tipo ?? (id === "rif" ? "rif" : "cedula");
+  const doc = DOCUMENTOS[clase];
   const [prefijo, setPrefijo] = useState(valorPrefijo ?? prefijos[0]!);
   const [digitos, setDigitos] = useState((valorNumero ?? "").replace(/\D/g, ""));
   const [local, setLocal] = useState<{ tocado: boolean; error?: string }>({ tocado: false });
@@ -213,7 +217,7 @@ export function CampoDocumento({
           placeholder={placeholder}
           value={doc.formatear(digitos)}
           // Tope nativo: limita también antes de que cargue el JavaScript (el RIF suma el guion).
-          maxLength={id === "rif" ? max + 1 : max}
+          maxLength={clase === "rif" ? max + 1 : max}
           onChange={(e) => aplicar(e.target.value)}
           onPaste={(e) => {
             // Lo pegado ("V-12.345.678") se limpia antes de que maxLength lo recorte.
@@ -380,7 +384,25 @@ const ETIQUETAS: Record<string, string> = {
   tipoEntidad: "Tipo de entidad",
   razonSocial: "Razón social",
   rif: "RIF",
+  telefono: "Teléfono",
+  ocupacion: "Ocupación",
+  condicion: "Condición",
+  nombresRepresentante: "Nombres del representante",
+  apellidosRepresentante: "Apellidos del representante",
+  cedulaRepresentante: "Cédula del representante",
+  telefonoInstitucional: "Teléfono institucional",
+  acreditacion: "Acreditación",
+  archivo: "Archivo",
+  tipo: "Tipo de participación",
+  noticia: "Noticia",
+  parroquia: "Parroquia",
+  sector: "Sector",
+  categoriaTecnica: "Categoría técnica",
+  descripcion: "Descripción",
+  adjunto: "Documento de soporte",
 };
+
+const CON_NUMERO = ["cedula", "rif", "cedulaRepresentante"];
 
 /** Resumen de errores: recibe el foco al aparecer y enlaza a cada campo. */
 export function ResumenErrores({ estado }: { estado: EstadoFormulario }) {
@@ -421,7 +443,7 @@ export function ResumenErrores({ estado }: { estado: EstadoFormulario }) {
               {errores.map(([campo, texto]) => (
                 <li key={campo}>
                   <a
-                    href={`#${campo === "cedula" ? "cedulaNumero" : campo === "rif" ? "rifNumero" : campo}`}
+                    href={`#${CON_NUMERO.includes(campo) ? `${campo}Numero` : campo}`}
                     className="underline"
                   >
                     {ETIQUETAS[campo] ?? campo}

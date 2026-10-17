@@ -49,20 +49,24 @@ Next.js (App Router) · TypeScript · Tailwind CSS · Zod · ESLint · Prettier 
 
 ## Cuenta del ciudadano (simulada)
 
-Mientras no exista `plataforma-api`, el registro y el acceso usan una autenticación simulada en memoria (`src/lib/auth/`), con las mismas reglas de `/portal/auth/*`. Se reinicia al reiniciar el servidor.
+Mientras no exista `plataforma-api`, el registro, el acceso, el perfil y la participación usan una autenticación simulada en memoria (`src/lib/auth/`), con las mismas reglas de `/portal/auth/*`. Se reinicia al reiniciar el servidor.
 
-- Rutas: `/registro`, `/registro/revisa-tu-correo`, `/verificar`, `/ingresar`, `/unirme`, `/recuperar`, `/restablecer`, `/mi-cuenta` y `/participa`.
+- Rutas: `/registro`, `/registro/revisa-tu-correo`, `/verificar`, `/ingresar`, `/unirme`, `/recuperar`, `/restablecer`, `/mi-cuenta` (asistente de perfil), `/participa` y `/participa/enviada`.
+- Los archivos del perfil y de la participación se validan (PDF, JPG o PNG de hasta 2 MB), pero el simulador solo guarda su nombre, tipo y peso.
 - En desarrollo, el enlace que en producción llega por correo aparece en un recuadro «Solo en desarrollo».
 - Cuentas de demostración (contraseña `Iribarren#2026`):
 
 | Correo                  | Caso                                                   |
 | ----------------------- | ------------------------------------------------------ |
-| `ana@ejemplo.com`       | Persona verificada, perfil completo                    |
+| `ana@ejemplo.com`       | Persona verificada, perfil completo: puede participar  |
+| `jose@ejemplo.com`      | Persona con el perfil vacío: recorre el asistente      |
+| `rosa@ejemplo.com`      | Perfil en «Requiere corrección» (documento ilegible)   |
 | `luis@ejemplo.com`      | Correo sin verificar                                   |
 | `carla@ejemplo.com`     | Cuenta de otra alcaldía: pasa por «Unirme a Iribarren» |
 | `contacto@cardones.org` | Organización con perfil incompleto                     |
 
 - Enlaces de ejemplo: `/verificar?token=demo-vencido` y `/verificar?token=demo-usado`.
+- Los folios se numeran desde `IRI-2026-0001` cada vez que arranca el servidor.
 
 ## Integración continua
 

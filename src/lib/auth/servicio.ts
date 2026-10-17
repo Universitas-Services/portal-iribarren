@@ -1,4 +1,11 @@
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import type {
+  CategoriaTecnica,
+  EstadoParticipacion,
+  EstadoVerificacion,
+  Parroquia,
+  TipoParticipacion,
+} from "@/lib/api/types";
 
 /*
  * Autenticación simulada del portal. Reproduce las reglas de /portal/auth/* (backlog 1.4) sobre
@@ -19,7 +26,16 @@ export type Cuenta = {
   verificado: boolean;
   /** Alcaldías en las que la cuenta tiene membresía (una cuenta, varios portales). */
   membresias: string[];
-  perfilCompleto: boolean;
+  /** Datos de «Terminación del perfil» (v3). */
+  perfil: Perfil;
+  /** Solo metadatos: el archivo va a Storage en plataforma-api. */
+  documentos: Partial<Record<TipoDocumento, DocumentoCargado>>;
+  /** Revisión de identidad que hace el Revisor desde el admin. */
+  estadoVerificacion: EstadoVerificacion;
+  /** Con REQUIERE_CORRECCION: qué documento debe reemplazarse y por qué. */
+  correccion?: { documento: TipoDocumento; motivo: string };
+  /** Fecha ISO en que pidió la baja de la cuenta. */
+  bajaSolicitada?: string;
   /** Persona natural. */
   cedula?: string;
   nombres?: string;
@@ -30,6 +46,48 @@ export type Cuenta = {
   tipoEntidad?: string;
 };
 
+export type TipoDocumento = "IDENTIDAD" | "REPRESENTACION" | "ENTIDAD";
+
+export type DocumentoCargado = {
+  nombre: string;
+  mime: string;
+  tamano: number;
+  version: number;
+  subidoEl: string;
+};
+
+export type Perfil = {
+  /** Persona natural. */
+  telefono?: string;
+  ocupacion?: string;
+  /** Organización: quién la representa. */
+  condicion?: string;
+  nombresRepresentante?: string;
+  apellidosRepresentante?: string;
+  cedulaRepresentante?: string;
+  telefonoInstitucional?: string;
+  /** «Sí», «No» o «No aplica»: si es «Sí», hace falta el documento REPRESENTACION. */
+  acreditacion?: string;
+};
+
+export type Participacion = {
+  folio: string;
+  cuentaId: string;
+  tipo: TipoParticipacion;
+  noticia?: { slug: string; titulo: string };
+  parroquia: Parroquia;
+  sector: string;
+  categoriaTecnica: CategoriaTecnica;
+  descripcion: string;
+  adjunto?: Omit<DocumentoCargado, "version">;
+  mostrarNombre: boolean;
+  /** Nombre o razón social al momento del envío. */
+  autor: string;
+  estado: EstadoParticipacion;
+  creadaEl: string;
+  historial: { estado: EstadoParticipacion; fecha: string; comentario?: string }[];
+};
+
 type TipoToken = "VERIFICAR" | "RESTABLECER";
 type Token = { cuentaId: string; tipo: TipoToken; expira: number; usado: boolean };
 
@@ -37,12 +95,20 @@ export type Almacen = {
   cuentas: Map<string, Cuenta>;
   tokens: Map<string, Token>;
   sesiones: Map<string, string>;
+  participaciones: Map<string, Participacion>;
+  /** Idempotency-Key ya procesadas (por cuenta) → folio emitido. */
+  idempotencia: Map<string, string>;
+  /** Último número de folio emitido. */
+  secuencia: number;
 };
 
 export const crearAlmacen = (): Almacen => ({
   cuentas: new Map(),
   tokens: new Map(),
   sesiones: new Map(),
+  participaciones: new Map(),
+  idempotencia: new Map(),
+  secuencia: 0,
 });
 
 /* ---------- Contraseñas (scrypt con sal, comparación en tiempo constante) ---------- */
@@ -132,7 +198,9 @@ export function registrar(alm: Almacen, d: DatosRegistro, ahora = Date.now()): R
     hash: cifrar(contrasena),
     verificado: false,
     membresias: [ALCALDIA],
-    perfilCompleto: false,
+    perfil: {},
+    documentos: {},
+    estadoVerificacion: "PENDIENTE",
   });
   return { estado: "ENVIADO", tokenDesarrollo: emitirToken(alm, id, "VERIFICAR", 24, ahora) };
 }
@@ -187,7 +255,7 @@ export function iniciarSesion(alm: Almacen, correo: string, contrasena: string):
   alm.sesiones.set(sesion, c.id);
   const siguiente = !c.membresias.includes(ALCALDIA)
     ? "UNIRSE"
-    : !c.perfilCompleto
+    : !perfilCompleto(c)
       ? "PERFIL"
       : "LISTO";
   return { estado: "OK", sesion, siguiente };
@@ -238,19 +306,117 @@ export function restablecer(
 
 /* ---------- Perfil ---------- */
 
-/** Lo que falta para completar el perfil, según el tipo de cuenta (v3, «Terminación del perfil»). */
-export function faltantesPerfil(c: Cuenta): string[] {
-  if (c.perfilCompleto) return [];
-  return c.tipo === "NATURAL"
-    ? ["Teléfono de contacto", "Ocupación (opcional)", "Documento de identidad (PDF, JPG o PNG)"]
-    : [
-        "Condición en la que actúas (representante legal, vocero u otra)",
-        "Nombres, apellidos y cédula del representante",
-        "Documento que acredita la representación",
-      ];
+export type PasoPerfil = {
+  clave: "DATOS" | "IDENTIDAD" | "REPRESENTANTE" | "ACREDITACION" | "ENTIDAD";
+  titulo: string;
+  hecho: boolean;
+};
+
+/** Pasos de «Terminación del perfil» según el tipo de cuenta (v3, formularios 1 y 2). */
+export function pasosPerfil(c: Cuenta): PasoPerfil[] {
+  const p = c.perfil;
+  const d = c.documentos;
+  if (c.tipo === "NATURAL") {
+    return [
+      { clave: "DATOS", titulo: "Teléfono de contacto", hecho: !!p.telefono },
+      { clave: "IDENTIDAD", titulo: "Documento de identidad", hecho: !!d.IDENTIDAD },
+    ];
+  }
+  return [
+    {
+      clave: "REPRESENTANTE",
+      titulo: "Datos de quien representa a la organización",
+      hecho: !!(
+        p.condicion &&
+        p.nombresRepresentante &&
+        p.cedulaRepresentante &&
+        p.telefonoInstitucional
+      ),
+    },
+    {
+      clave: "ACREDITACION",
+      titulo: "Acreditación de la representación",
+      hecho: !!p.acreditacion && (p.acreditacion !== "Sí" || !!d.REPRESENTACION),
+    },
+    { clave: "ENTIDAD", titulo: "Documento de la organización", hecho: !!d.ENTIDAD },
+  ];
 }
 
-/** Datos mínimos que ve la interfaz: nunca el hash ni datos de identidad completos. */
+export const perfilCompleto = (c: Cuenta) => pasosPerfil(c).every((p) => p.hecho);
+
+/** Puede enviar participaciones: perfil completo y sin rechazo del Revisor. */
+export const puedeParticipar = (c: Cuenta) =>
+  perfilCompleto(c) && c.estadoVerificacion !== "RECHAZADO";
+
+/** Lo que falta para completar el perfil, en palabras para la persona. */
+export const faltantesPerfil = (c: Cuenta) =>
+  pasosPerfil(c)
+    .filter((p) => !p.hecho)
+    .map((p) => p.titulo);
+
+/** Con «Requiere corrección», solo se puede tocar el documento que señaló el Revisor. */
+export const soloCorreccion = (c: Cuenta) =>
+  c.estadoVerificacion === "REQUIERE_CORRECCION" && !!c.correccion;
+
+export type ResultadoPerfil = "OK" | "SIN_SESION" | "BLOQUEADO";
+
+/**
+ * Guarda datos del perfil. Con «Requiere corrección» los datos ya revisados no se tocan
+ * (v3, rol 1 paso 4): solo se acepta el documento señalado.
+ */
+export function guardarPerfil(
+  alm: Almacen,
+  sesion: string | undefined,
+  datos: Perfil,
+): ResultadoPerfil {
+  const c = cuentaDeSesion(alm, sesion);
+  if (!c) return "SIN_SESION";
+  if (soloCorreccion(c)) return "BLOQUEADO";
+  c.perfil = { ...c.perfil, ...datos };
+  return "OK";
+}
+
+/** Sube un documento o lo reemplaza con una versión nueva. */
+export function cargarDocumento(
+  alm: Almacen,
+  sesion: string | undefined,
+  tipo: TipoDocumento,
+  archivo: { nombre: string; mime: string; tamano: number },
+  ahora = Date.now(),
+): ResultadoPerfil {
+  const c = cuentaDeSesion(alm, sesion);
+  if (!c) return "SIN_SESION";
+  if (soloCorreccion(c) && c.correccion?.documento !== tipo) return "BLOQUEADO";
+  const anterior = c.documentos[tipo];
+  c.documentos[tipo] = {
+    ...archivo,
+    version: (anterior?.version ?? 0) + 1,
+    subidoEl: new Date(ahora).toISOString(),
+  };
+  // Un documento nuevo vuelve a la bandeja del Revisor.
+  if (c.correccion?.documento === tipo) c.correccion = undefined;
+  if (c.estadoVerificacion !== "PENDIENTE") c.estadoVerificacion = "PENDIENTE";
+  return "OK";
+}
+
+/** Quita la membresía de esta alcaldía y cierra la sesión. La cuenta sigue en otros portales. */
+export function abandonarPortal(alm: Almacen, sesion?: string) {
+  const c = cuentaDeSesion(alm, sesion);
+  if (!c) return false;
+  c.membresias = c.membresias.filter((m) => m !== ALCALDIA);
+  cerrarSesion(alm, sesion);
+  return true;
+}
+
+/** Registra la solicitud de baja; la atiende la alcaldía (los aportes enviados se conservan). */
+export function solicitarBaja(alm: Almacen, sesion?: string, ahora = Date.now()) {
+  const c = cuentaDeSesion(alm, sesion);
+  if (!c) return false;
+  c.bajaSolicitada ??= new Date(ahora).toISOString();
+  return true;
+}
+
+/** Datos mínimos que ve la interfaz: nunca el hash. */
 export function resumenCuenta(c: Cuenta) {
   return {
     nombre:
@@ -260,9 +426,93 @@ export function resumenCuenta(c: Cuenta) {
     corto: c.tipo === "NATURAL" ? (c.nombres?.split(" ")[0] ?? "") : (c.razonSocial ?? ""),
     tipo: c.tipo,
     correo: c.correo,
-    perfilCompleto: c.perfilCompleto,
+    perfilCompleto: perfilCompleto(c),
+    puedeParticipar: puedeParticipar(c),
     faltantes: faltantesPerfil(c),
+    estadoVerificacion: c.estadoVerificacion,
   };
 }
 
 export type ResumenCuenta = ReturnType<typeof resumenCuenta>;
+
+/** Todo lo que muestra «Mi cuenta». */
+export function vistaPerfil(c: Cuenta) {
+  return {
+    ...resumenCuenta(c),
+    cedula: c.cedula,
+    nombres: c.nombres,
+    apellidos: c.apellidos,
+    razonSocial: c.razonSocial,
+    rif: c.rif,
+    tipoEntidad: c.tipoEntidad,
+    perfil: c.perfil,
+    documentos: c.documentos,
+    pasos: pasosPerfil(c),
+    correccion: c.correccion,
+    bajaSolicitada: c.bajaSolicitada,
+  };
+}
+
+export type VistaPerfil = ReturnType<typeof vistaPerfil>;
+
+/* ---------- Participación ---------- */
+
+export type DatosParticipacion = Omit<
+  Participacion,
+  "folio" | "cuentaId" | "autor" | "estado" | "creadaEl" | "historial"
+>;
+
+export type ResultadoParticipacion =
+  { estado: "OK"; folio: string } | { estado: "SIN_SESION" } | { estado: "PERFIL_INCOMPLETO" };
+
+/**
+ * Registra una participación con folio IRI-AAAA-XXXX en estado Pendiente (v3, 5.1).
+ * Es idempotente: la misma Idempotency-Key de la misma cuenta devuelve el mismo folio, así un
+ * doble clic o un reintento de red no crean dos participaciones.
+ */
+export function enviarParticipacion(
+  alm: Almacen,
+  sesion: string | undefined,
+  idempotencia: string,
+  d: DatosParticipacion,
+  ahora = Date.now(),
+): ResultadoParticipacion {
+  const c = cuentaDeSesion(alm, sesion);
+  if (!c) return { estado: "SIN_SESION" };
+  const clave = `${c.id}:${idempotencia}`;
+  const previo = alm.idempotencia.get(clave);
+  if (previo) return { estado: "OK", folio: previo };
+  if (!puedeParticipar(c)) return { estado: "PERFIL_INCOMPLETO" };
+
+  alm.secuencia += 1;
+  const fecha = new Date(ahora);
+  const folio = `IRI-${fecha.getFullYear()}-${String(alm.secuencia).padStart(4, "0")}`;
+  const creadaEl = fecha.toISOString();
+  alm.participaciones.set(folio, {
+    ...d,
+    folio,
+    cuentaId: c.id,
+    autor: resumenCuenta(c).nombre,
+    estado: "PENDIENTE",
+    creadaEl,
+    historial: [{ estado: "PENDIENTE", fecha: creadaEl }],
+  });
+  alm.idempotencia.set(clave, folio);
+  return { estado: "OK", folio };
+}
+
+/** Una participación propia; nadie ve los folios de otra cuenta. */
+export function participacionPropia(alm: Almacen, sesion: string | undefined, folio: string) {
+  const c = cuentaDeSesion(alm, sesion);
+  const p = alm.participaciones.get(folio);
+  return c && p?.cuentaId === c.id ? p : undefined;
+}
+
+/** Participaciones de la cuenta, de la más reciente a la más antigua (base de la 3.11). */
+export function participacionesDe(alm: Almacen, sesion?: string) {
+  const c = cuentaDeSesion(alm, sesion);
+  if (!c) return [];
+  return [...alm.participaciones.values()]
+    .filter((p) => p.cuentaId === c.id)
+    .sort((a, b) => b.creadaEl.localeCompare(a.creadaEl));
+}

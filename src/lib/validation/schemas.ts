@@ -1,7 +1,13 @@
 import { z } from "zod";
 import {
+  ACREDITACION_REPRESENTANTE,
   CATEGORIAS,
+  CATEGORIAS_TECNICAS,
+  CONDICIONES_REPRESENTANTE,
   DOC_CATEGORIAS,
+  OCUPACIONES,
+  PARROQUIAS,
+  TIPOS_PARTICIPACION,
   type DocEstado,
   type FiltrosDocumentos,
   type FiltrosNoticias,
@@ -95,66 +101,78 @@ export const restablecerSchema = z
   })
   .refine(contrasenasIguales.check, contrasenasIguales.params);
 
-/** CU-18 Completar perfil: datos personales y documento de identidad. */
-export const perfilSchema = z.object({
+/* ---------- Perfil (v3, «Para terminación del perfil») ---------- */
+
+const opcion = <T extends readonly [string, ...string[]]>(valores: T, error: string) =>
+  z.enum(valores, { error });
+
+/** Persona natural, paso 1: teléfono de contacto y ocupación (opcional). */
+export const datosNaturalSchema = z.object({
   telefono: telefonoSchema,
-  ocupacion: z.string().trim().optional(),
+  ocupacion: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    opcion(OCUPACIONES, "Elige una ocupación de la lista.").optional(),
+  ),
 });
 
-export const documentoIdentidadSchema = z.object({
+/** Organización, paso 1: quién la representa y el teléfono institucional. */
+export const representanteSchema = z.object({
+  condicion: opcion(CONDICIONES_REPRESENTANTE, "Indica en qué condición actúas."),
+  nombresRepresentante: nombrePersonaSchema,
+  apellidosRepresentante: nombrePersonaSchema,
+  cedulaRepresentante: cedulaSchema,
+  telefonoInstitucional: telefonoSchema,
+});
+
+/** Organización, paso 2: ¿tiene documento que acredite su condición? (el archivo, si es «Sí»). */
+export const acreditacionSchema = z.object({
+  acreditacion: opcion(ACREDITACION_REPRESENTANTE, "Responde si tienes el documento."),
+});
+
+/** Documentos del perfil: PDF, JPG o PNG de hasta 2 MB (v3, RN-09). */
+export const TIPOS_DOCUMENTO_PERFIL = ["IDENTIDAD", "REPRESENTACION", "ENTIDAD"] as const;
+export type TipoDocumentoPerfil = (typeof TIPOS_DOCUMENTO_PERFIL)[number];
+
+export const documentoPerfilSchema = z.object({
+  documento: z.enum(TIPOS_DOCUMENTO_PERFIL),
   archivo: archivoSchema(),
 });
 
-/** CU-18 Registrar organización (vocero). */
-export const organizacionSchema = z.object({
-  tipoEntidad: z.string().trim().min(1, "Selecciona el tipo de organización."),
-  razonSocial: z.string().trim().min(3, "Ingresa la razón social.").max(160),
-  rif: rifSchema,
-  correoInstitucional: correoSchema,
-  telefonoInstitucional: telefonoSchema,
-  acreditacion: archivoSchema({ tipos: ["application/pdf", "image/jpeg"] }),
-});
+/* ---------- Participación (v3, formulario 3) ---------- */
 
-export const TIPOS_PARTICIPACION = [
-  "OPINION_GENERAL",
-  "OPINION_NOTICIA",
-  "PROPUESTA_FORMAL",
-] as const;
+export const DESCRIPCION_MIN = 50;
+export const DESCRIPCION_MAX = 3000;
 
-/** CU-19 Enviar participación (RN-05, RN-08, RN-09). */
+/** CU-19 Enviar participación. La cuenta participa a su nombre (persona u organización). */
 export const participacionSchema = z
   .object({
     tipo: z.enum(TIPOS_PARTICIPACION, { error: "Elige el tipo de participación." }),
-    postId: z.string().optional(),
-    parroquia: z.string().min(1, "Selecciona la parroquia."),
-    sector: z.string().trim().min(2, "Indica el barrio, urbanización o zona.").max(120),
-    categoriaTecnica: z.string().min(1, "Selecciona la categoría."),
+    noticia: z.string().trim().optional(),
+    parroquia: opcion(PARROQUIAS, "Selecciona la parroquia."),
+    sector: z
+      .string()
+      .trim()
+      .min(3, "Indica la comunidad, barrio, urbanización o sector.")
+      .max(150, "El sector no puede superar 150 caracteres."),
+    categoriaTecnica: opcion(CATEGORIAS_TECNICAS, "Selecciona la categoría técnica."),
     descripcion: z
       .string()
       .trim()
-      .min(30, "Describe tu aporte con al menos 30 caracteres.")
-      .max(5000, "La descripción no puede superar 5.000 caracteres."),
-    adjunto: archivoSchema({ tipos: ["application/pdf", "image/jpeg"] }).optional(),
-    actuaComo: z.enum(["PERSONA", "ORGANIZACION"]),
-    organizationId: z.string().optional(),
+      .min(DESCRIPCION_MIN, `Explica tu aporte con al menos ${DESCRIPCION_MIN} caracteres.`)
+      .max(DESCRIPCION_MAX, `La descripción no puede superar ${DESCRIPCION_MAX} caracteres.`),
+    adjunto: archivoSchema().optional(),
     mostrarNombre: z.boolean(),
+    idempotencia: z.string().min(8),
   })
   .superRefine((d, ctx) => {
-    if (d.tipo === "OPINION_NOTICIA" && !d.postId) {
-      ctx.addIssue({ code: "custom", path: ["postId"], message: "Selecciona la noticia." });
+    if (d.tipo === "OPINION_NOTICIA" && !d.noticia) {
+      ctx.addIssue({ code: "custom", path: ["noticia"], message: "Selecciona la noticia." });
     }
     if (d.tipo === "PROPUESTA_FORMAL" && !d.adjunto) {
       ctx.addIssue({
         code: "custom",
         path: ["adjunto"],
-        message: "La propuesta formal requiere un PDF o JPG de soporte.",
-      });
-    }
-    if (d.actuaComo === "ORGANIZACION" && !d.organizationId) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["organizationId"],
-        message: "Selecciona la organización.",
+        message: "La propuesta formal necesita un documento de soporte (PDF, JPG o PNG).",
       });
     }
   });
@@ -162,8 +180,6 @@ export const participacionSchema = z
 export type RegistroNaturalInput = z.infer<typeof registroNaturalSchema>;
 export type RegistroOrganizacionInput = z.infer<typeof registroOrganizacionSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
-export type PerfilInput = z.infer<typeof perfilSchema>;
-export type OrganizacionInput = z.infer<typeof organizacionSchema>;
 export type ParticipacionInput = z.infer<typeof participacionSchema>;
 
 /** Toma el primer valor cuando el parámetro llega repetido (?a=1&a=2). */
