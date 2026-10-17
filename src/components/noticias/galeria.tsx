@@ -172,7 +172,10 @@ export function Galeria({ imagenes, titulo }: { imagenes: Imagen[]; titulo: stri
             </div>
 
             <p className="flex flex-wrap justify-between gap-x-4 gap-y-1 px-4 py-4 text-sm text-papel/80 sm:px-6">
-              <span>{foto.alt}</span>
+              <span>
+                {foto.ilustrativa && <span className="font-semibold">Foto ilustrativa · </span>}
+                {foto.alt}
+              </span>
               <CreditoImagen credito={foto.credito} />
             </p>
           </div>

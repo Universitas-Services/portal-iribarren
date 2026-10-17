@@ -2,6 +2,8 @@
 
 Portal ciudadano de la Alcaldía de Iribarren para el proceso del PDUL. Los visitantes consultan noticias, documentos y propuestas publicadas; los ciudadanos registrados completan su perfil, envían opiniones y propuestas, y siguen su estado.
 
+> **¿Retomas el proyecto en otro equipo o en una conversación nueva?** Lee primero [`docs/CONTEXTO.md`](docs/CONTEXTO.md): estado, decisiones, pendientes del portal y del admin, y el contrato supuesto con la API.
+
 La aplicación no llama a la API desde el navegador: lo hace desde su propio servidor Next.js (BFF), que se identifica ante `plataforma-api` con las credenciales del portal (`PORTAL_CLIENT_ID` y `PORTAL_CLIENT_SECRET`).
 
 ## Requisitos
@@ -46,6 +48,27 @@ Next.js (App Router) · TypeScript · Tailwind CSS · Zod · ESLint · Prettier 
 - Los bloques que piden datos se envuelven en `<Suspense>` con su propio skeleton, para que la página cargue por partes (ver `src/app/page.tsx`).
 - Las rutas inexistentes usan `src/app/not-found.tsx` y los fallos `src/app/error.tsx` (con «Reintentar»).
 - Para ver los skeletons con los datos de ejemplo, define `MOCK_DELAY_MS=1500` en `.env.local` (solo en desarrollo).
+
+## Cuenta del ciudadano (simulada)
+
+Mientras no exista `plataforma-api`, el registro, el acceso, el perfil y la participación usan una autenticación simulada en memoria (`src/lib/auth/`), con las mismas reglas de `/portal/auth/*`. Se reinicia al reiniciar el servidor.
+
+- Rutas: `/registro`, `/registro/revisa-tu-correo`, `/verificar`, `/ingresar`, `/unirme`, `/recuperar`, `/restablecer`, `/mi-cuenta` (asistente de perfil), `/participa` y `/participa/enviada`.
+- Los archivos se validan en el navegador y en el servidor, pero el simulador solo guarda su nombre, tipo y peso. Perfil: PDF, JPG o PNG de hasta 2 MB. Participación: hasta 5 fotos (JPG, PNG o WebP de 2 MB), un enlace de video de YouTube o Instagram y un documento de soporte (obligatorio en la propuesta formal).
+- En desarrollo, el enlace que en producción llega por correo aparece en un recuadro «Solo en desarrollo».
+- Cuentas de demostración (contraseña `Iribarren#2026`):
+
+| Correo                  | Caso                                                   |
+| ----------------------- | ------------------------------------------------------ |
+| `ana@ejemplo.com`       | Persona verificada, perfil completo: puede participar  |
+| `jose@ejemplo.com`      | Persona con el perfil vacío: recorre el asistente      |
+| `rosa@ejemplo.com`      | Perfil en «Requiere corrección» (documento ilegible)   |
+| `luis@ejemplo.com`      | Correo sin verificar                                   |
+| `carla@ejemplo.com`     | Cuenta de otra alcaldía: pasa por «Unirme a Iribarren» |
+| `contacto@cardones.org` | Organización con perfil incompleto                     |
+
+- Enlaces de ejemplo: `/verificar?token=demo-vencido` y `/verificar?token=demo-usado`.
+- Hay 7 participaciones de ejemplo (`IRI-2026-0001` a `0007`): 5 de Ana en todos los estados, para ver «Mis participaciones» (`/mi-cuenta/participaciones`), y 3 publicadas, para la galería pública `/propuestas`. Los aportes nuevos siguen desde `IRI-2026-0008` y la numeración vuelve a empezar al reiniciar el servidor.
 
 ## Integración continua
 

@@ -18,6 +18,7 @@
   --color-superficie: #f7f7f8;
   --color-linea: #e5e7eb;
   --color-exito: #28a745;
+  --color-exito-oscuro: #1d6e33;
 
   --font-display: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;

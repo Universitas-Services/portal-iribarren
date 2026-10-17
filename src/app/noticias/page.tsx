@@ -2,12 +2,13 @@ import { SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { EncabezadoPagina } from "@/components/noticias/encabezado-pagina";
+import { EncabezadoPagina } from "@/components/layout/encabezado-pagina";
 import { FiltrosNoticias } from "@/components/noticias/filtros-noticias";
 import { MosaicoNoticias } from "@/components/noticias/mosaico-noticias";
-import { Paginacion } from "@/components/noticias/paginacion";
+import { Paginacion } from "@/components/listado/paginacion";
+import { TransicionListado, ZonaResultados } from "@/components/listado/transicion";
+import { urlPaginaNoticias } from "@/components/noticias/urls";
 import { ListadoSkeleton } from "@/components/noticias/skeletons";
-import { TransicionNoticias, ZonaResultados } from "@/components/noticias/transicion";
 import { getPosts } from "@/lib/api";
 import { CATEGORIAS } from "@/lib/api/types";
 import { plural } from "@/lib/formato";
@@ -16,7 +17,7 @@ import { parseFiltrosNoticias } from "@/lib/validation/schemas";
 export const metadata: Metadata = {
   title: "Noticias",
   description:
-    "Avances, minutas, comunicados y galerías del Plan de Desarrollo Urbano Local de Iribarren.",
+    "Decretos, análisis, mesas de trabajo y avances del Plan de Desarrollo Urbano Local de Iribarren.",
 };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -31,7 +32,7 @@ export default function NoticiasPage({ searchParams }: { searchParams: SearchPar
       <EncabezadoPagina
         migas={[{ href: "/", label: "Inicio" }, { label: "Noticias" }]}
         titulo="Noticias y novedades"
-        bajada="Avances del plan, minutas de las mesas técnicas, comunicados y galerías de la ciudad."
+        bajada="Decretos y normativas, análisis, mesas de trabajo y el avance del diagnóstico de la ciudad."
       />
       <div className="relative z-10 mx-auto -mt-16 max-w-7xl px-4 pb-24 sm:px-6 lg:-mt-20 lg:px-8">
         <Suspense fallback={<ListadoSkeleton />}>
@@ -50,14 +51,13 @@ async function Listado({ searchParams }: { searchParams: SearchParams }) {
   );
 
   return (
-    <TransicionNoticias>
+    <TransicionListado>
       <FiltrosNoticias filtros={filtros} categorias={CATEGORIAS} porFormato={porFormato} />
       <ZonaResultados>
         <p className="mt-6 text-sm text-tinta/75" aria-live="polite">
           {total === 0
             ? "Sin resultados"
             : `${plural(total, "noticia", "noticias")}${hayFiltros ? " con estos filtros" : ""}`}
-          <span className="text-tinta/55"> · Noticias de ejemplo</span>
         </p>
 
         {items.length > 0 ? (
@@ -84,8 +84,13 @@ async function Listado({ searchParams }: { searchParams: SearchParams }) {
           </div>
         )}
 
-        <Paginacion filtros={filtros} pagina={pagina} paginas={paginas} />
+        <Paginacion
+          pagina={pagina}
+          paginas={paginas}
+          href={(n) => urlPaginaNoticias(filtros, n)}
+          etiqueta="noticias"
+        />
       </ZonaResultados>
-    </TransicionNoticias>
+    </TransicionListado>
   );
 }

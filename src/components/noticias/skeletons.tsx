@@ -21,14 +21,9 @@ function TarjetaSkeleton() {
 export function FiltrosSkeleton() {
   return (
     <div aria-hidden="true" className="rounded-tarjeta bg-papel p-5 shadow-tarjeta sm:p-6">
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-[2fr_1.2fr_1fr_1fr]">
-        {Array.from({ length: 4 }, (_, i) => (
-          <div
-            key={i}
-            className={
-              i === 0 ? "col-span-2 lg:col-span-1" : i === 1 ? "col-span-2 lg:col-span-1" : ""
-            }
-          >
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-[2fr_1.2fr_1.6fr]">
+        {Array.from({ length: 3 }, (_, i) => (
+          <div key={i} className="col-span-2 lg:col-span-1">
             <Skeleton className="h-4 w-20" />
             <Skeleton className="mt-2 h-12 rounded-xl" />
           </div>

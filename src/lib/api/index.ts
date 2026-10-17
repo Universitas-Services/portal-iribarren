@@ -1,11 +1,15 @@
 import "server-only";
 import { cacheLife } from "next/cache";
 import sanitizeHtml from "sanitize-html";
-import { banners, posts, processStatus } from "@/lib/mocks/data";
-import { consultarNoticias, relacionadas } from "@/lib/noticias/consultas";
+import { consultarDocumentos } from "@/lib/documentos/consultas";
+import { banners, documentos, posts, processStatus } from "@/lib/mocks/data";
+import { paraPortada, relacionadas, consultarNoticias } from "@/lib/noticias/consultas";
 import type {
   Banner,
+  Documento,
+  FiltrosDocumentos,
   FiltrosNoticias,
+  PaginaDocumentos,
   PaginaNoticias,
   Post,
   PostSummary,
@@ -56,7 +60,7 @@ export async function getBanners(): Promise<Banner[]> {
 
 export async function getLatestPosts(limit = 3): Promise<PostSummary[]> {
   await simularRed(1.4);
-  return consultarNoticias(posts, { pagina: 1 }, limit).items;
+  return paraPortada(posts, limit);
 }
 
 /*
@@ -92,6 +96,29 @@ export async function getPostSlugs(): Promise<{ slug: string; publicadoEl: strin
   "use cache";
   cacheLife("minutes");
   return posts.map(({ slug, publicadoEl }) => ({ slug, publicadoEl }));
+}
+
+/* Repositorio documental: público y cacheado como las noticias. */
+
+export async function getDocumentos(filtros: FiltrosDocumentos): Promise<PaginaDocumentos> {
+  "use cache";
+  cacheLife("minutes");
+  await simularRed(1);
+  return consultarDocumentos(documentos, filtros);
+}
+
+export async function getDocumento(slug: string): Promise<Documento | undefined> {
+  "use cache";
+  cacheLife("minutes");
+  await simularRed(1);
+  return documentos.find((d) => d.slug === slug);
+}
+
+/** Slugs de los documentos, para prerenderizar el detalle y para el sitemap. */
+export async function getDocumentoSlugs(): Promise<{ slug: string; fecha: string }[]> {
+  "use cache";
+  cacheLife("minutes");
+  return documentos.map((d) => ({ slug: d.slug, fecha: d.actualizadoEl ?? d.publicadoEl }));
 }
 
 export type { Banner, Post, PostSummary, ProcessStatus } from "./types";

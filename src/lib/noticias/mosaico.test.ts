@@ -50,13 +50,13 @@ describe("acomodarMosaico", () => {
   });
 
   it("no deja huecos en 500 listados pseudoaleatorios", () => {
-    const formatos: PostFormat[] = ["TEXTO", "IMAGEN", "GALERIA", "DOCUMENTO"];
+    const formatos: PostFormat[] = ["TEXTO", "IMAGEN", "GALERIA", "DOCUMENTO", "VIDEO"];
     let semilla = 42;
     const azar = () => (semilla = (semilla * 16807) % 2147483647) / 2147483647;
     for (let i = 0; i < 500; i++) {
       const caso = Array.from(
         { length: 1 + Math.floor(azar() * 12) },
-        () => formatos[Math.floor(azar() * 4)]!,
+        () => formatos[Math.floor(azar() * formatos.length)]!,
       );
       expect(sinHuecos(acomodarMosaico(caso, 4), 4), caso.join(",")).toBe(true);
       expect(sinHuecos(acomodarMosaico(caso, 2), 2), caso.join(",")).toBe(true);

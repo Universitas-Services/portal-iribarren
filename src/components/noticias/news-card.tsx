@@ -1,28 +1,64 @@
 import {
   ClipboardList,
   FileText,
+  Gavel,
   Image as ImageIcon,
   Images,
+  Landmark,
+  Map as MapIcon,
   Megaphone,
-  Mic,
-  Newspaper,
+  Play,
+  Scale,
+  ScrollText,
+  Telescope,
+  UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { PostCategory, PostSummary } from "@/lib/api/types";
-import { formatearFecha, formatearPeso, plural } from "@/lib/formato";
+import { formatearDuracion, formatearFecha, formatearPeso, plural } from "@/lib/formato";
 
 /** Cuando la noticia no trae imagen, la tarjeta usa un bloque de color con el ícono de su categoría. */
-export const CATEGORIA: Record<PostCategory, { Icon: LucideIcon; fondo: string; icono: string }> = {
-  Avances: { Icon: Newspaper, fondo: "bg-rojo", icono: "text-papel/25" },
-  Minutas: { Icon: ClipboardList, fondo: "bg-naranja", icono: "text-noche/20" },
-  Comunicados: { Icon: Megaphone, fondo: "bg-noche", icono: "text-papel/15" },
-  Entrevistas: { Icon: Mic, fondo: "bg-amarillo", icono: "text-noche/20" },
-  Galería: { Icon: Images, fondo: "bg-rojo-oscuro", icono: "text-papel/20" },
+export const CATEGORIA: Record<
+  PostCategory,
+  { Icon: LucideIcon; fondo: string; icono: string; textoOscuro?: boolean }
+> = {
+  "Análisis institucional": { Icon: Landmark, fondo: "bg-noche", icono: "text-papel/15" },
+  "Doctrina legal": { Icon: Scale, fondo: "bg-rojo-oscuro", icono: "text-papel/20" },
+  "Decretos y normativas": { Icon: ScrollText, fondo: "bg-rojo", icono: "text-papel/25" },
+  Normativa: { Icon: Gavel, fondo: "bg-noche", icono: "text-papel/15" },
+  "Mensaje institucional": { Icon: Megaphone, fondo: "bg-rojo", icono: "text-papel/25" },
+  "Auditoría y diagnóstico": {
+    Icon: ClipboardList,
+    fondo: "bg-naranja",
+    icono: "text-noche/20",
+    textoOscuro: true,
+  },
+  "Mesas de trabajo": {
+    Icon: UsersRound,
+    fondo: "bg-amarillo",
+    icono: "text-noche/20",
+    textoOscuro: true,
+  },
+  "Despliegue territorial": { Icon: MapIcon, fondo: "bg-rojo-oscuro", icono: "text-papel/20" },
+  "Visión de futuro": { Icon: Telescope, fondo: "bg-noche", icono: "text-papel/15" },
 };
 
-/** Insignia que anticipa el formato: foto, galería o documento. Los textos no llevan insignia. */
+/** Rótulo de las publicaciones de ejemplo de la maqueta (no son noticias reales). */
+export function EtiquetaEjemplo({ claro = false }: { claro?: boolean }) {
+  return (
+    <span
+      className={`rounded-full border border-dashed px-2.5 py-0.5 font-display text-xs font-bold ${
+        claro ? "border-papel/60 text-papel" : "border-tinta/40 text-tinta/80"
+      }`}
+    >
+      Ejemplo
+    </span>
+  );
+}
+
+/** Insignia que anticipa el formato: foto, galería, video o documento. Los textos no llevan. */
 export function FormatoBadge({ post }: { post: PostSummary }) {
   const datos =
     post.formato === "GALERIA"
@@ -34,7 +70,12 @@ export function FormatoBadge({ post }: { post: PostSummary }) {
           }
         : post.formato === "IMAGEN"
           ? { Icon: ImageIcon, texto: "Foto" }
-          : null;
+          : post.formato === "VIDEO"
+            ? {
+                Icon: Play,
+                texto: `Video${post.duracionSeg ? ` · ${formatearDuracion(post.duracionSeg)}` : ""}`,
+              }
+            : null;
   if (!datos) return null;
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-noche/80 px-2.5 py-1 font-display text-xs font-bold text-papel backdrop-blur-sm">
@@ -75,6 +116,7 @@ export function NewsCard({ post }: { post: PostSummary }) {
           <span className="rounded-full bg-rojo/10 px-2.5 py-0.5 font-display text-xs font-bold text-rojo">
             {post.categoria}
           </span>
+          {post.ejemplo && <EtiquetaEjemplo />}
           {post.parroquia && <span>{post.parroquia}</span>}
           <span aria-hidden="true">·</span>
           <time dateTime={post.publicadoEl}>{formatearFecha(post.publicadoEl)}</time>

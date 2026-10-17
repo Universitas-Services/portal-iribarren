@@ -120,9 +120,9 @@ export function MayorTile({ className = "" }: { className?: string }) {
         Mensaje del alcalde
       </h2>
       <p className="mt-4 font-display text-xl leading-snug font-bold sm:text-[1.4rem]">
-        Después de más de veinte años con el plan de 2003, Iribarren vuelve a planificar. Con el
-        Decreto 48-2026 arrancamos un plan moderno, participativo y con rigor técnico, y lo vamos a
-        construir contigo.
+        Dejamos atrás la ultractividad del plan de 2003. Con el Decreto 48-2026 abrimos una
+        planificación moderna, participativa y con rigor científico, que saldrá de las oficinas para
+        construirse en la calle, contigo.
       </p>
       <div className="mt-auto flex items-center gap-3 pt-6">
         <span

@@ -8,16 +8,17 @@ Maqueta de la Guía de Identidad Urbana llevada a un tablero vivo: hero oscuro a
 
 ## Color
 
-| Token                            | Valor                          | Uso                                                                    |
-| -------------------------------- | ------------------------------ | ---------------------------------------------------------------------- |
-| `rojo`                           | `#C32026`                      | Acción principal, fase en curso, marca                                 |
-| `rojo-oscuro`                    | `#A61C00`                      | Hover de rojo, fondos de anuncio                                       |
-| `naranja`                        | `#F39200`                      | Acentos, 404, íconos sobre fondo oscuro. Nunca texto blanco encima     |
-| `amarillo`                       | `#ECA52B`                      | «PDUL YA:» del hero, anuncios cálidos (texto `noche`)                  |
-| `noche`                          | `#232A36`                      | Hero, mensaje del alcalde, títulos                                     |
-| `tinta`                          | `#333333`                      | Texto de cuerpo (`tinta/70` como mínimo para secundarios sobre blanco) |
-| `papel` / `superficie` / `linea` | `#FFF` / `#F7F7F8` / `#E5E7EB` | Tarjetas / fondo de página / bordes                                    |
-| `plata`, `gris`                  |                                | Divisores. `gris` no pasa AA como texto sobre blanco                   |
+| Token                            | Valor                          | Uso                                                                         |
+| -------------------------------- | ------------------------------ | --------------------------------------------------------------------------- |
+| `rojo`                           | `#C32026`                      | Acción principal, fase en curso, marca                                      |
+| `rojo-oscuro`                    | `#A61C00`                      | Hover de rojo, fondos de anuncio                                            |
+| `naranja`                        | `#F39200`                      | Acentos, 404, íconos sobre fondo oscuro. Nunca texto blanco encima          |
+| `amarillo`                       | `#ECA52B`                      | «PDUL YA:» del hero, anuncios cálidos (texto `noche`)                       |
+| `noche`                          | `#232A36`                      | Hero, mensaje del alcalde, títulos                                          |
+| `tinta`                          | `#333333`                      | Texto de cuerpo (`tinta/70` como mínimo para secundarios sobre blanco)      |
+| `papel` / `superficie` / `linea` | `#FFF` / `#F7F7F8` / `#E5E7EB` | Tarjetas / fondo de página / bordes                                         |
+| `exito` / `exito-oscuro`         | `#28A745` / `#1D6E33`          | Sello «oficial»: punto con `exito`, texto con `exito-oscuro` (contraste AA) |
+| `plata`, `gris`                  |                                | Divisores. `gris` no pasa AA como texto sobre blanco                        |
 
 ## Tipografía
 
@@ -64,10 +65,13 @@ Todo bajo `prefers-reduced-motion: no-preference`; las animaciones ligadas al sc
 - Noticias (`src/components/noticias/`):
   - `EncabezadoPagina`: banda oscura con migas y título; el contenido se monta encima, como en el Inicio.
   - `FiltrosNoticias`: búsqueda, categoría y fechas sincronizadas con la URL, más pestañas por formato con conteos; funcionan sin JavaScript.
-  - `MosaicoNoticias`: cada formato tiene pieza y tamaño propios (galería 2×2, foto 1×2, texto 2×1, documento 1×1). `src/lib/noticias/mosaico.ts` las acomoda en 4 columnas (2 en tablet) y estira las vecinas para que nunca queden huecos. En teléfono, una columna.
-  - Detalle por formato: `FiguraNoticia`, `Galeria` (visor con `<dialog>`, teclado y deslizamiento), `VisorDocumento` + `VistaPdf` (solo si el navegador tiene visor de PDF) y `CuerpoNoticia` (`.prosa`, HTML saneado en el servidor).
+  - `MosaicoNoticias`: cada formato tiene pieza y tamaño propios (galería 2×2, video 2×2, foto 1×2, texto 2×1, documento 1×1). `src/lib/noticias/mosaico.ts` las acomoda en 4 columnas (2 en tablet) y estira las vecinas para que nunca queden huecos. En teléfono, una columna.
+  - Detalle por formato: `FiguraNoticia`, `Galeria` (visor con `<dialog>`, teclado y deslizamiento), `ReproductorVideo` (archivo con `<video>` nativo y subtítulos; YouTube sin cookies que solo carga al pulsar reproducir; Instagram se abre en Instagram), `BloquePuntos` («Puntos de análisis» de la plantilla) y `BotonNoticia`, `VisorDocumento` + `VistaPdf` (solo si el navegador tiene visor de PDF) y `CuerpoNoticia` (`.prosa`, HTML saneado en el servidor).
   - `NewsCard`: tarjeta uniforme para el carril del Inicio y «Más noticias».
   - Toda foto que no sea de la Alcaldía muestra `CreditoImagen` (autor, licencia y fuente).
+- Compartidos de listado (`src/components/listado/`): `SelectorFechas` (rango con atajos y calendario en español sobre react-day-picker, estilizado con los tokens; hoja inferior en teléfono, Esc y clic fuera cierran), `Paginacion` (recibe la función que arma cada URL) y `TransicionListado`/`ZonaResultados` (los resultados anteriores quedan atenuados mientras cargan los nuevos). `EncabezadoPagina` vive en `src/components/layout/`.
+- Documentos (`src/components/documentos/`): `FiltrosDocumentos` (columna fija en escritorio, `<details>` plegable en teléfono, funciona sin JavaScript), `FilaDocumento` (hoja con sello de color, datos del archivo y descarga directa), `SelloEstado` (verde `exito-oscuro` para oficial, amarillo para borrador). El detalle reutiliza `VisorDocumento` y suma el historial de versiones.
+- Conoce el PDUL (`src/components/conoce/`): `Indice` (marca la sección visible con `IntersectionObserver`; carril horizontal en teléfono) y `FasesPdul` (línea de tiempo de las 7 fases con la actual marcada).
 - Estados:
   - `src/components/ui/skeleton.tsx` (`Skeleton`, `SkeletonText`, `SkeletonCard`, `LoadingStatus`);
   - skeletons a medida en `home/skeletons.tsx`;

@@ -15,19 +15,19 @@ import {
 
 const Ctx = createContext<{ pendiente: boolean; iniciar: TransitionStartFunction } | null>(null);
 
-export function TransicionNoticias({ children }: { children: ReactNode }) {
+export function TransicionListado({ children }: { children: ReactNode }) {
   const [pendiente, iniciar] = useTransition();
   return <Ctx value={{ pendiente, iniciar }}>{children}</Ctx>;
 }
 
-export function useTransicionNoticias() {
+export function useTransicionListado() {
   const ctx = useContext(Ctx);
-  if (!ctx) throw new Error("useTransicionNoticias va dentro de <TransicionNoticias>.");
+  if (!ctx) throw new Error("useTransicionListado va dentro de <TransicionListado>.");
   return ctx;
 }
 
 export function ZonaResultados({ children }: { children: ReactNode }) {
-  const { pendiente } = useTransicionNoticias();
+  const { pendiente } = useTransicionListado();
   return (
     <div
       aria-busy={pendiente}

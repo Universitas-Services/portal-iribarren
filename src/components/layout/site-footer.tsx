@@ -8,7 +8,7 @@ const MARCO_LEGAL = [
   // Enlaces oficiales pendientes de confirmar con el cliente.
   { href: "/conoce-el-pdul#marco-legal", label: "Decreto 48-2026" },
   { href: "/conoce-el-pdul#marco-legal", label: "LOOU" },
-  { href: "/conoce-el-pdul#marco-legal", label: "Ordenanza de Gobierno Electrónico" },
+  { href: "/conoce-el-pdul#marco-legal", label: "Sentencia N° 928/2018 del TSJ" },
 ];
 
 const enlace = "transition-colors duration-150 hover:text-rojo hover:underline";
@@ -19,7 +19,7 @@ const enlace = "transition-colors duration-150 hover:text-rojo hover:underline";
  */
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-linea bg-papel text-tinta">
+    <footer className="mt-auto border-t border-linea bg-papel text-tinta print:hidden">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-5 sm:px-6 sm:py-8 lg:flex-nowrap lg:gap-10 lg:px-8">
         <Image
           src="/brand/pdul-ya-horizontal.png"
@@ -81,6 +81,15 @@ export function SiteFooter() {
             >
               <Instagram size={14} className="text-rojo" />
               @alcaldiairibarren
+            </a>
+            <a
+              href="https://www.instagram.com/yanysaguerove/"
+              rel="noopener noreferrer"
+              target="_blank"
+              className={`inline-flex items-center gap-1.5 ${enlace}`}
+            >
+              <Instagram size={14} className="text-rojo" />
+              @yanysaguerove
             </a>
           </div>
           <ul

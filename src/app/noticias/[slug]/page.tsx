@@ -4,13 +4,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import {
+  BloquePuntos,
+  BotonNoticia,
   CuerpoNoticia,
   FiguraNoticia,
   VisorDocumento,
 } from "@/components/noticias/contenido-noticia";
-import { EncabezadoPagina } from "@/components/noticias/encabezado-pagina";
+import { EncabezadoPagina } from "@/components/layout/encabezado-pagina";
 import { Galeria } from "@/components/noticias/galeria";
-import { NewsCard } from "@/components/noticias/news-card";
+import { ReproductorVideo } from "@/components/noticias/reproductor-video";
+import { EtiquetaEjemplo, NewsCard } from "@/components/noticias/news-card";
 import { RelacionadasSkeleton } from "@/components/noticias/skeletons";
 import { getPost, getPostSlugs, getRelatedPosts } from "@/lib/api";
 import { formatearFechaLarga } from "@/lib/formato";
@@ -25,7 +28,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const post = await getPost((await params).slug);
   if (!post) return { title: "Noticia no encontrada" };
-  const portada = post.imagenes[0];
+  const portada = post.imagenes[0] ?? post.video?.portada;
   return {
     title: post.titulo,
     description: post.resumen,
@@ -51,6 +54,8 @@ export default async function NoticiaPage({ params }: { params: Params }) {
       <FiguraNoticia imagen={post.imagenes[0]} />
     ) : post.formato === "GALERIA" && post.imagenes.length > 0 ? (
       <Galeria imagenes={post.imagenes} titulo={post.titulo} />
+    ) : post.formato === "VIDEO" && post.video ? (
+      <ReproductorVideo video={post.video} titulo={post.titulo} />
     ) : null;
 
   return (
@@ -72,6 +77,7 @@ export default async function NoticiaPage({ params }: { params: Params }) {
           >
             {post.categoria}
           </Link>
+          {post.ejemplo && <EtiquetaEjemplo claro />}
           {post.parroquia && <span>{post.parroquia}</span>}
           <span aria-hidden="true">·</span>
           <time dateTime={post.publicadoEl}>{formatearFechaLarga(post.publicadoEl)}</time>
@@ -83,6 +89,8 @@ export default async function NoticiaPage({ params }: { params: Params }) {
 
         <div className="rounded-tarjeta bg-papel p-6 shadow-tarjeta sm:p-10">
           <CuerpoNoticia html={post.cuerpo} />
+          {post.puntos && post.puntos.items.length > 0 && <BloquePuntos puntos={post.puntos} />}
+          {post.boton && <BotonNoticia boton={post.boton} />}
           {post.autor && <p className="mt-8 text-sm text-tinta/75">Por {post.autor}</p>}
         </div>
 
