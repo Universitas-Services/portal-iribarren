@@ -1,138 +1,58 @@
 import {
   ArrowRight,
   Ban,
-  ExternalLink,
-  FileText,
-  GraduationCap,
-  Landmark,
-  Map,
+  Database,
+  Droplets,
+  Leaf,
+  Network,
   Scale,
-  ShieldCheck,
-  UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
+import { FaseProcedimiento } from "@/components/conoce/fase-procedimiento";
 import { FasesPdul, FasesSkeleton } from "@/components/conoce/fases";
 import { Indice, type SeccionIndice } from "@/components/conoce/indice";
 import { EncabezadoPagina } from "@/components/layout/encabezado-pagina";
+import { getUsuario } from "@/lib/auth/sesion";
+import {
+  ANTECEDENTES,
+  CIFRAS,
+  COMPONENTES,
+  FASES,
+  LINEA_TIEMPO,
+  LLAMADO,
+  MARCO,
+  MARCO_INTRO,
+  OBJETIVOS,
+  PROCEDIMIENTO_INTRO,
+  QUE_ES,
+} from "@/lib/conoce/contenido";
 
 export const metadata: Metadata = {
   title: "Conoce el PDUL",
   description:
-    "Qué es el Plan de Desarrollo Urbano Local de Iribarren, sus antecedentes, objetivos, fases y marco legal.",
+    "Qué es el Plan de Desarrollo Urbano Local de Iribarren, sus componentes, antecedentes, marco legal, procedimiento de elaboración y objetivos 2026–2046.",
 };
 
 const SECCIONES: SeccionIndice[] = [
-  { id: "que-es", label: "¿Qué es el PDUL?" },
+  { id: "que-es", label: "¿Qué es un PDUL?" },
+  { id: "componentes", label: "Componentes" },
   { id: "antecedentes", label: "Antecedentes" },
-  { id: "objetivos", label: "Objetivos" },
-  { id: "fases", label: "Las 7 fases" },
   { id: "marco-legal", label: "Marco legal" },
+  { id: "procedimiento", label: "Procedimiento" },
+  { id: "objetivos", label: "Objetivos" },
   { id: "alcance", label: "Qué no gestiona" },
 ];
 
-/** Los compromisos del Decreto 48-2026, según la Propuesta de Gestión Ciudadana v3. */
-const OBJETIVOS: { titulo: string; texto: string; Icon: LucideIcon }[] = [
-  {
-    titulo: "Construcción participativa",
-    texto:
-      "El plan no se redactará a puerta cerrada: saldrá de las oficinas para debatirse en la calle con todos los sectores.",
-    Icon: UsersRound,
-  },
-  {
-    titulo: "Rigor técnico y seguridad jurídica",
-    texto:
-      "Estudios de suelo, riesgo sísmico e hídrico y reglas claras como motor para reactivar la inversión privada.",
-    Icon: GraduationCap,
-  },
-  {
-    titulo: "Justicia social y equilibrio territorial",
-    texto:
-      "Equilibrar el desarrollo del centro con la atención a las parroquias periféricas: una justicia social que no se negocia, sino que se formaliza.",
-    Icon: Map,
-  },
-  {
-    titulo: "Cero papel y trazabilidad",
-    texto:
-      "Recepción digital de propuestas con folio, acuse y respuesta motivada, y una bitácora que no se puede modificar.",
-    Icon: ShieldCheck,
-  },
-];
-
-const MARCO: {
-  nombre: string;
-  texto: string;
-  Icon: LucideIcon;
-  enlace?: { href: string; label: string };
-}[] = [
-  {
-    nombre: "Decreto 48-2026",
-    texto:
-      "Decreto del alcalde que activa la formulación del nuevo PDUL y crea el Registro municipal de actores.",
-    Icon: Landmark,
-    enlace: { href: "/documentos/decreto-48-2026", label: "Ver en el repositorio" },
-  },
-  {
-    nombre: "Ordenanza del PDUL de Barquisimeto (2003)",
-    texto:
-      "Promulgada el 28 de agosto de 2003 en Gaceta Municipal N° 1.803 Extraordinario, con vigencia hasta 2016 según su Artículo 150.",
-    Icon: FileText,
-  },
-  {
-    nombre: "Sentencia N° 928/2018 de la Sala Constitucional del TSJ",
-    texto:
-      "Del 17 de diciembre de 2018: acordó la aplicación ultractiva y provisional del plan de 2003 y la obligación de sancionar una nueva Ordenanza.",
-    Icon: Scale,
-    enlace: { href: "/noticias/marco-jurisprudencial-pdul", label: "Leer el análisis" },
-  },
-  {
-    nombre: "Ley Orgánica de Ordenación Urbanística",
-    texto:
-      "Ley nacional que regula los planes de desarrollo urbano local y la participación de la comunidad en su elaboración.",
-    Icon: Scale,
-  },
-  {
-    nombre: "Ordenanza de Gobierno Electrónico",
-    texto:
-      "Norma municipal que respalda la atención y la participación de la ciudadanía a través de medios digitales.",
-    Icon: FileText,
-  },
-  {
-    nombre: "Lineamientos de la OAC (Contraloría General de la República)",
-    texto:
-      "Parámetros de atención al ciudadano: acuse de recibo, respuesta motivada y conservación de la memoria del proceso.",
-    Icon: ShieldCheck,
-  },
-];
-
-const ANTECEDENTES = [
-  {
-    fecha: "28 de agosto de 2003",
-    texto:
-      "Se promulga la Ordenanza sobre el PDUL de la Ciudad de Barquisimeto (Gaceta Municipal N° 1.803 Extraordinario).",
-  },
-  {
-    fecha: "2016",
-    texto: "Vence la vigencia del plan, fijada hasta ese año por su Artículo 150.",
-  },
-  {
-    fecha: "17 de diciembre de 2018",
-    texto:
-      "La Sala Constitucional del TSJ (Sentencia N° 928) acuerda cautelarmente la aplicación ultractiva del plan vencido, como medida provisoria.",
-  },
-  {
-    fecha: "2021",
-    texto:
-      "La Sentencia N° 0171/2021 ratifica que la ultractividad no exime al Municipio de formular y sancionar una nueva Ordenanza.",
-  },
-  {
-    fecha: "14 de septiembre de 2026",
-    texto:
-      "En el 474.º aniversario de Barquisimeto, el alcalde Yanys Agüero presenta el Decreto N.º 48-2026, que inicia el nuevo PDUL a 20 años (hasta 2046).",
-  },
-];
+const ICONO_OBJETIVO: Record<(typeof OBJETIVOS)[number]["clave"], LucideIcon> = {
+  juridica: Scale,
+  policentrica: Network,
+  justicia: Droplets,
+  resiliencia: Leaf,
+  digital: Database,
+};
 
 const FUERA_DE_ALCANCE = [
   "Licencias de construcción",
@@ -141,36 +61,19 @@ const FUERA_DE_ALCANCE = [
   "Permisos de edificación",
 ];
 
-function Seccion({
-  id,
-  titulo,
-  children,
-  provisional = false,
-}: {
-  id: string;
-  titulo: string;
-  children: ReactNode;
-  provisional?: boolean;
-}) {
+function Seccion({ id, titulo, children }: { id: string; titulo: string; children: ReactNode }) {
   return (
     <section
       id={id}
       aria-labelledby={`${id}-titulo`}
       className="revelar scroll-mt-36 rounded-tarjeta bg-papel p-6 shadow-tarjeta sm:p-10 lg:scroll-mt-28"
     >
-      <div className="flex flex-wrap items-center gap-3">
-        <h2
-          id={`${id}-titulo`}
-          className="font-display text-2xl font-extrabold text-noche sm:text-3xl"
-        >
-          {titulo}
-        </h2>
-        {provisional && (
-          <span className="rounded-full bg-amarillo/25 px-2.5 py-0.5 font-display text-xs font-bold text-noche">
-            Texto provisional
-          </span>
-        )}
-      </div>
+      <h2
+        id={`${id}-titulo`}
+        className="font-display text-2xl font-extrabold text-noche sm:text-3xl"
+      >
+        {titulo}
+      </h2>
       <div className="mt-6">{children}</div>
     </section>
   );
@@ -182,7 +85,7 @@ export default function ConocePage() {
       <EncabezadoPagina
         migas={[{ href: "/", label: "Inicio" }, { label: "Conoce el PDUL" }]}
         titulo="Conoce el PDUL"
-        bajada="El Plan de Desarrollo Urbano Local es la hoja de ruta para el crecimiento de la ciudad. Aquí te contamos qué es, de dónde viene, qué busca y cómo puedes participar."
+        bajada="La ley marco municipal del suelo que ordenará Barquisimeto hasta 2046: qué es, de dónde viene, cómo se elabora y qué busca."
       />
 
       <div className="relative z-10 mx-auto -mt-16 grid max-w-7xl grid-cols-[minmax(0,1fr)] gap-8 px-4 pb-24 sm:px-6 lg:-mt-20 lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start lg:px-8">
@@ -191,26 +94,14 @@ export default function ConocePage() {
         </aside>
 
         <div className="min-w-0 space-y-8">
-          <Seccion id="que-es" titulo="¿Qué es el PDUL?">
+          <Seccion id="que-es" titulo="¿Qué es un PDUL y por qué es crucial para Barquisimeto?">
             <div className="prosa">
-              <p>
-                Es el plan que define cómo debe crecer el municipio Iribarren: dónde se puede
-                construir, qué servicios y espacios públicos hacen falta y cómo se mueve la ciudad.
-                Una vez aprobado por la Cámara Municipal, se convierte en la norma que orienta el
-                desarrollo urbano de Barquisimeto.
-              </p>
-              <p>
-                Este portal es su ventana a la ciudadanía: aquí se publican los avances y los
-                documentos, y se reciben opiniones y propuestas con un folio y una respuesta. La
-                consulta pública formal durará 60 días, pero las propuestas se reciben desde ahora.
-              </p>
+              {QUE_ES.map((p) => (
+                <p key={p.slice(0, 24)}>{p}</p>
+              ))}
             </div>
-            <dl className="mt-8 grid gap-4 sm:grid-cols-3">
-              {[
-                ["10", "parroquias en el diagnóstico"],
-                ["7", "fases hasta su vigencia"],
-                ["20", "años de horizonte, hasta 2046"],
-              ].map(([n, texto]) => (
+            <dl className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+              {CIFRAS.map(([n, texto]) => (
                 <div key={texto} className="rounded-2xl bg-superficie p-5">
                   <dt className="sr-only">{texto}</dt>
                   <dd>
@@ -224,76 +115,189 @@ export default function ConocePage() {
             </dl>
           </Seccion>
 
-          <Seccion id="antecedentes" titulo="Antecedentes">
-            <ol className="relative space-y-6 border-l-2 border-linea pl-6">
-              {ANTECEDENTES.map(({ fecha, texto }) => (
-                <li key={fecha} className="relative">
+          <Seccion id="componentes" titulo="Los tres componentes del PDUL">
+            <ol className="grid gap-4 lg:grid-cols-3">
+              {COMPONENTES.map((c, i) => (
+                <li key={c.titulo} className="flex flex-col rounded-2xl border border-linea p-5">
                   <span
                     aria-hidden="true"
-                    className="absolute top-1.5 -left-[2.05rem] size-3.5 rounded-full bg-rojo ring-4 ring-papel"
-                  />
-                  <p className="font-display font-extrabold text-noche">{fecha}</p>
-                  <p className="mt-1 leading-relaxed text-tinta">{texto}</p>
-                </li>
-              ))}
-            </ol>
-            <p className="mt-6 text-sm text-tinta/75">
-              Iribarren acumula una deuda de 8 años en planificación urbana: el plan venció en 2016
-              y su prórroga judicial culminó en 2018.
-            </p>
-          </Seccion>
-
-          <Seccion id="objetivos" titulo="Objetivos">
-            <ul className="grid gap-4 sm:grid-cols-2">
-              {OBJETIVOS.map(({ titulo, texto, Icon }) => (
-                <li key={titulo} className="rounded-2xl border border-linea p-5">
-                  <span className="grid size-11 place-items-center rounded-full bg-naranja/15 text-rojo-oscuro">
-                    <Icon size={22} aria-hidden="true" />
+                    className="font-display text-5xl leading-none font-extrabold text-rojo/20"
+                  >
+                    {i + 1}
                   </span>
-                  <h3 className="mt-4 font-display text-lg font-extrabold text-noche">{titulo}</h3>
-                  <p className="mt-1.5 leading-relaxed text-tinta">{texto}</p>
-                </li>
-              ))}
-            </ul>
-          </Seccion>
-
-          <Seccion id="fases" titulo="Las 7 fases">
-            <Suspense fallback={<FasesSkeleton />}>
-              <FasesPdul />
-            </Suspense>
-          </Seccion>
-
-          <Seccion id="marco-legal" titulo="Marco legal">
-            <ul className="space-y-4">
-              {MARCO.map(({ nombre, texto, Icon, enlace }) => (
-                <li
-                  key={nombre}
-                  className="flex flex-col gap-4 rounded-2xl border border-linea p-5 sm:flex-row sm:items-center"
-                >
-                  <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-noche text-papel">
-                    <Icon size={22} aria-hidden="true" />
-                  </span>
-                  <div className="flex-1">
-                    <h3 className="font-display text-lg font-extrabold text-noche">{nombre}</h3>
-                    <p className="mt-1 leading-relaxed text-tinta">{texto}</p>
-                  </div>
-                  {enlace ? (
-                    <Link
-                      href={enlace.href}
-                      className="inline-flex min-h-11 shrink-0 items-center gap-2 self-start rounded-xl bg-rojo/10 px-4 font-display text-sm font-bold text-rojo transition-colors hover:bg-rojo/15 sm:self-center"
-                    >
-                      {enlace.label}
-                      <ArrowRight size={16} aria-hidden="true" />
-                    </Link>
-                  ) : (
-                    <span className="inline-flex shrink-0 items-center gap-1.5 self-start text-xs text-tinta/70 sm:self-center">
-                      <ExternalLink size={14} aria-hidden="true" />
-                      Enlace oficial pendiente
-                    </span>
+                  <h3 className="mt-3 font-display text-lg font-extrabold text-noche">
+                    {c.titulo}
+                  </h3>
+                  <p className="mt-2 leading-relaxed text-tinta">{c.texto}</p>
+                  {c.lista && (
+                    <ul className="mt-3 flex flex-wrap gap-2">
+                      {c.lista.map((l) => (
+                        <li
+                          key={l}
+                          className="rounded-full bg-superficie px-3 py-1 text-sm font-semibold text-noche"
+                        >
+                          {l}
+                        </li>
+                      ))}
+                    </ul>
                   )}
                 </li>
               ))}
-            </ul>
+            </ol>
+          </Seccion>
+
+          <Seccion id="antecedentes" titulo="Antecedentes urbanos: ¿por qué un nuevo PDUL ahora?">
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_17rem]">
+              <div className="prosa">
+                {ANTECEDENTES.map((p) => (
+                  <p key={p.slice(0, 24)}>{p}</p>
+                ))}
+              </div>
+              <div>
+                <ol className="relative space-y-5 border-l-2 border-linea pl-6">
+                  {LINEA_TIEMPO.map(({ fecha, texto }) => (
+                    <li key={fecha} className="relative">
+                      <span
+                        aria-hidden="true"
+                        className="absolute top-1.5 -left-[2.05rem] size-3.5 rounded-full bg-rojo ring-4 ring-papel"
+                      />
+                      <p className="font-display font-extrabold text-noche">{fecha}</p>
+                      <p className="mt-0.5 text-sm leading-relaxed text-tinta">{texto}</p>
+                    </li>
+                  ))}
+                </ol>
+                <p className="mt-6 rounded-2xl bg-noche p-5 text-papel">
+                  <span className="block font-display text-3xl font-extrabold">27.146 ha</span>
+                  <span className="mt-1 block text-sm text-papel/80">
+                    de la poligonal urbana original de 2003, ya superadas por la ciudad
+                  </span>
+                </p>
+              </div>
+            </div>
+          </Seccion>
+
+          <Seccion
+            id="marco-legal"
+            titulo="Naturaleza jurídica y marco de obligatorio cumplimiento"
+          >
+            <p className="prosa">{MARCO_INTRO}</p>
+            <ol className="mt-6">
+              {MARCO.map(({ nombre, texto, enlace }, i) => (
+                <li key={nombre} className="relative pb-4 pl-14 last:pb-0">
+                  {i < MARCO.length - 1 && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-12 bottom-0 left-[1.2rem] w-0.5 bg-gradient-to-b from-rojo to-rojo/20"
+                    />
+                  )}
+                  <span
+                    aria-hidden="true"
+                    className="absolute top-0 left-0 grid size-10 place-items-center rounded-full bg-rojo font-display font-extrabold text-papel"
+                  >
+                    {i + 1}
+                  </span>
+                  <div className="rounded-2xl border border-linea p-5">
+                    <h3 className="font-display text-lg font-extrabold text-noche">{nombre}</h3>
+                    <p className="mt-1.5 leading-relaxed text-tinta">{texto}</p>
+                    {enlace && (
+                      <Link
+                        href={enlace.href}
+                        className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-rojo/10 px-4 font-display text-sm font-bold text-rojo transition-colors hover:bg-rojo/15"
+                      >
+                        {enlace.label}
+                        <ArrowRight size={16} aria-hidden="true" />
+                      </Link>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </Seccion>
+
+          <Seccion id="procedimiento" titulo="Procedimiento de elaboración">
+            <p className="prosa">{PROCEDIMIENTO_INTRO}</p>
+            <ol className="mt-6 space-y-4">
+              {FASES.map((f, i) => (
+                <FaseProcedimiento
+                  key={f.numero}
+                  numero={f.numero}
+                  nombre={f.nombre}
+                  duracion={f.duracion}
+                  abiertaAlInicio={i === 0}
+                >
+                  <p className="font-display text-sm font-bold text-noche">¿En qué consiste?</p>
+                  <p className="mt-1 leading-relaxed text-tinta">{f.consiste}</p>
+                  <p className="mt-5 font-display text-sm font-bold text-noche">
+                    Hitos y entregables clave
+                  </p>
+                  <ul className="mt-2 space-y-3">
+                    {f.hitos.map((h) => (
+                      <li key={h.titulo} className="flex gap-3">
+                        <span
+                          aria-hidden="true"
+                          className="mt-2.5 size-1.5 shrink-0 rounded-full bg-rojo"
+                        />
+                        <div className="min-w-0 leading-relaxed text-tinta">
+                          <strong className="font-semibold text-noche">{h.titulo}</strong>
+                          {h.texto && <>: {h.texto}</>}
+                          {h.subhitos && (
+                            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                              {h.subhitos.map((s) => (
+                                <div key={s.titulo} className="rounded-2xl bg-superficie p-4">
+                                  <p className="font-display font-extrabold text-rojo">
+                                    {s.titulo}
+                                  </p>
+                                  <p className="mt-1 text-sm leading-relaxed">{s.texto}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </FaseProcedimiento>
+              ))}
+            </ol>
+
+            <div className="mt-8 rounded-2xl bg-superficie p-5 sm:p-6">
+              <h3 className="font-display text-lg font-extrabold text-noche">
+                ¿En qué va el proceso?
+              </h3>
+              <p className="mt-1 mb-5 text-sm text-tinta">
+                Los hitos del proceso y el punto en que se encuentra hoy.
+              </p>
+              <Suspense fallback={<FasesSkeleton compacto />}>
+                <FasesPdul compacto />
+              </Suspense>
+            </div>
+          </Seccion>
+
+          <Seccion id="objetivos" titulo="Objetivos estratégicos del PDUL Iribarren (2026–2046)">
+            <ol className="grid gap-4 sm:grid-cols-2">
+              {OBJETIVOS.map(({ clave, titulo, texto }, i) => {
+                const Icon = ICONO_OBJETIVO[clave];
+                return (
+                  <li
+                    key={clave}
+                    className={`rounded-2xl border border-linea p-5 ${i === OBJETIVOS.length - 1 ? "sm:col-span-2" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-naranja/15 text-rojo-oscuro">
+                        <Icon size={22} aria-hidden="true" />
+                      </span>
+                      <span className="font-display text-sm font-bold text-tinta/70">
+                        Objetivo {i + 1}
+                      </span>
+                    </div>
+                    <h3 className="mt-4 font-display text-lg font-extrabold text-noche">
+                      {titulo}
+                    </h3>
+                    <p className="mt-1.5 leading-relaxed text-tinta">{texto}</p>
+                  </li>
+                );
+              })}
+            </ol>
           </Seccion>
 
           <Seccion id="alcance" titulo="Qué no gestiona este portal">
@@ -316,20 +320,13 @@ export default function ConocePage() {
             className="revelar relative overflow-hidden rounded-tarjeta bg-rojo p-6 text-papel shadow-tarjeta sm:p-10"
           >
             <h2 id="participa-titulo" className="font-display text-2xl font-extrabold sm:text-3xl">
-              El plan se construye con tu voz
+              {LLAMADO.titulo}
             </h2>
-            <p className="mt-3 max-w-xl leading-relaxed text-papel/90">
-              Envía una opinión o una propuesta formal, o revisa los documentos que sustentan cada
-              fase.
-            </p>
+            <p className="mt-3 max-w-xl leading-relaxed text-papel/90">{LLAMADO.texto}</p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/participa"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-papel px-5 font-display font-bold text-rojo transition-transform duration-150 active:scale-[0.97]"
-              >
-                Participar
-                <ArrowRight size={18} aria-hidden="true" />
-              </Link>
+              <Suspense fallback={<BotonLlamado href="/registro" texto="Regístrate y participa" />}>
+                <LlamadoSegunSesion />
+              </Suspense>
               <Link
                 href="/documentos"
                 className="inline-flex min-h-12 items-center justify-center rounded-xl px-5 font-display font-bold text-papel ring-2 ring-papel/60 transition-colors ring-inset hover:bg-papel/10"
@@ -341,5 +338,27 @@ export default function ConocePage() {
         </div>
       </div>
     </>
+  );
+}
+
+function BotonLlamado({ href, texto }: { href: string; texto: string }) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-papel px-5 font-display font-bold text-rojo transition-transform duration-150 active:scale-[0.97]"
+    >
+      {texto}
+      <ArrowRight size={18} aria-hidden="true" />
+    </Link>
+  );
+}
+
+/** Con sesión, el botón va directo a participar; sin sesión, al registro (módulo de identidad). */
+async function LlamadoSegunSesion() {
+  const u = await getUsuario();
+  return u ? (
+    <BotonLlamado href="/participa" texto="Participa en el PDUL" />
+  ) : (
+    <BotonLlamado href="/registro" texto="Regístrate y participa" />
   );
 }

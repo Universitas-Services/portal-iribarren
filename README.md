@@ -66,7 +66,7 @@ Mientras no exista `plataforma-api`, el registro, el acceso, el perfil y la part
 | `contacto@cardones.org` | Organización con perfil incompleto                     |
 
 - Enlaces de ejemplo: `/verificar?token=demo-vencido` y `/verificar?token=demo-usado`.
-- Los folios se numeran desde `IRI-2026-0001` cada vez que arranca el servidor.
+- Hay 7 participaciones de ejemplo (`IRI-2026-0001` a `0007`): 5 de Ana en todos los estados, para ver «Mis participaciones» (`/mi-cuenta/participaciones`), y 3 publicadas, para la galería pública `/propuestas`. Los aportes nuevos siguen desde `IRI-2026-0008` y la numeración vuelve a empezar al reiniciar el servidor.
 
 ## Integración continua
 

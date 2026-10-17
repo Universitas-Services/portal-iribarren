@@ -520,3 +520,73 @@ export function participacionesDe(alm: Almacen, sesion?: string) {
     .filter((p) => p.cuentaId === c.id)
     .sort((a, b) => b.creadaEl.localeCompare(a.creadaEl));
 }
+
+/* ---------- Seguimiento y galería pública ---------- */
+
+export type FiltroParticipaciones = {
+  estado?: EstadoParticipacion;
+  tipo?: TipoParticipacion;
+  parroquia?: Parroquia;
+  categoriaTecnica?: CategoriaTecnica;
+  /** Folio completo o solo su número: «IRI-2026-0045», «2026-0045» o «45». */
+  folio?: string;
+  /** Texto libre en descripción, sector y autor (galería pública). */
+  q?: string;
+};
+
+const sinTildes = (t: string) =>
+  t
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+
+/** Si el folio buscado es solo un número, compara contra el secuencial sin ceros a la izquierda. */
+function coincideFolio(folio: string, buscado: string) {
+  const b = buscado.trim().toUpperCase();
+  if (!b) return true;
+  if (/^\d+$/.test(b)) return Number(folio.slice(-4)) === Number(b) || folio.endsWith(b);
+  return folio.includes(b);
+}
+
+export function filtrarParticipaciones(lista: Participacion[], f: FiltroParticipaciones) {
+  const q = f.q ? sinTildes(f.q.trim()) : "";
+  return lista.filter(
+    (p) =>
+      (!f.estado || p.estado === f.estado) &&
+      (!f.tipo || p.tipo === f.tipo) &&
+      (!f.parroquia || p.parroquia === f.parroquia) &&
+      (!f.categoriaTecnica || p.categoriaTecnica === f.categoriaTecnica) &&
+      (!f.folio || coincideFolio(p.folio, f.folio)) &&
+      (!q || sinTildes(`${p.descripcion} ${p.sector} ${p.autor}`).includes(q)),
+  );
+}
+
+/**
+ * Lo que puede ver cualquier visitante de una participación publicada: nunca el id de la
+ * cuenta ni datos de contacto. El autor solo aparece si autorizó mostrar su nombre (v3, 5.1).
+ */
+export function vistaPublica(p: Participacion) {
+  const { cuentaId: _cuenta, historial, mostrarNombre, autor, ...resto } = p;
+  return {
+    ...resto,
+    autor: mostrarNombre ? autor : undefined,
+    publicadaEl: historial.find((h) => h.estado === "PUBLICADA")?.fecha ?? p.creadaEl,
+  };
+}
+
+export type PropuestaPublica = ReturnType<typeof vistaPublica>;
+
+/** Galería pública: solo PUBLICADA y con nombre autorizado, de la más reciente a la más antigua. */
+export function propuestasPublicadas(alm: Almacen, f: FiltroParticipaciones = {}) {
+  const publicadas = [...alm.participaciones.values()].filter(
+    (p) => p.estado === "PUBLICADA" && p.mostrarNombre,
+  );
+  return filtrarParticipaciones(publicadas, { ...f, estado: undefined })
+    .map(vistaPublica)
+    .sort((a, b) => b.publicadaEl.localeCompare(a.publicadaEl));
+}
+
+export function propuestaPublica(alm: Almacen, folio: string) {
+  const p = alm.participaciones.get(folio.toUpperCase());
+  return p && p.estado === "PUBLICADA" && p.mostrarNombre ? vistaPublica(p) : undefined;
+}

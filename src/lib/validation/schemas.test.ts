@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { MB } from "./common";
 import {
   datosNaturalSchema,
+  filtrosParticipacionesSchema,
   documentoPerfilSchema,
   participacionSchema,
   registroNaturalSchema,
@@ -203,5 +204,30 @@ describe("perfil", () => {
     expect(documentoPerfilSchema.safeParse({ documento: "IDENTIDAD", archivo: docx }).success).toBe(
       false,
     );
+  });
+});
+
+describe("filtrosParticipacionesSchema", () => {
+  it("lee los valores de la URL y descarta los inválidos", () => {
+    const f = filtrosParticipacionesSchema.parse({
+      estado: "en-revision",
+      tipo: "propuesta-formal",
+      parroquia: "El Cují",
+      categoriaTecnica: "Inventada",
+      folio: "IRI-2026-0004",
+      pagina: "x",
+    });
+    expect(f).toMatchObject({
+      estado: "EN_REVISION",
+      tipo: "PROPUESTA_FORMAL",
+      parroquia: "El Cují",
+      categoriaTecnica: undefined,
+      folio: "IRI-2026-0004",
+      pagina: 1,
+    });
+    expect(filtrosParticipacionesSchema.parse({ estado: "borrado", folio: "<x>" })).toMatchObject({
+      estado: undefined,
+      folio: undefined,
+    });
   });
 });

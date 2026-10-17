@@ -8,7 +8,7 @@ const MARCO_LEGAL = [
   // Enlaces oficiales pendientes de confirmar con el cliente.
   { href: "/conoce-el-pdul#marco-legal", label: "Decreto 48-2026" },
   { href: "/conoce-el-pdul#marco-legal", label: "LOOU" },
-  { href: "/conoce-el-pdul#marco-legal", label: "Ordenanza de Gobierno Electrónico" },
+  { href: "/conoce-el-pdul#marco-legal", label: "Sentencia N° 928/2018 del TSJ" },
 ];
 
 const enlace = "transition-colors duration-150 hover:text-rojo hover:underline";

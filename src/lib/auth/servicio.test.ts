@@ -6,12 +6,15 @@ import {
   correoDeToken,
   cuentaDeSesion,
   enviarParticipacion,
+  filtrarParticipaciones,
   estadoRestablecer,
   guardarPerfil,
   iniciarSesion,
   participacionesDe,
   participacionPropia,
   perfilCompleto,
+  propuestaPublica,
+  propuestasPublicadas,
   recuperar,
   reenviarVerificacion,
   registrar,
@@ -219,25 +222,30 @@ describe("participación", () => {
   it("emite folios secuenciales con el formato IRI-AAAA-XXXX en estado Pendiente", () => {
     const alm = almacenDemo();
     const s = sesionDe(alm, "ana@ejemplo.com");
+    // Los folios siguen después de las participaciones de ejemplo.
+    const n = alm.secuencia;
+    const folio = (k: number) => `IRI-2026-${String(k).padStart(4, "0")}`;
     const ahora = Date.UTC(2026, 9, 17, 15);
     const a = enviarParticipacion(alm, s, "clave-1", datos, ahora);
     const b = enviarParticipacion(alm, s, "clave-2", datos, ahora + 1000);
-    expect(a).toEqual({ estado: "OK", folio: "IRI-2026-0001" });
-    expect(b).toEqual({ estado: "OK", folio: "IRI-2026-0002" });
-    expect(participacionPropia(alm, s, "IRI-2026-0001")?.estado).toBe("PENDIENTE");
-    expect(participacionesDe(alm, s).map((p) => p.folio)).toEqual([
-      "IRI-2026-0002",
-      "IRI-2026-0001",
-    ]);
+    expect(a).toEqual({ estado: "OK", folio: folio(n + 1) });
+    expect(b).toEqual({ estado: "OK", folio: folio(n + 2) });
+    expect(participacionPropia(alm, s, folio(n + 1))?.estado).toBe("PENDIENTE");
+    expect(
+      participacionesDe(alm, s)
+        .slice(0, 2)
+        .map((p) => p.folio),
+    ).toEqual([folio(n + 2), folio(n + 1)]);
   });
 
   it("la misma Idempotency-Key no crea un segundo folio", () => {
     const alm = almacenDemo();
     const s = sesionDe(alm, "ana@ejemplo.com");
+    const antes = alm.participaciones.size;
     const a = enviarParticipacion(alm, s, "doble-clic", datos);
     const b = enviarParticipacion(alm, s, "doble-clic", datos);
     expect(b).toEqual(a);
-    expect(alm.participaciones.size).toBe(1);
+    expect(alm.participaciones.size).toBe(antes + 1);
   });
 
   it("rechaza el envío con el perfil incompleto", () => {
@@ -253,5 +261,41 @@ describe("participación", () => {
     const r = enviarParticipacion(alm, ana, "k", datos);
     if (r.estado !== "OK") throw new Error("debía enviarse");
     expect(participacionPropia(alm, rosa, r.folio)).toBeUndefined();
+  });
+});
+
+describe("seguimiento y galería", () => {
+  it("filtra por estado, tipo y folio con o sin prefijo", () => {
+    const alm = almacenDemo();
+    const lista = participacionesDe(alm, sesionDe(alm, "ana@ejemplo.com"));
+    expect(lista).toHaveLength(5);
+    expect(filtrarParticipaciones(lista, { estado: "RECHAZADA" }).map((p) => p.folio)).toEqual([
+      "IRI-2026-0003",
+    ]);
+    expect(filtrarParticipaciones(lista, { tipo: "PROPUESTA_FORMAL" })).toHaveLength(1);
+    for (const folio of ["IRI-2026-0004", "2026-0004", "0004", "4"])
+      expect(filtrarParticipaciones(lista, { folio }).map((p) => p.folio)).toEqual([
+        "IRI-2026-0004",
+      ]);
+  });
+
+  it("la galería solo muestra lo publicado con nombre autorizado y oculta la cuenta", () => {
+    const alm = almacenDemo();
+    const publicadas = propuestasPublicadas(alm);
+    expect(publicadas.length).toBeGreaterThan(0);
+    for (const p of publicadas) {
+      expect(p.estado).toBe("PUBLICADA");
+      expect(p.autor).toBeTruthy();
+      expect(p).not.toHaveProperty("cuentaId");
+    }
+    // Aprobada sin autorización de nombre: no se publica.
+    expect(propuestaPublica(alm, "IRI-2026-0002")).toBeUndefined();
+    expect(propuestaPublica(alm, "iri-2026-0001")?.folio).toBe("IRI-2026-0001");
+  });
+
+  it("busca texto sin importar tildes y filtra por parroquia", () => {
+    const alm = almacenDemo();
+    expect(propuestasPublicadas(alm, { q: "CANCHA MULTIPLE" })).toHaveLength(1);
+    expect(propuestasPublicadas(alm, { parroquia: "El Cují" })).toHaveLength(1);
   });
 });

@@ -1,4 +1,4 @@
-import { LogOut, UserRound } from "lucide-react";
+import { ClipboardList, LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
 import { cerrarSesionAccion } from "@/lib/auth/acciones";
 import { getUsuario } from "@/lib/auth/sesion";
@@ -59,6 +59,13 @@ export async function CuentaMovil() {
     <div className="rounded-2xl bg-superficie p-4">
       <p className="text-sm text-tinta/75">Sesión iniciada como</p>
       <p className="truncate font-display font-extrabold text-noche">{u.nombre}</p>
+      <Link
+        href="/mi-cuenta/participaciones"
+        className="mt-3 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-papel font-display font-semibold text-noche ring-1 ring-linea"
+      >
+        <ClipboardList size={18} aria-hidden="true" className="text-rojo" />
+        Mis participaciones
+      </Link>
       <div className="mt-3 grid grid-cols-2 gap-3">
         <Link
           href="/mi-cuenta"

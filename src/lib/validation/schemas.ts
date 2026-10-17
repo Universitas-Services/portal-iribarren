@@ -7,6 +7,7 @@ import {
   DOC_CATEGORIAS,
   OCUPACIONES,
   PARROQUIAS,
+  ESTADOS_PARTICIPACION,
   TIPOS_PARTICIPACION,
   type DocEstado,
   type FiltrosDocumentos,
@@ -298,3 +299,36 @@ export function parseFiltrosDocumentos(
 ): FiltrosDocumentos {
   return filtrosDocumentosSchema.parse(params);
 }
+
+/* ---------- Filtros de participaciones (Mis participaciones y galería pública) ---------- */
+
+/** En la URL los valores van en minúsculas y con guion: EN_REVISION → en-revision. */
+export const aSlug = (v: string) => v.toLowerCase().replace(/_/g, "-");
+const desdeSlug = <T extends readonly string[]>(valores: T) =>
+  z
+    .string()
+    .transform((s) => valores.find((v) => aSlug(v) === s))
+    .pipe(z.enum(valores as unknown as [T[number], ...T[number][]]).optional());
+
+/** Nunca lanza: un valor inválido se descarta, como en los demás listados. */
+export const filtrosParticipacionesSchema = z.object({
+  estado: z.preprocess(primero, desdeSlug(ESTADOS_PARTICIPACION).optional()).catch(undefined),
+  tipo: z.preprocess(primero, desdeSlug(TIPOS_PARTICIPACION).optional()).catch(undefined),
+  parroquia: z.preprocess(primero, z.enum(PARROQUIAS).optional()).catch(undefined),
+  categoriaTecnica: z.preprocess(primero, z.enum(CATEGORIAS_TECNICAS).optional()).catch(undefined),
+  folio: z
+    .preprocess(
+      primero,
+      z
+        .string()
+        .trim()
+        .max(20)
+        .regex(/^[\w-]*$/)
+        .optional(),
+    )
+    .catch(undefined),
+  q: z.preprocess(primero, z.string().trim().max(100).optional()).catch(undefined),
+  pagina: z.preprocess(primero, z.coerce.number().int().min(1).max(10_000)).catch(1),
+});
+
+export type FiltrosParticipaciones = z.infer<typeof filtrosParticipacionesSchema>;

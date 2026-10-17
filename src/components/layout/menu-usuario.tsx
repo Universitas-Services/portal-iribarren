@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, LogOut, UserRound } from "lucide-react";
+import { ChevronDown, ClipboardList, LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { cerrarSesionAccion } from "@/lib/auth/acciones";
@@ -69,6 +69,14 @@ export function MenuUsuario({ nombre, corto }: { nombre: string; corto: string }
           >
             <UserRound size={18} aria-hidden="true" className="text-rojo" />
             Mi cuenta
+          </Link>
+          <Link
+            href="/mi-cuenta/participaciones"
+            onClick={() => setAbierto(false)}
+            className="flex min-h-11 items-center gap-2.5 rounded-xl px-3 font-semibold text-noche hover:bg-superficie"
+          >
+            <ClipboardList size={18} aria-hidden="true" className="text-rojo" />
+            Mis participaciones
           </Link>
           <form action={cerrarSesionAccion}>
             <button

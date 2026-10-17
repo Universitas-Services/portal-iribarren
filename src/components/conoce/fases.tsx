@@ -3,8 +3,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getProcess } from "@/lib/api";
 import { ETIQUETA_FASE } from "@/lib/proceso";
 
-/** Las 7 fases del PDUL en línea de tiempo vertical, con la fase en curso marcada. */
-export async function FasesPdul() {
+/**
+ * Los 7 hitos del proceso en línea de tiempo vertical, con el actual marcado. En versión
+ * compacta (recuadro «¿En qué va el proceso?» de Conoce) se omiten las descripciones.
+ */
+export async function FasesPdul({ compacto = false }: { compacto?: boolean }) {
   const { fases, faseActual, ejemplo } = await getProcess();
   return (
     <>
@@ -13,11 +16,14 @@ export async function FasesPdul() {
           const hecha = i < faseActual;
           const enCurso = i === faseActual;
           return (
-            <li key={f.id} className="relative flex gap-4 pb-6 last:pb-0">
+            <li
+              key={f.id}
+              className={`relative flex gap-4 last:pb-0 ${compacto ? "pb-3" : "pb-6"}`}
+            >
               {i < fases.length - 1 && (
                 <span
                   aria-hidden="true"
-                  className={`absolute top-10 bottom-0 left-[1.1rem] w-0.5 ${hecha ? "bg-rojo" : "bg-linea"}`}
+                  className={`absolute bottom-0 left-[1.1rem] w-0.5 ${compacto ? "top-9" : "top-10"} ${hecha ? "bg-rojo" : "bg-linea"}`}
                 />
               )}
               <span
@@ -35,7 +41,7 @@ export async function FasesPdul() {
               <div className="pt-1">
                 <p className="flex flex-wrap items-center gap-2">
                   <span
-                    className={`font-display text-lg font-extrabold ${enCurso ? "text-rojo" : "text-noche"}`}
+                    className={`font-display font-extrabold ${compacto ? "text-base" : "text-lg"} ${enCurso ? "text-rojo" : "text-noche"}`}
                   >
                     {f.nombre}
                   </span>
@@ -52,7 +58,7 @@ export async function FasesPdul() {
                     {ETIQUETA_FASE[f.estado]}
                   </span>
                 </p>
-                <p className="mt-1 leading-relaxed text-tinta">{f.descripcion}</p>
+                {!compacto && <p className="mt-1 leading-relaxed text-tinta">{f.descripcion}</p>}
               </div>
             </li>
           );
@@ -67,15 +73,15 @@ export async function FasesPdul() {
   );
 }
 
-export function FasesSkeleton() {
+export function FasesSkeleton({ compacto = false }: { compacto?: boolean }) {
   return (
-    <div aria-hidden="true" className="space-y-6">
+    <div aria-hidden="true" className={compacto ? "space-y-3" : "space-y-6"}>
       {Array.from({ length: 7 }, (_, i) => (
         <div key={i} className="flex gap-4">
           <Skeleton className="size-9 shrink-0 rounded-full" />
           <div className="flex-1">
             <Skeleton className="h-5 w-48" />
-            <Skeleton className="mt-2 h-4 w-4/5" />
+            {!compacto && <Skeleton className="mt-2 h-4 w-4/5" />}
           </div>
         </div>
       ))}

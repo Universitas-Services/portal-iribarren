@@ -207,10 +207,13 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
           </Link>
         </li>
         <li>
-          <span className="flex min-h-14 items-center gap-3 rounded-2xl border border-dashed border-linea px-4 font-display font-bold text-tinta/60">
-            <ClipboardList size={20} aria-hidden="true" />
-            Mis participaciones (próximamente)
-          </span>
+          <Link
+            href="/mi-cuenta/participaciones"
+            className="flex min-h-14 items-center gap-3 rounded-2xl border border-linea px-4 font-display font-bold text-noche transition-colors hover:border-rojo hover:text-rojo"
+          >
+            <ClipboardList size={20} aria-hidden="true" className="text-rojo" />
+            Mis participaciones
+          </Link>
         </li>
       </ul>
 

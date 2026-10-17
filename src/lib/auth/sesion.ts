@@ -1,9 +1,15 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { almacenDemo } from "./fixtures";
 import {
   cuentaDeSesion,
+  filtrarParticipaciones,
+  participacionesDe,
   participacionPropia,
+  propuestaPublica,
+  propuestasPublicadas,
+  type FiltroParticipaciones,
   resumenCuenta,
   vistaPerfil,
   type Almacen,
@@ -51,6 +57,28 @@ export async function getPerfil(): Promise<VistaPerfil | null> {
 export async function getParticipacion(folio: string) {
   const id = (await cookies()).get(COOKIE_SESION)?.value;
   return participacionPropia(almacen(), id, folio);
+}
+
+/** Participaciones de la cuenta en sesión, filtradas (null sin sesión). */
+export async function getMisParticipaciones(filtros: FiltroParticipaciones) {
+  const id = (await cookies()).get(COOKIE_SESION)?.value;
+  if (!cuentaDeSesion(almacen(), id)) return null;
+  const todas = participacionesDe(almacen(), id);
+  return { total: todas.length, items: filtrarParticipaciones(todas, filtros) };
+}
+
+/*
+ * Galería pública. Sale del almacén en memoria, que cambia en cada envío: se lee al pedir la
+ * página (connection). Con plataforma-api pasa a «use cache» con revalidación por etiqueta.
+ */
+export async function getPropuestasPublicadas(filtros: FiltroParticipaciones) {
+  await connection();
+  return propuestasPublicadas(almacen(), filtros);
+}
+
+export async function getPropuestaPublica(folio: string) {
+  await connection();
+  return propuestaPublica(almacen(), folio);
 }
 
 export async function idSesion() {
