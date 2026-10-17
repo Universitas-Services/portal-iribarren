@@ -89,10 +89,10 @@ describe("participacionSchema", () => {
   it("exige adjunto en la propuesta formal y acepta PNG", () => {
     const r = participacionSchema.safeParse({ ...base, tipo: "PROPUESTA_FORMAL" });
     expect(r.success).toBe(false);
-    expect(r.error?.issues[0]?.path).toEqual(["adjunto"]);
+    expect(r.error?.issues[0]?.path).toEqual(["soporte"]);
     const png = new File([new Uint8Array(10)], "plano.png", { type: "image/png" });
     expect(
-      participacionSchema.safeParse({ ...base, tipo: "PROPUESTA_FORMAL", adjunto: png }).success,
+      participacionSchema.safeParse({ ...base, tipo: "PROPUESTA_FORMAL", soporte: png }).success,
     ).toBe(true);
   });
 
@@ -100,7 +100,7 @@ describe("participacionSchema", () => {
     const r = participacionSchema.safeParse({
       ...base,
       tipo: "PROPUESTA_FORMAL",
-      adjunto: pdf(2 * MB + 1),
+      soporte: pdf(2 * MB + 1),
     });
     expect(r.success).toBe(false);
   });
@@ -124,6 +124,42 @@ describe("participacionSchema", () => {
     expect(participacionSchema.safeParse({ ...base, descripcion: "a".repeat(3001) }).success).toBe(
       false,
     );
+  });
+
+  const foto = (nombre = "calle.jpg", tipo = "image/jpeg") =>
+    new File([new Uint8Array(10)], nombre, { type: tipo });
+
+  it("acepta hasta 5 imágenes JPG, PNG o WebP en cualquier modalidad", () => {
+    const imagenes = [foto(), foto("a.png", "image/png"), foto("b.webp", "image/webp")];
+    expect(participacionSchema.safeParse({ ...base, imagenes }).success).toBe(true);
+    const seis = Array.from({ length: 6 }, () => foto());
+    expect(participacionSchema.safeParse({ ...base, imagenes: seis }).success).toBe(false);
+    expect(
+      participacionSchema.safeParse({ ...base, imagenes: [foto("plano.pdf", "application/pdf")] })
+        .success,
+    ).toBe(false);
+  });
+
+  it("acepta un enlace de YouTube o Instagram y rechaza otros", () => {
+    const r = participacionSchema.safeParse({ ...base, video: "https://youtu.be/dQw4w9WgXcQ" });
+    expect(r.data?.video).toEqual({
+      fuente: "YOUTUBE",
+      url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    });
+    expect(participacionSchema.safeParse({ ...base, video: "" }).data?.video).toBeUndefined();
+    expect(participacionSchema.safeParse({ ...base, video: "https://vimeo.com/1" }).success).toBe(
+      false,
+    );
+  });
+
+  it("las imágenes y el video no reemplazan el soporte de la propuesta formal", () => {
+    const r = participacionSchema.safeParse({
+      ...base,
+      tipo: "PROPUESTA_FORMAL",
+      imagenes: [foto()],
+      video: "https://youtu.be/dQw4w9WgXcQ",
+    });
+    expect(r.error?.issues[0]?.path).toEqual(["soporte"]);
   });
 
   it("limita el sector a 150 caracteres", () => {

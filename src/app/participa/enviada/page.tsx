@@ -1,4 +1,4 @@
-import { CircleCheck, Mail, MessageSquareText } from "lucide-react";
+import { CircleCheck, FileText, ImageIcon, Mail, MessageSquareText, Video } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -109,11 +109,46 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
           </p>
           <p className="mt-1 leading-relaxed whitespace-pre-line text-noche">{p.descripcion}</p>
         </div>
-        {p.adjunto && (
-          <p className="mt-4 text-sm text-tinta">
-            Soporte: <span className="font-semibold text-noche">{p.adjunto.nombre}</span> (
-            {formatearPeso(p.adjunto.tamano)})
-          </p>
+        {(p.soporte || p.imagenes.length > 0 || p.video) && (
+          <ul className="mt-4 space-y-2 border-t border-linea pt-4 text-sm text-tinta">
+            {p.soporte && (
+              <li className="flex items-start gap-2">
+                <FileText size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
+                <span>
+                  Soporte: <span className="font-semibold text-noche">{p.soporte.nombre}</span> (
+                  {formatearPeso(p.soporte.tamano)})
+                </span>
+              </li>
+            )}
+            {p.imagenes.length > 0 && (
+              <li className="flex items-start gap-2">
+                <ImageIcon size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
+                <span>
+                  {p.imagenes.length === 1 ? "1 foto" : `${p.imagenes.length} fotos`}:{" "}
+                  <span className="font-semibold break-words text-noche">
+                    {p.imagenes.map((i) => i.nombre).join(", ")}
+                  </span>
+                </span>
+              </li>
+            )}
+            {p.video && (
+              <li className="flex items-start gap-2">
+                <Video size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
+                <span>
+                  Video en {p.video.fuente === "YOUTUBE" ? "YouTube" : "Instagram"}:{" "}
+                  <a
+                    href={p.video.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold break-all text-rojo underline underline-offset-2"
+                  >
+                    {p.video.url}
+                    <span className="sr-only"> (se abre en otra pestaña)</span>
+                  </a>
+                </span>
+              </li>
+            )}
+          </ul>
         )}
         <p className="mt-4 text-sm text-tinta/80">
           El aporte quedó registrado tal como lo enviaste: no se puede editar ni eliminar.

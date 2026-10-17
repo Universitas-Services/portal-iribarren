@@ -6,9 +6,9 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   experimental: {
     serverActions: {
-      // Cada formulario lleva a lo sumo un archivo de 2 MB (v3, RN-09) más el margen del
-      // multipart. La API vuelve a validar tipo y tamaño.
-      bodySizeLimit: "3mb",
+      // La participación lleva hasta 5 imágenes y un documento de 2 MB cada uno, más el margen
+      // del multipart. Con plataforma-api los archivos irán directo a Storage.
+      bodySizeLimit: "13mb",
     },
   },
   turbopack: {

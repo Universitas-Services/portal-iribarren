@@ -1,4 +1,5 @@
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import type { EnlaceVideo } from "@/lib/noticias/video";
 import type {
   CategoriaTecnica,
   EstadoParticipacion,
@@ -79,7 +80,10 @@ export type Participacion = {
   sector: string;
   categoriaTecnica: CategoriaTecnica;
   descripcion: string;
-  adjunto?: Omit<DocumentoCargado, "version">;
+  /** Metadatos: los archivos van a Storage en plataforma-api. */
+  imagenes: Omit<DocumentoCargado, "version" | "subidoEl">[];
+  video?: EnlaceVideo;
+  soporte?: Omit<DocumentoCargado, "version" | "subidoEl">;
   mostrarNombre: boolean;
   /** Nombre o razón social al momento del envío. */
   autor: string;

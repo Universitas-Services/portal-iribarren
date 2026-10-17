@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { duracionLegible, formatearDuracion } from "@/lib/formato";
-import { idYoutube } from "./video";
+import { enlaceVideo, idYoutube } from "./video";
 
 describe("idYoutube", () => {
   it.each([
@@ -33,5 +33,31 @@ describe("duración", () => {
   it("la lee en palabras para lectores de pantalla", () => {
     expect(duracionLegible(84)).toBe("1 minuto y 24 segundos");
     expect(duracionLegible(60)).toBe("1 minuto");
+  });
+});
+
+describe("enlaceVideo", () => {
+  it("normaliza YouTube e Instagram", () => {
+    expect(enlaceVideo(" https://youtu.be/dQw4w9WgXcQ?t=10 ")).toEqual({
+      fuente: "YOUTUBE",
+      url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    });
+    expect(enlaceVideo("https://instagram.com/reels/DdUGySaIYsG")).toEqual({
+      fuente: "INSTAGRAM",
+      url: "https://www.instagram.com/reel/DdUGySaIYsG/",
+    });
+    expect(enlaceVideo("https://www.instagram.com/p/DdS3mOfFocQ/?igsh=x")?.fuente).toBe(
+      "INSTAGRAM",
+    );
+  });
+
+  it.each([
+    "https://www.instagram.com/alcaldia_iribarren/",
+    "http://instagram.com/p/abc/",
+    "https://evil.com/instagram.com/p/abc/",
+    "https://vimeo.com/123456",
+    "",
+  ])("rechaza %s", (url) => {
+    expect(enlaceVideo(url)).toBeUndefined();
   });
 });

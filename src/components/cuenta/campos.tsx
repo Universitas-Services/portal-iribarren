@@ -4,6 +4,7 @@ import { AlertCircle, Check, CheckCircle2, Eye, EyeOff, Info, Loader2, X } from 
 import { useEffect, useRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import type { ZodType } from "zod";
+import { Selector } from "@/components/ui/selector";
 import type { EstadoFormulario } from "@/lib/auth/acciones";
 import { cedulaSchema, DIGITOS_CEDULA, rifSchema } from "@/lib/validation/common";
 
@@ -186,25 +187,20 @@ export function CampoDocumento({
     <fieldset aria-describedby={mostrado ? `${id}-error` : `${id}-ayuda`}>
       <legend className={claseEtiqueta}>{etiqueta}</legend>
       <div className="flex gap-2">
-        <label className="sr-only" htmlFor={`${id}Prefijo`}>
-          Prefijo
-        </label>
-        <select
+        <Selector
           id={`${id}Prefijo`}
-          name={`${id}Prefijo`}
-          value={prefijo}
-          onChange={(e) => {
-            setPrefijo(e.target.value);
-            if (local.tocado && digitos) validar(e.target.value, digitos);
+          etiqueta="Prefijo"
+          ocultarEtiqueta
+          compacto
+          ancho="w-20"
+          opciones={prefijos}
+          valor={prefijo}
+          onCambio={(p) => {
+            setPrefijo(p);
+            if (local.tocado && digitos) validar(p, digitos);
           }}
-          className={`${claseCampo(mostrado, "w-20")} shrink-0 px-3 font-display font-bold`}
-        >
-          {prefijos.map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
-          ))}
-        </select>
+          invalido={!!mostrado}
+        />
         <label className="sr-only" htmlFor={`${id}Numero`}>
           Número
         </label>
@@ -399,7 +395,9 @@ const ETIQUETAS: Record<string, string> = {
   sector: "Sector",
   categoriaTecnica: "Categoría técnica",
   descripcion: "Descripción",
-  adjunto: "Documento de soporte",
+  soporte: "Documento de soporte",
+  imagenes: "Fotos",
+  video: "Enlace del video",
 };
 
 const CON_NUMERO = ["cedula", "rif", "cedulaRepresentante"];

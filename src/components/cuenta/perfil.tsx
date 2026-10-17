@@ -81,6 +81,7 @@ export function FormDatosNatural({ perfil }: { perfil: Perfil }) {
         etiqueta="Ocupación (opcional)"
         opciones={OCUPACIONES}
         vacio="Prefiero no indicarla"
+        permitirVacio
         defaultValue={v.ocupacion ?? perfil.ocupacion ?? ""}
         error={estado.errores?.ocupacion}
       />
@@ -107,7 +108,6 @@ export function FormRepresentante({ perfil }: { perfil: Perfil }) {
         id="condicion"
         etiqueta="¿En qué condición actúas en nombre de la organización?"
         opciones={CONDICIONES_REPRESENTANTE}
-        required
         defaultValue={v.condicion ?? perfil.condicion ?? ""}
         error={estado.errores?.condicion}
       />

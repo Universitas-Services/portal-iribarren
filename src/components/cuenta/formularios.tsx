@@ -13,6 +13,7 @@ import {
 } from "@/lib/auth/acciones";
 import { correoSchema, nombrePersonaSchema } from "@/lib/validation/common";
 import { TIPOS_ENTIDAD } from "@/lib/validation/schemas";
+import { CampoSelect } from "./piezas";
 import {
   AvisoDesarrollo,
   BotonEnviar,
@@ -21,7 +22,6 @@ import {
   CampoDocumento,
   Casilla,
   ResumenErrores,
-  claseCampo,
   soloLetras,
 } from "./campos";
 
@@ -138,34 +138,13 @@ export function FormRegistroOrganizacion() {
   return (
     <form action={accion} noValidate className="space-y-5">
       <ResumenErrores estado={estado} />
-      <div>
-        <label
-          htmlFor="tipoEntidad"
-          className="mb-1.5 block font-display text-sm font-bold text-noche"
-        >
-          Tipo de entidad u organización
-        </label>
-        <select
-          id="tipoEntidad"
-          name="tipoEntidad"
-          required
-          defaultValue={v.tipoEntidad ?? ""}
-          aria-invalid={estado.errores?.tipoEntidad ? true : undefined}
-          className={claseCampo(estado.errores?.tipoEntidad)}
-        >
-          <option value="" disabled>
-            Selecciona una opción
-          </option>
-          {TIPOS_ENTIDAD.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-        {estado.errores?.tipoEntidad && (
-          <p className="mt-1.5 text-sm text-rojo">{estado.errores.tipoEntidad}</p>
-        )}
-      </div>
+      <CampoSelect
+        id="tipoEntidad"
+        etiqueta="Tipo de entidad u organización"
+        opciones={TIPOS_ENTIDAD}
+        defaultValue={v.tipoEntidad}
+        error={estado.errores?.tipoEntidad}
+      />
       <Campo
         id="razonSocial"
         etiqueta="Razón social o denominación oficial"

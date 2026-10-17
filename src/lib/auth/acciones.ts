@@ -67,6 +67,9 @@ function leer(fd: FormData) {
     datos.cedulaRepresentante = `${fd.get("cedulaRepresentantePrefijo")}-${fd.get("cedulaRepresentanteNumero")}`;
   // Un <input type="file"> vacío llega como un archivo de 0 bytes: se trata como «sin archivo».
   for (const [k, v] of fd.entries()) if (v instanceof File && v.size > 0) datos[k] = v;
+  // Campos con varios archivos.
+  if (fd.has("imagenes"))
+    datos.imagenes = fd.getAll("imagenes").filter((f) => f instanceof File && f.size > 0);
   return datos;
 }
 
@@ -383,7 +386,7 @@ export async function enviarParticipacionAccion(
   const datos = leer(fd);
   const p = participacionSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
-  const { idempotencia, noticia: slug, adjunto, ...resto } = p.data;
+  const { idempotencia, noticia: slug, imagenes, soporte, ...resto } = p.data;
 
   let noticia: { slug: string; titulo: string } | undefined;
   if (resto.tipo === "OPINION_NOTICIA" && slug) {
@@ -399,7 +402,8 @@ export async function enviarParticipacionAccion(
   const r = enviarParticipacion(almacen(), sesion, idempotencia, {
     ...resto,
     noticia,
-    adjunto: adjunto ? { ...metadatos(adjunto), subidoEl: new Date().toISOString() } : undefined,
+    imagenes: imagenes.map(metadatos),
+    soporte: soporte ? metadatos(soporte) : undefined,
   });
   if (r.estado === "SIN_SESION") redirect("/ingresar?volver=/participa&motivo=participar");
   if (r.estado === "PERFIL_INCOMPLETO")

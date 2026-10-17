@@ -52,7 +52,7 @@ Next.js (App Router) · TypeScript · Tailwind CSS · Zod · ESLint · Prettier 
 Mientras no exista `plataforma-api`, el registro, el acceso, el perfil y la participación usan una autenticación simulada en memoria (`src/lib/auth/`), con las mismas reglas de `/portal/auth/*`. Se reinicia al reiniciar el servidor.
 
 - Rutas: `/registro`, `/registro/revisa-tu-correo`, `/verificar`, `/ingresar`, `/unirme`, `/recuperar`, `/restablecer`, `/mi-cuenta` (asistente de perfil), `/participa` y `/participa/enviada`.
-- Los archivos del perfil y de la participación se validan (PDF, JPG o PNG de hasta 2 MB), pero el simulador solo guarda su nombre, tipo y peso.
+- Los archivos se validan en el navegador y en el servidor, pero el simulador solo guarda su nombre, tipo y peso. Perfil: PDF, JPG o PNG de hasta 2 MB. Participación: hasta 5 fotos (JPG, PNG o WebP de 2 MB), un enlace de video de YouTube o Instagram y un documento de soporte (obligatorio en la propuesta formal).
 - En desarrollo, el enlace que en producción llega por correo aparece en un recuadro «Solo en desarrollo».
 - Cuentas de demostración (contraseña `Iribarren#2026`):
 

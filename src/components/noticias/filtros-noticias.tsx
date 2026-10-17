@@ -7,6 +7,7 @@ import {
   Images,
   LayoutGrid,
   Search,
+  Tag,
   Type,
   X,
   type LucideIcon,
@@ -17,6 +18,7 @@ import type { FiltrosNoticias, PaginaNoticias, PostCategory } from "@/lib/api/ty
 import { formatoAUrl } from "@/lib/validation/schemas";
 import { SelectorFechas, textoRango } from "@/components/listado/selector-fechas";
 import { useTransicionListado } from "@/components/listado/transicion";
+import { Selector } from "@/components/ui/selector";
 
 type Valores = { q: string; categoria: string; formato: string; desde: string; hasta: string };
 
@@ -151,23 +153,17 @@ export function FiltrosNoticias({
             </div>
           </div>
           <div className="col-span-2 lg:col-span-1">
-            <label htmlFor="filtro-categoria" className={etiqueta}>
-              Categoría
-            </label>
-            <select
+            <Selector
               id="filtro-categoria"
               name="categoria"
-              value={valores.categoria}
-              onChange={(e) => cambiar({ categoria: e.target.value })}
-              className={campo}
-            >
-              <option value="">Todas</option>
-              {categorias.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+              etiqueta="Categoría"
+              Icono={Tag}
+              opciones={categorias}
+              valor={valores.categoria}
+              onCambio={(categoria) => cambiar({ categoria })}
+              vacio="Todas"
+              permitirVacio
+            />
           </div>
           <div className="col-span-2 lg:col-span-1">
             <SelectorFechas

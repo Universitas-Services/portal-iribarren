@@ -25,3 +25,28 @@ export function idYoutube(url: string): string | undefined {
 /** URL del reproductor sin cookies, con reproducción al abrir (la persona ya pulsó «play»). */
 export const urlEmbedYoutube = (id: string) =>
   `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
+
+export type EnlaceVideo = { fuente: "YOUTUBE" | "INSTAGRAM"; url: string };
+
+/**
+ * Reconoce un enlace de video de YouTube o de una publicación de Instagram (p, reel o tv) y lo
+ * devuelve normalizado. Cualquier otro enlace da undefined: el portal no guarda URLs arbitrarias.
+ */
+export function enlaceVideo(texto: string): EnlaceVideo | undefined {
+  const url = texto.trim();
+  const id = idYoutube(url);
+  if (id) return { fuente: "YOUTUBE", url: `https://www.youtube.com/watch?v=${id}` };
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    return undefined;
+  }
+  const host = u.hostname.replace(/^(www|m)\./, "");
+  const codigo = u.pathname.match(/^\/(p|reel|reels|tv)\/([\w-]+)\/?$/);
+  if (host === "instagram.com" && u.protocol === "https:" && codigo) {
+    const tipo = codigo[1] === "reels" ? "reel" : codigo[1];
+    return { fuente: "INSTAGRAM", url: `https://www.instagram.com/${tipo}/${codigo[2]}/` };
+  }
+  return undefined;
+}

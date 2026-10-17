@@ -1,17 +1,11 @@
 "use client";
 
 import { AlertCircle, Check, FileText, ImageIcon, Upload, X } from "lucide-react";
-import {
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type ReactNode,
-  type SelectHTMLAttributes,
-} from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { Selector, type OpcionSelector } from "@/components/ui/selector";
 import { formatearPeso } from "@/lib/formato";
 import { archivoSchema } from "@/lib/validation/common";
-import { claseCampo } from "./campos";
+import { imagenSchema } from "@/lib/validation/schemas";
 
 /*
  * Piezas de los formularios de perfil y participación: archivo con vista previa, selector,
@@ -192,57 +186,199 @@ export function CampoArchivo({
   );
 }
 
-type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & {
-  id: string;
-  etiqueta: string;
-  /** Textos, o pares valor/texto cuando el valor no es lo que se muestra. */
-  opciones: readonly (string | { valor: string; texto: string })[];
-  vacio?: string;
-  error?: string;
-  ayuda?: string;
-};
+type Foto = { file: File; url: string };
 
+/**
+ * Varias imágenes con miniaturas (JPG, PNG o WebP de hasta 2 MB, máximo `max`). Cada imagen se
+ * valida al elegirla; las que no pasan se descartan con un aviso y el resto se conserva.
+ */
+export function CampoImagenes({
+  id,
+  name = id,
+  etiqueta,
+  ayuda,
+  max,
+  error,
+}: {
+  id: string;
+  name?: string;
+  etiqueta: string;
+  ayuda: string;
+  max: number;
+  error?: string;
+}) {
+  const input = useRef<HTMLInputElement>(null);
+  const [fotos, setFotos] = useState<Foto[]>([]);
+  const [local, setLocal] = useState<string>();
+  const [encima, setEncima] = useState(false);
+  const mostrado = local ?? error;
+  const urls = useRef<string[]>([]);
+
+  // Libera las miniaturas al salir.
+  useEffect(() => () => urls.current.forEach((u) => URL.revokeObjectURL(u)), []);
+
+  /** El <input> siempre lleva exactamente las fotos de la lista. */
+  function sincronizar(lista: Foto[]) {
+    if (!input.current) return;
+    const dt = new DataTransfer();
+    lista.forEach((f) => dt.items.add(f.file));
+    input.current.files = dt.files;
+  }
+
+  function agregar(nuevos: File[]) {
+    const rechazos: string[] = [];
+    const aceptadas: Foto[] = [];
+    for (const f of nuevos) {
+      const r = imagenSchema.safeParse(f);
+      if (!r.success) {
+        rechazos.push(
+          r.error.issues[0]?.message === "Formato no permitido."
+            ? `«${f.name}» no es JPG, PNG ni WebP`
+            : `«${f.name}» supera 2 MB`,
+        );
+        continue;
+      }
+      if (fotos.length + aceptadas.length >= max) {
+        rechazos.push(`«${f.name}» no cabe: el máximo es ${max}`);
+        continue;
+      }
+      const url = URL.createObjectURL(f);
+      urls.current.push(url);
+      aceptadas.push({ file: f, url });
+    }
+    const lista = [...fotos, ...aceptadas];
+    setFotos(lista);
+    sincronizar(lista);
+    setLocal(rechazos.length ? `${rechazos.join("; ")}.` : undefined);
+  }
+
+  function quitar(i: number) {
+    const [fuera] = fotos.slice(i, i + 1);
+    if (fuera) URL.revokeObjectURL(fuera.url);
+    const lista = fotos.filter((_, j) => j !== i);
+    setFotos(lista);
+    sincronizar(lista);
+    setLocal(undefined);
+  }
+
+  const lleno = fotos.length >= max;
+
+  return (
+    <div>
+      <p id={`${id}-etiqueta`} className={claseEtiqueta}>
+        {etiqueta} <span className="font-normal text-tinta/70">(opcional)</span>
+      </p>
+
+      {fotos.length > 0 && (
+        <ul className="mb-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
+          {fotos.map((f, i) => (
+            <li key={f.url} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element -- vista previa local (blob:) */}
+              <img
+                src={f.url}
+                alt=""
+                className="aspect-square w-full rounded-xl object-cover ring-1 ring-linea"
+              />
+              <button
+                type="button"
+                onClick={() => quitar(i)}
+                className="absolute top-1 right-1 grid size-8 place-items-center rounded-full bg-noche/80 text-papel hover:bg-rojo"
+              >
+                <X size={16} aria-hidden="true" />
+                <span className="sr-only">Quitar {f.file.name}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <label
+        htmlFor={id}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setEncima(true);
+        }}
+        onDragLeave={() => setEncima(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setEncima(false);
+          agregar([...e.dataTransfer.files]);
+        }}
+        className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-5 text-center transition-colors has-[:focus-visible]:border-rojo has-[:focus-visible]:bg-rojo/5 ${
+          mostrado || encima ? "border-rojo bg-rojo/5" : "border-linea hover:border-noche/40"
+        } ${lleno ? "hidden" : ""}`}
+      >
+        <ImageIcon size={24} aria-hidden="true" className="text-rojo" />
+        <span className="font-semibold text-noche">
+          {fotos.length ? "Agregar más fotos" : "Elige fotos o arrástralas aquí"}
+        </span>
+        <span className="text-sm text-tinta/70">{ayuda}</span>
+        <input
+          ref={input}
+          id={id}
+          name={name}
+          type="file"
+          multiple
+          accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+          aria-labelledby={`${id}-etiqueta`}
+          aria-describedby={`${id}-cuenta${mostrado ? ` ${id}-error` : ""}`}
+          aria-invalid={mostrado ? true : undefined}
+          onChange={(e) => {
+            // El navegador reemplaza la selección: se suma a las fotos que ya estaban.
+            const nuevos = [...(e.target.files ?? [])].filter(
+              (f) => !fotos.some((x) => x.file === f),
+            );
+            agregar(nuevos);
+          }}
+          className="sr-only"
+        />
+      </label>
+      <p
+        id={`${id}-cuenta`}
+        aria-live="polite"
+        className="mt-1.5 text-sm text-tinta/75 tabular-nums"
+      >
+        {fotos.length} de {max} fotos
+      </p>
+      <Error id={id} error={mostrado} />
+    </div>
+  );
+}
+
+/** Campo de selección de los formularios de cuenta: el selector del portal con su etiqueta. */
 export function CampoSelect({
   id,
   etiqueta,
   opciones,
-  vacio = "Selecciona una opción",
+  vacio,
+  permitirVacio,
   error,
   ayuda,
-  className = "",
-  ...select
-}: SelectProps) {
-  const describe = [error && `${id}-error`, ayuda && `${id}-ayuda`].filter(Boolean).join(" ");
+  defaultValue = "",
+  onCambio,
+}: {
+  id: string;
+  etiqueta: string;
+  opciones: readonly OpcionSelector[];
+  vacio?: string;
+  permitirVacio?: boolean;
+  error?: string;
+  ayuda?: string;
+  defaultValue?: string;
+  onCambio?: (valor: string) => void;
+}) {
   return (
-    <div className={className}>
-      <label htmlFor={id} className={claseEtiqueta}>
-        {etiqueta}
-      </label>
-      <select
-        id={id}
-        name={id}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describe || undefined}
-        className={claseCampo(error)}
-        {...select}
-      >
-        <option value="">{vacio}</option>
-        {opciones.map((o) => {
-          const { valor, texto } = typeof o === "string" ? { valor: o, texto: o } : o;
-          return (
-            <option key={valor} value={valor}>
-              {texto}
-            </option>
-          );
-        })}
-      </select>
-      {ayuda && !error && (
-        <p id={`${id}-ayuda`} className="mt-1.5 text-sm text-tinta/70">
-          {ayuda}
-        </p>
-      )}
-      <Error id={id} error={error} />
-    </div>
+    <Selector
+      id={id}
+      etiqueta={etiqueta}
+      opciones={opciones}
+      vacio={vacio}
+      permitirVacio={permitirVacio}
+      valorInicial={defaultValue}
+      onCambio={onCambio}
+      error={error}
+      ayuda={ayuda}
+    />
   );
 }
 

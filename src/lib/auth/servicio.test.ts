@@ -213,6 +213,7 @@ describe("participación", () => {
     categoriaTecnica: "Vialidad y Transporte" as const,
     descripcion: "Una opinión de prueba con suficiente detalle para el plan de desarrollo.",
     mostrarNombre: true,
+    imagenes: [],
   };
 
   it("emite folios secuenciales con el formato IRI-AAAA-XXXX en estado Pendiente", () => {

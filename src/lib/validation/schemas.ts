@@ -13,6 +13,7 @@ import {
   type FiltrosNoticias,
   type PostFormat,
 } from "@/lib/api/types";
+import { enlaceVideo } from "@/lib/noticias/video";
 import {
   aceptacionSchema,
   archivoSchema,
@@ -142,6 +143,27 @@ export const documentoPerfilSchema = z.object({
 
 export const DESCRIPCION_MIN = 50;
 export const DESCRIPCION_MAX = 3000;
+export const MAX_IMAGENES = 5;
+export const TIPOS_IMAGEN = ["image/jpeg", "image/png", "image/webp"] as const;
+
+/** Imagen de apoyo: JPG, PNG o WebP de hasta 2 MB. */
+export const imagenSchema = archivoSchema({ tipos: TIPOS_IMAGEN });
+
+/** Enlace de video: solo YouTube o una publicación de Instagram (no se suben archivos de video). */
+export const videoSchema = z
+  .string()
+  .trim()
+  .transform((v, ctx) => {
+    const e = enlaceVideo(v);
+    if (!e) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Pega un enlace de YouTube o de una publicación de Instagram.",
+      });
+      return z.NEVER;
+    }
+    return e;
+  });
 
 /** CU-19 Enviar participación. La cuenta participa a su nombre (persona u organización). */
 export const participacionSchema = z
@@ -160,7 +182,14 @@ export const participacionSchema = z
       .trim()
       .min(DESCRIPCION_MIN, `Explica tu aporte con al menos ${DESCRIPCION_MIN} caracteres.`)
       .max(DESCRIPCION_MAX, `La descripción no puede superar ${DESCRIPCION_MAX} caracteres.`),
-    adjunto: archivoSchema().optional(),
+    /** Fotos del lugar o de la situación (todas las modalidades). */
+    imagenes: z
+      .array(imagenSchema)
+      .max(MAX_IMAGENES, `Puedes adjuntar hasta ${MAX_IMAGENES} imágenes.`)
+      .default([]),
+    video: z.preprocess((v) => (v === "" ? undefined : v), videoSchema.optional()),
+    /** Documento de soporte: obligatorio en la propuesta formal. */
+    soporte: archivoSchema().optional(),
     mostrarNombre: z.boolean(),
     idempotencia: z.string().min(8),
   })
@@ -168,10 +197,10 @@ export const participacionSchema = z
     if (d.tipo === "OPINION_NOTICIA" && !d.noticia) {
       ctx.addIssue({ code: "custom", path: ["noticia"], message: "Selecciona la noticia." });
     }
-    if (d.tipo === "PROPUESTA_FORMAL" && !d.adjunto) {
+    if (d.tipo === "PROPUESTA_FORMAL" && !d.soporte) {
       ctx.addIssue({
         code: "custom",
-        path: ["adjunto"],
+        path: ["soporte"],
         message: "La propuesta formal necesita un documento de soporte (PDF, JPG o PNG).",
       });
     }

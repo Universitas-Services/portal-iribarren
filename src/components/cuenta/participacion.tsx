@@ -20,9 +20,15 @@ import {
   type TipoParticipacion,
 } from "@/lib/api/types";
 import { enviarParticipacionAccion, type EstadoFormulario } from "@/lib/auth/acciones";
-import { DESCRIPCION_MAX, DESCRIPCION_MIN, participacionSchema } from "@/lib/validation/schemas";
+import {
+  DESCRIPCION_MAX,
+  DESCRIPCION_MIN,
+  MAX_IMAGENES,
+  participacionSchema,
+  videoSchema,
+} from "@/lib/validation/schemas";
 import { Campo, ResumenErrores } from "./campos";
-import { CampoArchivo, CampoSelect, Dialogo } from "./piezas";
+import { CampoArchivo, CampoImagenes, CampoSelect, Dialogo } from "./piezas";
 
 const TIPOS: { valor: TipoParticipacion; titulo: string; texto: string; Icon: typeof FileText }[] =
   [
@@ -56,6 +62,7 @@ function leerFormulario(form: HTMLFormElement) {
     if (typeof v === "string") datos[k] = v;
     else if (v.size > 0) datos[k] = v;
   }
+  datos.imagenes = fd.getAll("imagenes").filter((f) => f instanceof File && f.size > 0);
   datos.mostrarNombre = fd.get("mostrarNombre") === "on";
   return datos;
 }
@@ -120,7 +127,13 @@ export function FormParticipacion({
       Parroquia: d.parroquia,
       Sector: d.sector,
       "Categoría técnica": d.categoriaTecnica,
-      ...(d.adjunto ? { Soporte: d.adjunto.name } : {}),
+      ...(d.soporte ? { Soporte: d.soporte.name } : {}),
+      ...(d.imagenes.length
+        ? { Fotos: d.imagenes.length === 1 ? "1 imagen" : `${d.imagenes.length} imágenes` }
+        : {}),
+      ...(d.video
+        ? { Video: d.video.fuente === "YOUTUBE" ? "Enlace de YouTube" : "Enlace de Instagram" }
+        : {}),
       "Nombre público": d.mostrarNombre ? `Sí, como «${autor}»` : "No",
     });
   }
@@ -263,14 +276,32 @@ export function FormParticipacion({
         )}
       </div>
 
+      <CampoImagenes
+        id="imagenes"
+        etiqueta="Fotos"
+        ayuda={`Del lugar o de la situación. Hasta ${MAX_IMAGENES} JPG, PNG o WebP de 2 MB cada una.`}
+        max={MAX_IMAGENES}
+        error={errores.imagenes}
+      />
+
+      <Campo
+        id="video"
+        etiqueta="Enlace de un video (opcional)"
+        type="url"
+        inputMode="url"
+        placeholder="https://youtu.be/… o https://www.instagram.com/reel/…"
+        defaultValue={v.video}
+        esquema={videoSchema.optional()}
+        ayuda="Sube el video a YouTube o Instagram y pega aquí el enlace de la publicación."
+        error={errores.video}
+      />
+
       <CampoArchivo
-        id="adjunto"
-        etiqueta={
-          tipo === "PROPUESTA_FORMAL" ? "Documento de soporte" : "Documento o imagen de apoyo"
-        }
-        ayuda="Planos, fotos, estudios o cartas. PDF, JPG o PNG de hasta 2 MB."
+        id="soporte"
+        etiqueta={tipo === "PROPUESTA_FORMAL" ? "Documento de soporte" : "Documento de apoyo"}
+        ayuda="Planos, estudios, actas o cartas. PDF, JPG o PNG de hasta 2 MB."
         requerido={tipo === "PROPUESTA_FORMAL"}
-        error={errores.adjunto}
+        error={errores.soporte}
       />
 
       <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-superficie p-4">
