@@ -13,37 +13,87 @@ import {
   cedulaSchema,
   contrasenaSchema,
   correoSchema,
-  nombreSchema,
+  nombrePersonaSchema,
   rifSchema,
   telefonoSchema,
 } from "./common";
 
 export const TIPOS_PERFIL = ["NATURAL", "ORGANIZACION"] as const;
 
-/** CU-16 Registrarse en el portal. */
-export const registroSchema = z
+/** Tipos de entidad de la Propuesta de Gestión Ciudadana v3. */
+export const TIPOS_ENTIDAD = [
+  "Cámaras empresariales",
+  "Colegios profesionales / Gremios",
+  "Universidades / Centros de investigación",
+  "Consejos comunales / Comunas",
+  "Comités de Tierras Urbanas (CTU)",
+  "Asociaciones civiles / ONG / Fundaciones",
+  "Empresas / Promotores inmobiliarios",
+  "Otros",
+] as const;
+
+const credenciales = {
+  contrasena: contrasenaSchema,
+  confirmarContrasena: z.string(),
+  aceptaTerminos: aceptacionSchema,
+  aceptaPoliticaDatos: aceptacionSchema,
+};
+
+const contrasenasIguales = {
+  check: (d: { contrasena: string; confirmarContrasena: string }) =>
+    d.contrasena === d.confirmarContrasena,
+  params: { path: ["confirmarContrasena"], error: "Las contraseñas no coinciden." },
+};
+
+/**
+ * CU-16 Registro de persona natural (v3, «Para registro»). El teléfono y la ocupación se
+ * piden al completar el perfil.
+ */
+export const registroNaturalSchema = z
   .object({
-    tipoPerfil: z.enum(TIPOS_PERFIL, { error: "Elige cómo vas a participar." }),
     cedula: cedulaSchema,
-    nombres: nombreSchema,
-    apellidos: nombreSchema,
+    nombres: nombrePersonaSchema,
+    apellidos: nombrePersonaSchema,
     correo: correoSchema,
-    telefono: telefonoSchema,
-    contrasena: contrasenaSchema,
-    confirmarContrasena: z.string(),
-    aceptaTerminos: aceptacionSchema,
-    aceptaPoliticaDatos: aceptacionSchema,
+    ...credenciales,
   })
-  .refine((d) => d.contrasena === d.confirmarContrasena, {
-    path: ["confirmarContrasena"],
-    error: "Las contraseñas no coinciden.",
-  });
+  .refine(contrasenasIguales.check, contrasenasIguales.params);
+
+/**
+ * CU-16 Registro de organización (v3). La cuenta se crea con el correo institucional; los
+ * datos del representante (nombre, cédula y acreditación) se piden al completar el perfil.
+ */
+export const registroOrganizacionSchema = z
+  .object({
+    tipoEntidad: z.enum(TIPOS_ENTIDAD, { error: "Selecciona el tipo de entidad." }),
+    razonSocial: z
+      .string()
+      .trim()
+      .min(3, "Ingresa la razón social o denominación oficial.")
+      .max(255, "No puede superar 255 caracteres."),
+    rif: rifSchema,
+    correo: correoSchema,
+    ...credenciales,
+  })
+  .refine(contrasenasIguales.check, contrasenasIguales.params);
 
 /** CU-01 Iniciar sesión. */
 export const loginSchema = z.object({
   correo: correoSchema,
   contrasena: z.string().min(1, "Ingresa tu contraseña."),
 });
+
+/** Olvidé mi contraseña: la respuesta es neutra exista o no la cuenta. */
+export const recuperarSchema = z.object({ correo: correoSchema });
+
+/** Restablecer contraseña desde el enlace del correo. */
+export const restablecerSchema = z
+  .object({
+    token: z.string().min(1, "El enlace no es válido."),
+    contrasena: contrasenaSchema,
+    confirmarContrasena: z.string(),
+  })
+  .refine(contrasenasIguales.check, contrasenasIguales.params);
 
 /** CU-18 Completar perfil: datos personales y documento de identidad. */
 export const perfilSchema = z.object({
@@ -109,7 +159,8 @@ export const participacionSchema = z
     }
   });
 
-export type RegistroInput = z.infer<typeof registroSchema>;
+export type RegistroNaturalInput = z.infer<typeof registroNaturalSchema>;
+export type RegistroOrganizacionInput = z.infer<typeof registroOrganizacionSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type PerfilInput = z.infer<typeof perfilSchema>;
 export type OrganizacionInput = z.infer<typeof organizacionSchema>;

@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Menu, X } from "lucide-react";
 import { NAV_LINKS } from "./nav-links";
 
-export function MobileNav() {
+/** Menú móvil. `cuenta` llega del servidor (sesión) envuelta en su propio Suspense. */
+export function MobileNav({ cuenta }: { cuenta: ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const panelId = useId();
@@ -64,20 +65,7 @@ export function MobileNav() {
               </li>
             ))}
           </ul>
-          <div className="mt-5 grid grid-cols-2 gap-3">
-            <Link
-              href="/ingresar"
-              className="grid min-h-12 place-items-center rounded-xl border border-tinta font-display font-semibold text-tinta"
-            >
-              Iniciar sesión
-            </Link>
-            <Link
-              href="/registro"
-              className="grid min-h-12 place-items-center rounded-xl bg-rojo font-display font-bold text-papel active:scale-[0.97]"
-            >
-              Regístrate
-            </Link>
-          </div>
+          <div className="mt-5">{cuenta}</div>
         </nav>
       </div>
     </div>

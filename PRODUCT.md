@@ -44,6 +44,7 @@ La recepción de propuestas está abierta antes de la consulta pública formal (
 - Next.js 16 (App Router) + TypeScript + Tailwind 4; la API (NestJS) la construye otro equipo y aún no existe: el portal usa datos de ejemplo detrás de `src/lib/api/`.
 - **Todas las páginas deben ser altamente responsive**, mobile-first y livianas para conexiones comunitarias.
 - Archivos ciudadanos: PDF, JPG o PNG de hasta 2 MB.
+- **Cuentas (v3):** persona natural se registra con cédula, nombres, apellidos, correo y contraseña; el teléfono, la ocupación y el documento de identidad se piden al completar el perfil. La organización se registra con tipo de entidad, razón social, RIF, correo institucional y contraseña (sin cédula); los datos y la acreditación del representante llegan al completar el perfil. Correo y RIF únicos; la cédula del representante es un dato del perfil, no un identificador de cuenta. Ambas cuentas usan membresías por alcaldía.
 - **Estados de carga obligatorios:** toda página nueva lleva su `loading.tsx` con un skeleton de la misma forma que el contenido, y los bloques con datos se envuelven en `<Suspense>` con su propio skeleton. Las rutas inexistentes y los fallos usan los compartidos `src/app/not-found.tsx` y `src/app/error.tsx`.
 - Pendiente por confirmar: fase actual del proceso (dato configurable desde el admin), dominio definitivo, enlaces oficiales a la Ordenanza de Gobierno Electrónico y a la LOOU.
 

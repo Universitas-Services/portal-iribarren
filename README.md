@@ -47,6 +47,23 @@ Next.js (App Router) · TypeScript · Tailwind CSS · Zod · ESLint · Prettier 
 - Las rutas inexistentes usan `src/app/not-found.tsx` y los fallos `src/app/error.tsx` (con «Reintentar»).
 - Para ver los skeletons con los datos de ejemplo, define `MOCK_DELAY_MS=1500` en `.env.local` (solo en desarrollo).
 
+## Cuenta del ciudadano (simulada)
+
+Mientras no exista `plataforma-api`, el registro y el acceso usan una autenticación simulada en memoria (`src/lib/auth/`), con las mismas reglas de `/portal/auth/*`. Se reinicia al reiniciar el servidor.
+
+- Rutas: `/registro`, `/registro/revisa-tu-correo`, `/verificar`, `/ingresar`, `/unirme`, `/recuperar`, `/restablecer`, `/mi-cuenta` y `/participa`.
+- En desarrollo, el enlace que en producción llega por correo aparece en un recuadro «Solo en desarrollo».
+- Cuentas de demostración (contraseña `Iribarren#2026`):
+
+| Correo                  | Caso                                                   |
+| ----------------------- | ------------------------------------------------------ |
+| `ana@ejemplo.com`       | Persona verificada, perfil completo                    |
+| `luis@ejemplo.com`      | Correo sin verificar                                   |
+| `carla@ejemplo.com`     | Cuenta de otra alcaldía: pasa por «Unirme a Iribarren» |
+| `contacto@cardones.org` | Organización con perfil incompleto                     |
+
+- Enlaces de ejemplo: `/verificar?token=demo-vencido` y `/verificar?token=demo-usado`.
+
 ## Integración continua
 
 `.github/workflows/ci.yml` se ejecuta en cada pull request y en cada push a `main`: Prettier, ESLint, TypeScript, Vitest y `next build`. Dependabot propone actualizaciones semanales de dependencias y de acciones.

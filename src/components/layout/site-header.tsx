@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import { MobileNav } from "./mobile-nav";
+import { AccesoEscritorio, AccesoMovil, CuentaEscritorio, CuentaMovil } from "./zona-cuenta";
 import { NAV_LINKS } from "./nav-links";
 
 export function SiteHeader() {
@@ -34,22 +36,19 @@ export function SiteHeader() {
           </ul>
         </nav>
 
-        <div className="hidden items-center gap-2 lg:flex">
-          <Link
-            href="/ingresar"
-            className="px-3 py-2 font-display text-[0.9375rem] font-semibold text-tinta hover:underline"
-          >
-            Iniciar sesión
-          </Link>
-          <Link
-            href="/registro"
-            className="rounded-xl bg-rojo px-5 py-2.5 font-display text-[0.9375rem] font-bold text-papel transition-[background-color,transform] duration-150 ease-out-expo hover:bg-rojo-oscuro active:scale-[0.97]"
-          >
-            Regístrate
-          </Link>
+        <div className="hidden lg:block">
+          <Suspense fallback={<AccesoEscritorio />}>
+            <CuentaEscritorio />
+          </Suspense>
         </div>
 
-        <MobileNav />
+        <MobileNav
+          cuenta={
+            <Suspense fallback={<AccesoMovil />}>
+              <CuentaMovil />
+            </Suspense>
+          }
+        />
       </div>
     </header>
   );
