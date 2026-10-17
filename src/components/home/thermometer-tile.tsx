@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import { getProcess } from "@/lib/api";
+import { ETIQUETA_FASE } from "@/lib/proceso";
 import { Tile } from "./tile";
 
 type Estado = "cumplida" | "actual" | "proxima";
@@ -84,8 +85,13 @@ export async function ThermometerTile({ className = "" }: { className?: string }
                 }`}
               >
                 {fase.nombre}
-                <span className="sr-only">
-                  {estado === "cumplida" ? " (cumplida)" : estado === "actual" ? " (en curso)" : ""}
+                <span
+                  className={`mt-0.5 block font-sans text-xs font-normal ${
+                    estado === "actual" ? "text-rojo" : "text-tinta/65"
+                  }`}
+                >
+                  <span className="sr-only">: </span>
+                  {ETIQUETA_FASE[fase.estado]}
                 </span>
               </span>
             </li>

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Post } from "@/lib/api/types";
 import { parseFiltrosNoticias } from "@/lib/validation/schemas";
-import { consultarNoticias, normalizar, relacionadas, resumir } from "./consultas";
+import { consultarNoticias, normalizar, paraPortada, relacionadas, resumir } from "./consultas";
 
 const post = (slug: string, extra: Partial<Post> = {}): Post => ({
   slug,
@@ -57,6 +57,18 @@ describe("consultarNoticias", () => {
 });
 
 describe("resumir y relacionadas", () => {
+  it("un video usa su portada en la tarjeta y expone la duración", () => {
+    const portada = { src: "/v.jpg", alt: "v", ancho: 16, alto: 9 };
+    const r = resumir(
+      post("v", {
+        formato: "VIDEO",
+        video: { fuente: "ARCHIVO", url: "/v.webm", portada, duracionSeg: 84 },
+      }),
+    );
+    expect(r).toMatchObject({ portada, duracionSeg: 84 });
+    expect(r).not.toHaveProperty("video");
+  });
+
   it("expone portada, conteo de imágenes y datos del adjunto sin el cuerpo", () => {
     const img = { src: "/a.jpg", alt: "a", ancho: 10, alto: 10 };
     const r = resumir(
@@ -141,7 +153,14 @@ describe("filtro por formato", () => {
   it("filtra por formato y cuenta cada formato con los demás filtros", () => {
     const r = consultarNoticias(conFormatos, { pagina: 1, formato: "DOCUMENTO" });
     expect(r.items.map((p) => p.slug).sort()).toEqual(["d1", "d2"]);
-    expect(r.porFormato).toEqual({ TODOS: 5, TEXTO: 1, IMAGEN: 1, GALERIA: 1, DOCUMENTO: 2 });
+    expect(r.porFormato).toEqual({
+      TODOS: 5,
+      TEXTO: 1,
+      IMAGEN: 1,
+      GALERIA: 1,
+      DOCUMENTO: 2,
+      VIDEO: 0,
+    });
   });
 
   it("los conteos respetan la categoría elegida", () => {
@@ -151,6 +170,40 @@ describe("filtro por formato", () => {
 
   it("lee el formato de la URL en minúsculas e ignora valores desconocidos", () => {
     expect(parseFiltrosNoticias({ formato: "galeria" }).formato).toBe("GALERIA");
-    expect(parseFiltrosNoticias({ formato: "video" }).formato).toBeUndefined();
+    expect(parseFiltrosNoticias({ formato: "video" }).formato).toBe("VIDEO");
+    expect(parseFiltrosNoticias({ formato: "audio" }).formato).toBeUndefined();
+  });
+});
+
+describe("portada del Inicio", () => {
+  it("muestra primero las destacadas y completa con las más recientes", () => {
+    const lista: Post[] = [
+      post("reciente", { publicadoEl: "2026-10-10" }),
+      post("destacada-vieja", { publicadoEl: "2026-09-04", destacada: true }),
+      post("destacada-nueva", { publicadoEl: "2026-09-14", destacada: true }),
+      post("vieja", { publicadoEl: "2026-08-01" }),
+    ];
+    expect(paraPortada(lista).map((p) => p.slug)).toEqual([
+      "destacada-nueva",
+      "destacada-vieja",
+      "reciente",
+    ]);
+  });
+
+  it("un video de Instagram puede no tener portada y no expone sus puntos", () => {
+    const r = resumir(
+      post("ig", {
+        formato: "VIDEO",
+        video: { fuente: "INSTAGRAM", url: "https://www.instagram.com/reel/x/" },
+        puntos: { items: [{ titulo: "a", texto: "b" }] },
+      }),
+    );
+    expect(r.portada).toBeUndefined();
+    expect(r).not.toHaveProperty("puntos");
+  });
+
+  it("acepta las categorías de la Propuesta v3", () => {
+    expect(parseFiltrosNoticias({ categoria: "Doctrina legal" }).categoria).toBe("Doctrina legal");
+    expect(parseFiltrosNoticias({ categoria: "Retiros y VUF" }).categoria).toBe("Retiros y VUF");
   });
 });

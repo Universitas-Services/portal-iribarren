@@ -11,6 +11,7 @@ export const TAMANO_BASE: Record<PostFormat, { w: number; h: number }> = {
   IMAGEN: { w: 1, h: 2 },
   TEXTO: { w: 2, h: 1 },
   DOCUMENTO: { w: 1, h: 1 },
+  VIDEO: { w: 2, h: 2 },
 };
 
 /** Posición en la retícula, con columnas y filas desde 1 como en CSS. */

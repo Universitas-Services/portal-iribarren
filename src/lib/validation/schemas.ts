@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { CATEGORIAS, type FiltrosNoticias, type PostFormat } from "@/lib/api/types";
+import {
+  CATEGORIAS,
+  DOC_CATEGORIAS,
+  type DocEstado,
+  type FiltrosDocumentos,
+  type FiltrosNoticias,
+  type PostFormat,
+} from "@/lib/api/types";
 import {
   aceptacionSchema,
   archivoSchema,
@@ -126,6 +133,7 @@ export const FORMATO_EN_URL = {
   imagen: "IMAGEN",
   galeria: "GALERIA",
   documento: "DOCUMENTO",
+  video: "VIDEO",
 } as const satisfies Record<string, PostFormat>;
 
 export const formatoAUrl = (f: PostFormat) =>
@@ -160,4 +168,37 @@ export const filtrosNoticiasSchema = z
 
 export function parseFiltrosNoticias(params: Record<string, string | string[] | undefined>) {
   return filtrosNoticiasSchema.parse(params);
+}
+
+/** En la URL el estado va en minúsculas: ?estado=oficial | ?estado=borrador */
+export const ESTADO_DOC_EN_URL = {
+  oficial: "OFICIAL",
+  borrador: "BORRADOR",
+} as const satisfies Record<string, DocEstado>;
+
+export const estadoDocAUrl = (e: DocEstado) => (e === "OFICIAL" ? "oficial" : "borrador");
+
+/** Filtros del repositorio documental leídos de la URL; como en noticias, nunca lanza error. */
+export const filtrosDocumentosSchema = z.object({
+  q: z
+    .preprocess(primero, z.string().trim().max(100).optional())
+    .transform((q) => q || undefined)
+    .catch(undefined),
+  categoria: z.preprocess(primero, z.enum(DOC_CATEGORIAS).optional()).catch(undefined),
+  estado: z
+    .preprocess(
+      primero,
+      z
+        .enum(Object.keys(ESTADO_DOC_EN_URL) as [keyof typeof ESTADO_DOC_EN_URL])
+        .transform((e) => ESTADO_DOC_EN_URL[e])
+        .optional(),
+    )
+    .catch(undefined),
+  pagina: z.preprocess(primero, z.coerce.number().int().min(1).max(10_000)).catch(1),
+}) satisfies z.ZodType<FiltrosDocumentos>;
+
+export function parseFiltrosDocumentos(
+  params: Record<string, string | string[] | undefined>,
+): FiltrosDocumentos {
+  return filtrosDocumentosSchema.parse(params);
 }

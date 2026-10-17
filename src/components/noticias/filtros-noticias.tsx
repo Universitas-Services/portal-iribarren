@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Clapperboard,
   FileText,
   Image as ImageIcon,
   Images,
@@ -13,9 +14,9 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { FiltrosNoticias, PaginaNoticias, PostCategory } from "@/lib/api/types";
-import { formatearFecha } from "@/lib/formato";
 import { formatoAUrl } from "@/lib/validation/schemas";
-import { useTransicionNoticias } from "./transicion";
+import { SelectorFechas, textoRango } from "@/components/listado/selector-fechas";
+import { useTransicionListado } from "@/components/listado/transicion";
 
 type Valores = { q: string; categoria: string; formato: string; desde: string; hasta: string };
 
@@ -45,6 +46,7 @@ const PESTANAS: {
   { valor: "", clave: "TODOS", label: "Todo", Icon: LayoutGrid },
   { valor: "imagen", clave: "IMAGEN", label: "Fotos", Icon: ImageIcon },
   { valor: "galeria", clave: "GALERIA", label: "Galerías", Icon: Images },
+  { valor: "video", clave: "VIDEO", label: "Videos", Icon: Clapperboard },
   { valor: "documento", clave: "DOCUMENTO", label: "Documentos", Icon: FileText },
   { valor: "texto", clave: "TEXTO", label: "Textos", Icon: Type },
 ];
@@ -67,7 +69,7 @@ export function FiltrosNoticias({
   porFormato: PaginaNoticias["porFormato"];
 }) {
   const router = useRouter();
-  const { iniciar } = useTransicionNoticias();
+  const { iniciar } = useTransicionListado();
   const [valores, setValores] = useState(() => desdeFiltros(filtros));
   const espera = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [escribiendo, setEscribiendo] = useState(false);
@@ -104,8 +106,10 @@ export function FiltrosNoticias({
   const activos = [
     valores.q && { clave: "q" as const, texto: `«${valores.q}»` },
     valores.categoria && { clave: "categoria" as const, texto: valores.categoria },
-    valores.desde && { clave: "desde" as const, texto: `Desde ${formatearFecha(valores.desde)}` },
-    valores.hasta && { clave: "hasta" as const, texto: `Hasta ${formatearFecha(valores.hasta)}` },
+    (valores.desde || valores.hasta) && {
+      clave: "fecha" as const,
+      texto: textoRango(valores.desde, valores.hasta),
+    },
   ].filter((a) => !!a);
 
   return (
@@ -122,7 +126,7 @@ export function FiltrosNoticias({
         }}
         className="rounded-tarjeta bg-papel p-5 shadow-tarjeta sm:p-6"
       >
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-[2fr_1.2fr_1fr_1fr]">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-[2fr_1.2fr_1.6fr]">
           <div className="col-span-2 lg:col-span-1">
             <label htmlFor="filtro-q" className={etiqueta}>
               Buscar
@@ -165,38 +169,29 @@ export function FiltrosNoticias({
               ))}
             </select>
           </div>
-          <div>
-            <label htmlFor="filtro-desde" className={etiqueta}>
-              Desde
-            </label>
-            <input
-              id="filtro-desde"
-              name="desde"
-              type="date"
-              value={valores.desde}
-              max={valores.hasta || undefined}
-              onChange={(e) => cambiar({ desde: e.target.value })}
-              className={campo}
+          <div className="col-span-2 lg:col-span-1">
+            <SelectorFechas
+              desde={valores.desde}
+              hasta={valores.hasta}
+              onAplicar={(desde, hasta) => cambiar({ desde, hasta })}
             />
-          </div>
-          <div>
-            <label htmlFor="filtro-hasta" className={etiqueta}>
-              Hasta
-            </label>
-            <input
-              id="filtro-hasta"
-              name="hasta"
-              type="date"
-              value={valores.hasta}
-              min={valores.desde || undefined}
-              onChange={(e) => cambiar({ hasta: e.target.value })}
-              className={campo}
-            />
+            <input type="hidden" name="desde" value={valores.desde} />
+            <input type="hidden" name="hasta" value={valores.hasta} />
           </div>
         </div>
 
-        {/* Solo visible sin JavaScript: con JavaScript los filtros se aplican solos. */}
+        {/* Solo sin JavaScript: campos de fecha nativos y botón para aplicar los filtros. */}
         <noscript>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <label className={etiqueta}>
+              Desde
+              <input name="desde" type="date" defaultValue={valores.desde} className={campo} />
+            </label>
+            <label className={etiqueta}>
+              Hasta
+              <input name="hasta" type="date" defaultValue={valores.hasta} className={campo} />
+            </label>
+          </div>
           <button
             type="submit"
             className="mt-4 h-12 rounded-xl bg-rojo px-6 font-display font-bold text-papel"
@@ -212,7 +207,9 @@ export function FiltrosNoticias({
               <button
                 key={a.clave}
                 type="button"
-                onClick={() => cambiar({ [a.clave]: "" })}
+                onClick={() =>
+                  cambiar(a.clave === "fecha" ? { desde: "", hasta: "" } : { [a.clave]: "" })
+                }
                 className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-rojo/10 px-3 font-display text-sm font-bold text-rojo transition-colors hover:bg-rojo/15"
               >
                 {a.texto}

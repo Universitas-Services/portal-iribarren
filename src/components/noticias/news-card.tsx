@@ -3,15 +3,19 @@ import {
   FileText,
   Image as ImageIcon,
   Images,
+  Landmark,
   Megaphone,
   Mic,
   Newspaper,
+  Play,
+  Ruler,
+  Scale,
   type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { PostCategory, PostSummary } from "@/lib/api/types";
-import { formatearFecha, formatearPeso, plural } from "@/lib/formato";
+import { formatearDuracion, formatearFecha, formatearPeso, plural } from "@/lib/formato";
 
 /** Cuando la noticia no trae imagen, la tarjeta usa un bloque de color con el ícono de su categoría. */
 export const CATEGORIA: Record<PostCategory, { Icon: LucideIcon; fondo: string; icono: string }> = {
@@ -20,9 +24,12 @@ export const CATEGORIA: Record<PostCategory, { Icon: LucideIcon; fondo: string; 
   Comunicados: { Icon: Megaphone, fondo: "bg-noche", icono: "text-papel/15" },
   Entrevistas: { Icon: Mic, fondo: "bg-amarillo", icono: "text-noche/20" },
   Galería: { Icon: Images, fondo: "bg-rojo-oscuro", icono: "text-papel/20" },
+  "Análisis institucional": { Icon: Landmark, fondo: "bg-noche", icono: "text-papel/15" },
+  "Doctrina legal": { Icon: Scale, fondo: "bg-rojo-oscuro", icono: "text-papel/20" },
+  "Retiros y VUF": { Icon: Ruler, fondo: "bg-naranja", icono: "text-noche/20" },
 };
 
-/** Insignia que anticipa el formato: foto, galería o documento. Los textos no llevan insignia. */
+/** Insignia que anticipa el formato: foto, galería, video o documento. Los textos no llevan. */
 export function FormatoBadge({ post }: { post: PostSummary }) {
   const datos =
     post.formato === "GALERIA"
@@ -34,7 +41,12 @@ export function FormatoBadge({ post }: { post: PostSummary }) {
           }
         : post.formato === "IMAGEN"
           ? { Icon: ImageIcon, texto: "Foto" }
-          : null;
+          : post.formato === "VIDEO"
+            ? {
+                Icon: Play,
+                texto: `Video${post.duracionSeg ? ` · ${formatearDuracion(post.duracionSeg)}` : ""}`,
+              }
+            : null;
   if (!datos) return null;
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-noche/80 px-2.5 py-1 font-display text-xs font-bold text-papel backdrop-blur-sm">

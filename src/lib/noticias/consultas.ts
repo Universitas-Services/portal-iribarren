@@ -23,10 +23,21 @@ export function normalizar(texto: string) {
 }
 
 export function resumir(post: Post): PostSummary {
-  const { cuerpo: _cuerpo, imagenes, adjunto, autor: _autor, actualizadoEl: _act, ...resto } = post;
+  const {
+    cuerpo: _cuerpo,
+    imagenes,
+    adjunto,
+    video,
+    puntos: _puntos,
+    boton: _boton,
+    autor: _autor,
+    actualizadoEl: _act,
+    ...resto
+  } = post;
   return {
     ...resto,
-    portada: imagenes[0],
+    portada: imagenes[0] ?? video?.portada,
+    duracionSeg: video?.duracionSeg,
     conteoImagenes: imagenes.length || undefined,
     miniaturas: post.formato === "GALERIA" ? imagenes.slice(0, 3) : undefined,
     adjunto: adjunto
@@ -76,6 +87,14 @@ export function consultarNoticias(
     porPagina,
     porFormato,
   };
+}
+
+/** Para el Inicio: primero las «destacadas en portada» (más recientes primero) y luego el resto. */
+export function paraPortada(posts: Post[], limite = 3): PostSummary[] {
+  const ordenadas = [...posts].sort(porFechaDesc);
+  return [...ordenadas.filter((p) => p.destacada), ...ordenadas.filter((p) => !p.destacada)]
+    .slice(0, limite)
+    .map(resumir);
 }
 
 /** Hasta `limite` noticias de la misma categoría, sin incluir la actual; completa con recientes. */

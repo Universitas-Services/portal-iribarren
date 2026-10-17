@@ -1,20 +1,5 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import type { FiltrosNoticias } from "@/lib/api/types";
-import { formatoAUrl } from "@/lib/validation/schemas";
-
-/** URL del listado que conserva los filtros y cambia solo la página. */
-export function urlPagina(f: FiltrosNoticias, pagina: number) {
-  const qs = new URLSearchParams();
-  if (f.q) qs.set("q", f.q);
-  if (f.categoria) qs.set("categoria", f.categoria);
-  if (f.formato) qs.set("formato", formatoAUrl(f.formato));
-  if (f.desde) qs.set("desde", f.desde);
-  if (f.hasta) qs.set("hasta", f.hasta);
-  if (pagina > 1) qs.set("pagina", String(pagina));
-  const s = qs.toString();
-  return s ? `/noticias?${s}` : "/noticias";
-}
 
 /** Números visibles: primera, última y las vecinas de la actual, con «…» en los saltos. */
 function numeros(actual: number, total: number): (number | "…")[] {
@@ -23,21 +8,31 @@ function numeros(actual: number, total: number): (number | "…")[] {
   return lista.flatMap((n, i) => (i > 0 && n - lista[i - 1]! > 1 ? ["…" as const, n] : [n]));
 }
 
+/**
+ * Paginación accesible para cualquier listado. `href` arma la URL de cada página
+ * conservando los filtros del listado.
+ */
 export function Paginacion({
-  filtros,
   pagina,
   paginas,
+  href,
+  etiqueta,
 }: {
-  filtros: FiltrosNoticias;
   pagina: number;
   paginas: number;
+  href: (pagina: number) => string;
+  /** Nombre del listado para lectores de pantalla, p. ej. «noticias». */
+  etiqueta: string;
 }) {
   if (paginas <= 1) return null;
   const boton =
     "grid min-h-11 min-w-11 place-items-center rounded-xl px-3 font-display font-bold transition-colors";
 
   return (
-    <nav aria-label="Paginación de noticias" className="mt-12 flex flex-col items-center gap-4">
+    <nav
+      aria-label={`Paginación de ${etiqueta}`}
+      className="mt-12 flex flex-col items-center gap-4"
+    >
       <p className="text-sm text-tinta/75">
         Página {pagina} de {paginas}
       </p>
@@ -45,7 +40,7 @@ export function Paginacion({
         <li>
           {pagina > 1 ? (
             <Link
-              href={urlPagina(filtros, pagina - 1)}
+              href={href(pagina - 1)}
               className={`${boton} bg-papel text-noche shadow-tarjeta hover:text-rojo`}
             >
               <span className="sr-only">Página anterior</span>
@@ -65,7 +60,7 @@ export function Paginacion({
           ) : (
             <li key={n}>
               <Link
-                href={urlPagina(filtros, n)}
+                href={href(n)}
                 aria-current={n === pagina ? "page" : undefined}
                 className={`${boton} ${
                   n === pagina
@@ -82,7 +77,7 @@ export function Paginacion({
         <li>
           {pagina < paginas ? (
             <Link
-              href={urlPagina(filtros, pagina + 1)}
+              href={href(pagina + 1)}
               className={`${boton} bg-papel text-noche shadow-tarjeta hover:text-rojo`}
             >
               <span className="sr-only">Página siguiente</span>

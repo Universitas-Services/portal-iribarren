@@ -2,12 +2,13 @@ import { SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { EncabezadoPagina } from "@/components/noticias/encabezado-pagina";
+import { EncabezadoPagina } from "@/components/layout/encabezado-pagina";
 import { FiltrosNoticias } from "@/components/noticias/filtros-noticias";
 import { MosaicoNoticias } from "@/components/noticias/mosaico-noticias";
-import { Paginacion } from "@/components/noticias/paginacion";
+import { Paginacion } from "@/components/listado/paginacion";
+import { TransicionListado, ZonaResultados } from "@/components/listado/transicion";
+import { urlPaginaNoticias } from "@/components/noticias/urls";
 import { ListadoSkeleton } from "@/components/noticias/skeletons";
-import { TransicionNoticias, ZonaResultados } from "@/components/noticias/transicion";
 import { getPosts } from "@/lib/api";
 import { CATEGORIAS } from "@/lib/api/types";
 import { plural } from "@/lib/formato";
@@ -50,7 +51,7 @@ async function Listado({ searchParams }: { searchParams: SearchParams }) {
   );
 
   return (
-    <TransicionNoticias>
+    <TransicionListado>
       <FiltrosNoticias filtros={filtros} categorias={CATEGORIAS} porFormato={porFormato} />
       <ZonaResultados>
         <p className="mt-6 text-sm text-tinta/75" aria-live="polite">
@@ -84,8 +85,13 @@ async function Listado({ searchParams }: { searchParams: SearchParams }) {
           </div>
         )}
 
-        <Paginacion filtros={filtros} pagina={pagina} paginas={paginas} />
+        <Paginacion
+          pagina={pagina}
+          paginas={paginas}
+          href={(n) => urlPaginaNoticias(filtros, n)}
+          etiqueta="noticias"
+        />
       </ZonaResultados>
-    </TransicionNoticias>
+    </TransicionListado>
   );
 }

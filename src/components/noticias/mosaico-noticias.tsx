@@ -1,8 +1,14 @@
-import { ArrowUpRight, Download, FileText, Images, Quote } from "lucide-react";
+import { ArrowUpRight, Clapperboard, Download, FileText, Images, Play, Quote } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { PostSummary } from "@/lib/api/types";
-import { formatearFecha, formatearPeso, plural } from "@/lib/formato";
+import {
+  duracionLegible,
+  formatearDuracion,
+  formatearFecha,
+  formatearPeso,
+  plural,
+} from "@/lib/formato";
 import { acomodarMosaico, type Celda } from "@/lib/noticias/mosaico";
 import { CATEGORIA } from "./news-card";
 import type { CSSProperties } from "react";
@@ -15,6 +21,7 @@ import type { CSSProperties } from "react";
  *   IMAGEN    1×2  foto vertical a sangre; el resumen aparece al pasar el cursor
  *   TEXTO     2×1  franja de color con tipografía grande
  *   DOCUMENTO 1×1  hoja con esquina doblada y descarga directa
+ *   VIDEO     2×2  portada a sangre con botón de reproducir y duración
  */
 
 /** La posición va en variables CSS para poder cambiarla según el ancho de pantalla. */
@@ -81,12 +88,59 @@ function PiezaImagen({ post, prioridad }: { post: PostSummary; prioridad: boolea
         <Meta post={post} claro />
         <EnlaceTitulo
           post={post}
-          className="mt-2 font-display text-xl leading-snug font-extrabold text-papel"
+          className="mt-2 line-clamp-5 font-display text-xl leading-snug font-extrabold text-papel"
         />
         {/* El resumen se despliega al pasar el cursor o con el foco; en táctil queda visible. */}
         <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-papel/85 transition-[max-height,opacity] duration-500 ease-out-expo [@media(hover:hover)]:max-h-0 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-focus-within:max-h-24 [@media(hover:hover)]:group-focus-within:opacity-100 [@media(hover:hover)]:group-hover:max-h-24 [@media(hover:hover)]:group-hover:opacity-100">
           {post.resumen}
         </p>
+      </div>
+    </article>
+  );
+}
+
+function PiezaVideo({ post, prioridad }: { post: PostSummary; prioridad: boolean }) {
+  return (
+    <article className={`${pieza} h-[24rem] bg-noche sm:h-full`}>
+      {post.portada && (
+        <Image
+          src={post.portada.src}
+          alt=""
+          fill
+          sizes="(min-width: 1024px) 620px, (min-width: 640px) 100vw, 100vw"
+          loading={prioridad ? "eager" : "lazy"}
+          className="object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]"
+        />
+      )}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[linear-gradient(0deg,rgb(35_42_54/0.95)_0%,rgb(35_42_54/0.35)_45%,rgb(35_42_54/0.15)_100%)]"
+      />
+      <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-noche/75 px-3 py-1 font-display text-xs font-bold text-papel backdrop-blur-sm">
+        <Clapperboard size={14} aria-hidden="true" />
+        Video
+        {post.duracionSeg ? (
+          <>
+            {" · "}
+            <span aria-hidden="true">{formatearDuracion(post.duracionSeg)}</span>
+            <span className="sr-only">{duracionLegible(post.duracionSeg)}</span>
+          </>
+        ) : null}
+      </span>
+      {/* Botón de reproducir decorativo: toda la pieza lleva al video. */}
+      <span
+        aria-hidden="true"
+        className="absolute top-[32%] left-1/2 grid size-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-rojo text-papel shadow-elevada ring-8 ring-papel/20 transition-[transform,box-shadow] duration-300 ease-out-expo group-hover:scale-110 group-hover:ring-papel/30 sm:top-[40%] sm:size-18"
+      >
+        <Play size={26} className="translate-x-0.5" fill="currentColor" />
+      </span>
+      <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+        <Meta post={post} claro />
+        <EnlaceTitulo
+          post={post}
+          className="mt-3 max-w-xl font-display text-2xl leading-tight font-extrabold text-papel sm:text-3xl"
+        />
+        <p className="mt-2 line-clamp-2 max-w-xl text-papel/85">{post.resumen}</p>
       </div>
     </article>
   );
@@ -250,6 +304,8 @@ export function MosaicoNoticias({ items }: { items: PostSummary[] }) {
             <PiezaGaleria post={post} />
           ) : post.formato === "IMAGEN" ? (
             <PiezaImagen post={post} prioridad={i < 2} />
+          ) : post.formato === "VIDEO" ? (
+            <PiezaVideo post={post} prioridad={i < 2} />
           ) : post.formato === "DOCUMENTO" ? (
             <PiezaDocumento post={post} />
           ) : (

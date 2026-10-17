@@ -82,6 +82,15 @@ export function SiteFooter() {
               <Instagram size={14} className="text-rojo" />
               @alcaldiairibarren
             </a>
+            <a
+              href="https://www.instagram.com/yanysaguerove/"
+              rel="noopener noreferrer"
+              target="_blank"
+              className={`inline-flex items-center gap-1.5 ${enlace}`}
+            >
+              <Instagram size={14} className="text-rojo" />
+              @yanysaguerove
+            </a>
           </div>
           <ul
             aria-label="Marco legal"
