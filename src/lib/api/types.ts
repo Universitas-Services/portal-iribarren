@@ -79,16 +79,20 @@ export type Banner = {
   imagen?: Imagen;
 };
 
-/** Catálogo de categorías (en producción lo administra el Operador desde el admin). */
+/**
+ * Catálogo de categorías de noticias, según la Propuesta v4 (en producción lo administra el
+ * Operador desde el admin). «Decretos y normativas» y «Normativa» vienen así del cliente.
+ */
 export const CATEGORIAS = [
-  "Avances",
   "Análisis institucional",
   "Doctrina legal",
-  "Retiros y VUF",
-  "Minutas",
-  "Comunicados",
-  "Entrevistas",
-  "Galería",
+  "Decretos y normativas",
+  "Normativa",
+  "Mensaje institucional",
+  "Auditoría y diagnóstico",
+  "Mesas de trabajo",
+  "Despliegue territorial",
+  "Visión de futuro",
 ] as const;
 export type PostCategory = (typeof CATEGORIAS)[number];
 
@@ -191,6 +195,8 @@ export type PostSummary = {
   miniaturas?: Imagen[];
   /** «Destacada en portada»: el Inicio la muestra antes que las demás. */
   destacada?: boolean;
+  /** Contenido de ejemplo de la maqueta: se rotula «Ejemplo» y nunca va a la portada. */
+  ejemplo?: boolean;
   /** Duración del video, para la insignia de la tarjeta. */
   duracionSeg?: number;
   /** Datos del adjunto para descargarlo desde el listado sin abrir la noticia. */

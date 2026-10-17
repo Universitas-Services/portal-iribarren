@@ -17,7 +17,7 @@ import { parseFiltrosNoticias } from "@/lib/validation/schemas";
 export const metadata: Metadata = {
   title: "Noticias",
   description:
-    "Avances, minutas, comunicados y galerías del Plan de Desarrollo Urbano Local de Iribarren.",
+    "Decretos, análisis, mesas de trabajo y avances del Plan de Desarrollo Urbano Local de Iribarren.",
 };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -32,7 +32,7 @@ export default function NoticiasPage({ searchParams }: { searchParams: SearchPar
       <EncabezadoPagina
         migas={[{ href: "/", label: "Inicio" }, { label: "Noticias" }]}
         titulo="Noticias y novedades"
-        bajada="Avances del plan, minutas de las mesas técnicas, comunicados y galerías de la ciudad."
+        bajada="Decretos y normativas, análisis, mesas de trabajo y el avance del diagnóstico de la ciudad."
       />
       <div className="relative z-10 mx-auto -mt-16 max-w-7xl px-4 pb-24 sm:px-6 lg:-mt-20 lg:px-8">
         <Suspense fallback={<ListadoSkeleton />}>
@@ -58,7 +58,6 @@ async function Listado({ searchParams }: { searchParams: SearchParams }) {
           {total === 0
             ? "Sin resultados"
             : `${plural(total, "noticia", "noticias")}${hayFiltros ? " con estos filtros" : ""}`}
-          <span className="text-tinta/55"> · Noticias de ejemplo</span>
         </p>
 
         {items.length > 0 ? (

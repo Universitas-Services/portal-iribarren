@@ -89,17 +89,25 @@ export function consultarNoticias(
   };
 }
 
-/** Para el Inicio: primero las «destacadas en portada» (más recientes primero) y luego el resto. */
+/**
+ * Para el Inicio: primero las «destacadas en portada» (más recientes primero) y luego el resto.
+ * Las publicaciones de ejemplo nunca llegan a la portada.
+ */
 export function paraPortada(posts: Post[], limite = 3): PostSummary[] {
-  const ordenadas = [...posts].sort(porFechaDesc);
+  const ordenadas = posts.filter((p) => !p.ejemplo).sort(porFechaDesc);
   return [...ordenadas.filter((p) => p.destacada), ...ordenadas.filter((p) => !p.destacada)]
     .slice(0, limite)
     .map(resumir);
 }
 
-/** Hasta `limite` noticias de la misma categoría, sin incluir la actual; completa con recientes. */
+/**
+ * Hasta `limite` noticias de la misma categoría, sin incluir la actual; completa con recientes.
+ * Las publicaciones reales van antes que las de ejemplo.
+ */
 export function relacionadas(posts: Post[], actual: Post, limite = 3): PostSummary[] {
-  const otras = posts.filter((p) => p.slug !== actual.slug).sort(porFechaDesc);
+  const otras = posts
+    .filter((p) => p.slug !== actual.slug)
+    .sort((a, b) => Number(Boolean(a.ejemplo)) - Number(Boolean(b.ejemplo)) || porFechaDesc(a, b));
   const misma = otras.filter((p) => p.categoria === actual.categoria);
   const resto = otras.filter((p) => p.categoria !== actual.categoria);
   return [...misma, ...resto].slice(0, limite).map(resumir);

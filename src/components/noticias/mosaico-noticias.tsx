@@ -1,4 +1,4 @@
-import { ArrowUpRight, Clapperboard, Download, FileText, Images, Play, Quote } from "lucide-react";
+import { ArrowUpRight, Clapperboard, Download, FileText, Images, Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { PostSummary } from "@/lib/api/types";
@@ -10,7 +10,7 @@ import {
   plural,
 } from "@/lib/formato";
 import { acomodarMosaico, type Celda } from "@/lib/noticias/mosaico";
-import { CATEGORIA } from "./news-card";
+import { CATEGORIA, EtiquetaEjemplo } from "./news-card";
 import type { CSSProperties } from "react";
 
 /*
@@ -48,6 +48,7 @@ function Meta({ post, claro = false }: { post: PostSummary; claro?: boolean }) {
       >
         {post.categoria}
       </span>
+      {post.ejemplo && <EtiquetaEjemplo claro={claro} />}
       {post.parroquia && <span>{post.parroquia}</span>}
       <span aria-hidden="true">·</span>
       <time dateTime={post.publicadoEl}>{formatearFecha(post.publicadoEl)}</time>
@@ -205,8 +206,8 @@ function PiezaGaleria({ post }: { post: PostSummary }) {
 
 function PiezaTexto({ post }: { post: PostSummary }) {
   const c = CATEGORIA[post.categoria];
-  const oscuro = post.categoria === "Minutas" || post.categoria === "Entrevistas";
-  const Icono = post.categoria === "Entrevistas" ? Quote : c.Icon;
+  const oscuro = Boolean(c.textoOscuro);
+  const Icono = c.Icon;
   return (
     <article className={`${pieza} flex h-full flex-col justify-between p-6 sm:p-7 ${c.fondo}`}>
       <Icono

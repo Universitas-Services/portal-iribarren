@@ -7,7 +7,7 @@ const post = (slug: string, extra: Partial<Post> = {}): Post => ({
   slug,
   titulo: `Título ${slug}`,
   resumen: "Resumen",
-  categoria: "Avances",
+  categoria: "Auditoría y diagnóstico",
   formato: "TEXTO",
   publicadoEl: "2026-10-01",
   cuerpo: "<p>x</p>",
@@ -17,9 +17,9 @@ const post = (slug: string, extra: Partial<Post> = {}): Post => ({
 
 const lista: Post[] = [
   post("a", { publicadoEl: "2026-10-14", titulo: "Arranca el diagnóstico" }),
-  post("b", { publicadoEl: "2026-10-10", categoria: "Minutas" }),
-  post("c", { publicadoEl: "2026-09-01", categoria: "Comunicados" }),
-  post("d", { publicadoEl: "2026-08-20", categoria: "Minutas" }),
+  post("b", { publicadoEl: "2026-10-10", categoria: "Mesas de trabajo" }),
+  post("c", { publicadoEl: "2026-09-01", categoria: "Mensaje institucional" }),
+  post("d", { publicadoEl: "2026-08-20", categoria: "Mesas de trabajo" }),
 ];
 
 describe("consultarNoticias", () => {
@@ -29,7 +29,7 @@ describe("consultarNoticias", () => {
   });
 
   it("filtra por categoría y por rango de fechas inclusivo", () => {
-    expect(consultarNoticias(lista, { pagina: 1, categoria: "Minutas" }).total).toBe(2);
+    expect(consultarNoticias(lista, { pagina: 1, categoria: "Mesas de trabajo" }).total).toBe(2);
     const r = consultarNoticias(lista, { pagina: 1, desde: "2026-09-01", hasta: "2026-10-10" });
     expect(r.items.map((p) => p.slug)).toEqual(["b", "c"]);
   });
@@ -99,13 +99,13 @@ describe("parseFiltrosNoticias", () => {
     expect(
       parseFiltrosNoticias({
         q: "  plan ",
-        categoria: "Minutas",
+        categoria: "Mesas de trabajo",
         desde: "2026-01-01",
         pagina: "2",
       }),
     ).toEqual({
       q: "plan",
-      categoria: "Minutas",
+      categoria: "Mesas de trabajo",
       desde: "2026-01-01",
       hasta: undefined,
       pagina: 2,
@@ -133,20 +133,24 @@ describe("parseFiltrosNoticias", () => {
   it("toma el primer valor repetido e invierte un rango al revés", () => {
     expect(
       parseFiltrosNoticias({
-        categoria: ["Avances", "Minutas"],
+        categoria: ["Auditoría y diagnóstico", "Mesas de trabajo"],
         desde: "2026-10-01",
         hasta: "2026-09-01",
       }),
-    ).toMatchObject({ categoria: "Avances", desde: "2026-09-01", hasta: "2026-10-01" });
+    ).toMatchObject({
+      categoria: "Auditoría y diagnóstico",
+      desde: "2026-09-01",
+      hasta: "2026-10-01",
+    });
   });
 });
 
 describe("filtro por formato", () => {
   const conFormatos: Post[] = [
-    post("t", { formato: "TEXTO", categoria: "Minutas" }),
+    post("t", { formato: "TEXTO", categoria: "Mesas de trabajo" }),
     post("i", { formato: "IMAGEN" }),
     post("g", { formato: "GALERIA" }),
-    post("d1", { formato: "DOCUMENTO", categoria: "Minutas" }),
+    post("d1", { formato: "DOCUMENTO", categoria: "Mesas de trabajo" }),
     post("d2", { formato: "DOCUMENTO" }),
   ];
 
@@ -164,7 +168,7 @@ describe("filtro por formato", () => {
   });
 
   it("los conteos respetan la categoría elegida", () => {
-    const r = consultarNoticias(conFormatos, { pagina: 1, categoria: "Minutas" });
+    const r = consultarNoticias(conFormatos, { pagina: 1, categoria: "Mesas de trabajo" });
     expect(r.porFormato).toMatchObject({ TODOS: 2, TEXTO: 1, DOCUMENTO: 1, IMAGEN: 0 });
   });
 
@@ -202,8 +206,19 @@ describe("portada del Inicio", () => {
     expect(r).not.toHaveProperty("puntos");
   });
 
-  it("acepta las categorías de la Propuesta v3", () => {
+  it("acepta las categorías de la Propuesta v4 y descarta las anteriores", () => {
     expect(parseFiltrosNoticias({ categoria: "Doctrina legal" }).categoria).toBe("Doctrina legal");
-    expect(parseFiltrosNoticias({ categoria: "Retiros y VUF" }).categoria).toBe("Retiros y VUF");
+    expect(parseFiltrosNoticias({ categoria: "Visión de futuro" }).categoria).toBe(
+      "Visión de futuro",
+    );
+    expect(parseFiltrosNoticias({ categoria: "Retiros y VUF" }).categoria).toBeUndefined();
+  });
+
+  it("las publicaciones de ejemplo nunca llegan a la portada", () => {
+    const lista: Post[] = [
+      post("ejemplo-reciente", { publicadoEl: "2026-10-20", destacada: true, ejemplo: true }),
+      post("real", { publicadoEl: "2026-09-01" }),
+    ];
+    expect(paraPortada(lista).map((p) => p.slug)).toEqual(["real"]);
   });
 });

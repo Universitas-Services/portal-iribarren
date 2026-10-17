@@ -164,26 +164,46 @@ export const banners: Banner[] = [
 
 const nota = "<p><em>Contenido de ejemplo para la maqueta del portal.</em></p>";
 
-/** Publicaciones de ejemplo en los cuatro formatos: texto, imagen, galería y documento. */
+/** Fotos entregadas por la Alcaldía para las noticias de la Propuesta v4. */
+const FOTO = (src: string, alt: string, ancho: number, alto: number): Imagen => ({
+  src: `/noticias/${src}`,
+  alt,
+  ancho,
+  alto,
+});
+
+const GACETA = {
+  nombre: "Decreto N° 48-2026 (Gaceta Municipal Extraordinaria N° 5256).pdf",
+  url: "/docs/gaceta-5256-decreto-48-2026.pdf",
+  tipo: "application/pdf" as const,
+  pesoBytes: 3_973_907,
+  paginas: 5,
+};
+
+/**
+ * Noticias reales (Propuesta de Gestión Ciudadana v4) y, al final, publicaciones de ejemplo
+ * que muestran los formatos. Las de ejemplo llevan `ejemplo: true`: se rotulan y nunca van a
+ * la portada del Inicio.
+ */
 export const posts: Post[] = [
   {
     slug: "decreto-inicio-pdul-iribarren",
     titulo:
       "Alcalde Yanys Agüero promulga el Decreto de Inicio del PDUL Iribarren: análisis del marco de garantías para la inversión y el desarrollo social",
     resumen:
-      "El Decreto Municipal N° 48-2026 abre formalmente la hoja de ruta participativa que dotará a Barquisimeto de un plan ordenador a 20 años, superando una parálisis normativa de casi una década.",
+      "El Decreto Municipal de la Alcaldía de Iribarren N° 48-2026 abre formalmente la hoja de ruta participativa que dotará a Barquisimeto de un plan ordenador a 20 años, superando una parálisis normativa de casi una década.",
     categoria: "Análisis institucional",
     formato: "IMAGEN",
     publicadoEl: "2026-09-14",
-    destacada: true,
     imagenes: [
-      {
-        ...FOTOS.skylineOeste,
-        alt: "Vista de Barquisimeto con las montañas al fondo",
-        ilustrativa: true,
-      },
+      FOTO(
+        "decreto-prensa.png",
+        "El alcalde atiende a la prensa con el Decreto de Inicio del PDUL en la mano",
+        1168,
+        1441,
+      ),
     ],
-    cuerpo: `<p>En un acto institucional que convoca a las cámaras empresariales, gremios técnicos, universidades y el Poder Popular, el alcalde del Municipio Iribarren, Yanys Enrique Agüero, ha firmado y promulgado el Decreto de Inicio del procedimiento para la elaboración del nuevo Plan de Desarrollo Urbano Local (PDUL). Este acto administrativo activa las fases de diagnóstico, concertación social y formulación de la futura Ordenanza que regirá el crecimiento de Barquisimeto hasta el año 2046.</p>`,
+    cuerpo: `<p>En un acto institucional que convoca a las cámaras empresariales, gremios técnicos, universidades y el Poder Popular, el Alcalde del Municipio Iribarren, Yanys Enrique Agüero, ha firmado y promulgado el Decreto de Inicio del procedimiento para la elaboración del nuevo Plan de Desarrollo Urbano Local (PDUL). Este acto administrativo activa las fases de diagnóstico, concertación social y formulación de la futura Ordenanza que regirá el crecimiento de Barquisimeto hasta el año 2046.</p>`,
     puntos: {
       items: [
         {
@@ -197,7 +217,7 @@ export const posts: Post[] = [
             "El marco normativo promulgado establece que el plan no se redactará a puerta cerrada; se priorizará el rigor técnico y la seguridad jurídica como motor para reactivar la inversión privada, y se equilibrará el desarrollo del centro con la atención a las parroquias periféricas.",
         },
         {
-          titulo: "Simplificación y cero papel",
+          titulo: "Simplificación y cero papel (TrustTech)",
           texto:
             "Se instruye la digitalización de los procesos de recepción de propuestas y la aplicación del criterio «cero papel» e interoperabilidad en la sustanciación del expediente urbano.",
         },
@@ -215,8 +235,12 @@ export const posts: Post[] = [
     publicadoEl: "2026-09-18",
     imagenes: [
       {
-        ...FOTOS.teatro,
-        alt: "Fachada del Teatro Juares en el centro de Barquisimeto",
+        ...FOTO(
+          "sentencia-tsj-zonificacion.jpg",
+          "Sede del Tribunal Supremo de Justicia junto a un plano de zonificación urbana de Barquisimeto",
+          1024,
+          559,
+        ),
         ilustrativa: true,
       },
     ],
@@ -234,102 +258,211 @@ export const posts: Post[] = [
     },
   },
   {
-    slug: "microzonificacion-sismica-zonificacion",
-    titulo:
-      "Microzonificación sísmica e ingeniería hídrica: los pilares técnicos de la nueva zonificación de Barquisimeto",
-    resumen:
-      "Cómo los estudios de geología, aceleración del suelo y drenajes pluviales reconfiguran el otorgamiento de permisos de construcción en la DPCU.",
-    categoria: "Retiros y VUF",
-    formato: "IMAGEN",
-    publicadoEl: "2026-09-04",
-    destacada: true,
-    imagenes: [
-      {
-        ...FOTOS.skylineCentro,
-        alt: "Edificios residenciales del centro de Barquisimeto",
-        ilustrativa: true,
-      },
-    ],
-    cuerpo: `<p>El urbanismo moderno no se diseña en un escritorio; se fundamenta en la ciencia de la tierra. La formulación del nuevo PDUL incorpora los estudios de microzonificación sísmica (FUNVISIS/COVENIN 1756) y la evaluación de cuencas hídricas como condicionantes directos de la edificabilidad y el régimen de las Variables Urbanas Fundamentales (VUF) en Iribarren.</p>`,
-    puntos: {
-      items: [
-        {
-          titulo: "Sismorresistencia aplicada a la parcela",
-          texto:
-            "Barquisimeto está categorizada en Zona Sísmica 5. La microzonificación permite identificar el comportamiento dinámico de los suelos, condicionando las alturas y la densidad en función de la capacidad de respuesta del terreno ante movimientos telúricos.",
-        },
-        {
-          titulo: "Protección marginal y drenajes pluviales",
-          texto:
-            "La vulnerabilidad ante lluvias intensas en las cuencas del Río Turbio y la Quebrada La Ruezga exige fijar franjas de protección marginal (retiros de 25 a 50 metros) y exigencias de suelo permeable para evitar inundaciones urbanas.",
-        },
-        {
-          titulo: "De variables estáticas a variables paramétricas (4D)",
-          texto:
-            "La propuesta doctrinaria de AVIPRI busca evolucionar las VUF tradicionales (Arts. 86 y 87 LOOU) hacia un modelo dinámico donde la densidad y los retiros (amortiguación cinética) se ajusten a la capacidad real de los servicios y la seguridad estructural.",
-        },
-      ],
-    },
-  },
-  {
     slug: "anuncio-decreto-48-aniversario",
     titulo:
-      "En el 474.º aniversario de Barquisimeto, el alcalde anuncia el Decreto 48 para un nuevo PDUL",
+      "Anuncio histórico en los 474 años de Barquisimeto: Alcalde Yanys Agüero decreta la creación del nuevo PDUL",
     resumen:
-      "Se convocará a las fuerzas vivas del municipio, incluido el sector empresarial, para construir una planificación urbana participativa.",
-    categoria: "Comunicados",
+      "Durante la Sesión Solemne por el aniversario de la ciudad, se formalizó el Decreto 48 para saldar una deuda de ocho años en materia de planificación urbana participativa.",
+    categoria: "Decretos y normativas",
     formato: "GALERIA",
     publicadoEl: "2026-09-14",
     imagenes: [
-      {
-        ...FOTOS.obelisco,
-        alt: "El Obelisco de Barquisimeto iluminado al anochecer",
-        ilustrativa: true,
-      },
-      { ...FOTOS.catedral, alt: "Catedral Metropolitana de Barquisimeto", ilustrativa: true },
-      {
-        ...FOTOS.manto,
-        alt: "Monumento Manto de la Divina Pastora al atardecer",
-        ilustrativa: true,
-      },
+      FOTO(
+        "sesion-solemne-mesa.png",
+        "Mesa directiva y orador en la Sesión Solemne por el 474.º aniversario de Barquisimeto",
+        1169,
+        1440,
+      ),
+      FOTO(
+        "sesion-solemne-publico.png",
+        "Autoridades y público asistentes a la Sesión Solemne, de noche, en el centro de Barquisimeto",
+        1168,
+        1431,
+      ),
+      FOTO("sesion-solemne-alcalde.png", "El alcalde durante la Sesión Solemne", 1168, 1438),
     ],
-    cuerpo: `<p>En el marco de la celebración de los 474 años de Barquisimeto, el alcalde Yanys Agüero anunció la creación del Decreto 48, que permitirá establecer el nuevo Plan de Desarrollo Urbano Local (PDUL) de Iribarren.</p>
-<p>Se convocará a las fuerzas vivas del municipio, incluyendo al sector empresarial, para construir una planificación urbana participativa. El nuevo PDUL estará orientado a la esperanza, el futuro, el desarrollo y la planificación urbanística del municipio.</p>
-<p>Iribarren mantiene una deuda de 8 años en materia de planificación urbana: el plan anterior venció en 2016 y su prórroga culminó en 2018.</p>
-<p>El anuncio se realizó durante la Sesión Solemne por el 474.º aniversario de Barquisimeto, con la presencia del gobernador Luis Reyes Reyes, alcaldes, concejales, representantes de los Poderes Públicos y ciudadanos. Durante la sesión también fueron entregadas las órdenes Ciudad Barquisimeto y Juan Guillermo Iribarren a personalidades destacadas por su aporte a la ciudad.</p>`,
+    cuerpo: `<p>En el marco de la celebración de los 474 años de Barquisimeto, el alcalde Yanys Agüero anunció la creación del Decreto 48, instrumento clave que dará vida al nuevo Plan de Desarrollo Urbano Local (PDUL) del municipio Iribarren. El anuncio, realizado durante la Sesión Solemne con la presencia de autoridades regionales y locales, marca un punto de inflexión para superar una década de transitoriedad normativa y convocar a todas las fuerzas vivas a la co-creación del futuro urbano de la ciudad.</p>`,
+    puntos: {
+      items: [
+        {
+          titulo: "Planificación participativa",
+          texto:
+            "Convocatoria abierta a gremios, sector empresarial, academia y Poder Popular para diseñar el modelo de ciudad.",
+        },
+        {
+          titulo: "Deuda normativa superada",
+          texto:
+            "Se pone fin a la parálisis de un plan anterior vencido en 2016 y cuya prórroga expiró en 2018.",
+        },
+        {
+          titulo: "Visión de futuro y cohesión",
+          texto:
+            "Orientación hacia el desarrollo sostenible, la esperanza y la justicia social en las parroquias.",
+        },
+      ],
+    },
     boton: {
-      texto: "Ver la publicación en Instagram",
+      texto: "Ver publicación oficial en Instagram",
       href: "https://www.instagram.com/p/DdS3mOfFocQ/",
     },
   },
   {
-    slug: "avanzamos-hacia-el-futuro-video",
-    titulo: "¡Avanzamos hacia el futuro de Barquisimeto!",
+    slug: "tres-compromisos-alcalde-pdul",
+    titulo: "Tres compromisos clave del Alcalde Yanys Agüero para el nuevo PDUL de Iribarren",
     resumen:
-      "El alcalde presentó el Decreto N.º 48-2026 y tres compromisos: construcción participativa, rigor técnico con seguridad jurídica y justicia social.",
-    categoria: "Comunicados",
+      "Participación en la calle, rigor técnico con seguridad jurídica y justicia social formalizada guiarán el desarrollo de Barquisimeto hacia el futuro.",
+    categoria: "Mensaje institucional",
     formato: "VIDEO",
     publicadoEl: "2026-09-15",
     imagenes: [],
     video: {
-      fuente: "INSTAGRAM",
-      url: "https://www.instagram.com/reel/DdUGySaIYsG/",
-      portada: {
-        ...FOTOS.catedral,
-        alt: "Catedral Metropolitana de Barquisimeto",
+      fuente: "ARCHIVO",
+      url: "/videos/tres-compromisos-pdul.mp4",
+      portada: FOTO(
+        "sesion-solemne-alcalde.png",
+        "El alcalde Yanys Agüero en la presentación del Decreto 48",
+        1168,
+        1438,
+      ),
+    },
+    cuerpo: `<p>En el marco del 474.º aniversario de la ciudad, el alcalde del municipio Iribarren, Yanys Agüero, presentó oficialmente el Decreto N.º 48-2026 para dar paso a un nuevo Plan de Desarrollo Urbano Local (PDUL) proyectado para las futuras generaciones. Durante su intervención, el mandatario destacó los tres pilares fundamentales que regirán la hoja de ruta del municipio.</p>`,
+    boton: {
+      texto: "Ver publicación oficial en Instagram",
+      href: "https://www.instagram.com/reel/DdUGySaIYsG/",
+    },
+  },
+  {
+    slug: "reunion-auditoria-legal-institucional",
+    titulo:
+      "Reunión preparatoria evalúa el Informe de auditoría legal e institucional urbanística de Iribarren",
+    resumen:
+      "Equipos de la Alcaldía, Concejo Municipal y DPCU afinan las bases técnicas y jurídicas para consolidar el diagnóstico del nuevo PDUL.",
+    categoria: "Auditoría y diagnóstico",
+    formato: "GALERIA",
+    publicadoEl: "2026-10-03",
+    destacada: true,
+    imagenes: [
+      FOTO("auditoria-1.png", "Participante atento durante la reunión de trabajo", 1169, 1538),
+      FOTO(
+        "auditoria-2.png",
+        "Un expositor explica ideas frente a una pantalla durante la reunión",
+        1168,
+        1534,
+      ),
+      FOTO(
+        "auditoria-3.png",
+        "Asistentes revisan documentos alrededor de la mesa de trabajo",
+        1168,
+        1532,
+      ),
+      FOTO("auditoria-4.png", "Participantes de la reunión sentados a la mesa", 1169, 1538),
+    ],
+    cuerpo: `<p>Sostuvimos una importante reunión preparatoria en la que revisamos detalladamente el Informe de Auditoría Legal e Institucional Urbanística del municipio Iribarren. Este paso fundamental nos permite sentar bases sólidas para avanzar en el diseño de nuestro Plan de Desarrollo Urbano Local (PDUL).</p>
+<p>Esta jornada de trabajo reunió la experiencia del equipo de la Alcaldía de Iribarren, Concejo Municipal, DPCU, como unidad rectora de este proceso, así como organizaciones gubernamentales y no gubernamentales de nuestro municipio. Este paso de diagnóstico es clave para proyectar un crecimiento urbano ordenado, legalmente sustentado y adaptado a las necesidades reales de nuestra gente.</p>`,
+    puntos: {
+      items: [
+        {
+          titulo: "Articulación institucional",
+          texto:
+            "Trabajo conjunto entre la Alcaldía, el Concejo Municipal, la DPCU y organizaciones gubernamentales y no gubernamentales.",
+        },
+        {
+          titulo: "Diagnóstico sólido",
+          texto:
+            "Revisión detallada del Informe de Auditoría Legal e Institucional Urbanística como base del plan.",
+        },
+        {
+          titulo: "Crecimiento ordenado",
+          texto:
+            "Proyección de un desarrollo urbano legalmente sustentado y adaptado a las necesidades reales de la ciudadanía.",
+        },
+      ],
+    },
+    boton: {
+      texto: "Ver publicación oficial en Instagram",
+      href: "https://www.instagram.com/p/DeCjxl5HOme/",
+    },
+  },
+  {
+    slug: "primera-mesa-tecnica-concejo-alcaldia",
+    titulo:
+      "Concejo Municipal y Alcaldía instalan primera mesa técnica para avanzar en el nuevo PDUL de Iribarren",
+    resumen:
+      "Con el inicio del diagnóstico participativo instruido por el Decreto 048, autoridades y sectores sociales trazan la hoja de ruta para el ordenamiento urbano a 20 años.",
+    categoria: "Mesas de trabajo",
+    formato: "TEXTO",
+    publicadoEl: "2026-09-22",
+    destacada: true,
+    imagenes: [],
+    cuerpo: `<p>El Concejo Municipal de Iribarren y la Alcaldía instalaron la primera mesa de trabajo técnica para avanzar en la actualización del Plan de Desarrollo Urbano Local (PDUL), en cumplimiento del Decreto 048 promulgado por el alcalde Yanys Agüero.</p>
+<p>El presidente del cuerpo edilicio, Jesús Natera, detalló que el proceso abarca cuatro fases enfocadas en un diagnóstico participativo que integrará a empresarios, comunas, universidades y comerciantes para garantizar un crecimiento ordenado, seguro y sostenible en todo el municipio.</p>`,
+  },
+  {
+    slug: "no-se-trata-de-improvisar-hcamp",
+    titulo:
+      "«No se trata de improvisar»: Alcalde Yanys Agüero detalla los plazos y fases del nuevo PDUL desde el HCAMP",
+    resumen:
+      "Con un horizonte de 20 años (2026-2046) y un trabajo continuo de año y medio a dos años, se encendieron oficialmente los motores para la construcción del plan urbanístico de Iribarren.",
+    categoria: "Despliegue territorial",
+    formato: "IMAGEN",
+    publicadoEl: "2026-09-16",
+    imagenes: [
+      {
+        ...FOTO(
+          "obelisco-aereo.jpg",
+          "Vista aérea del Obelisco de Barquisimeto y sus avenidas",
+          1440,
+          1800,
+        ),
         ilustrativa: true,
       },
-    },
-    cuerpo: `<p>En el marco del 474 aniversario de la ciudad, el alcalde del municipio Iribarren, Yanys Agüero, presentó el Decreto N.º 48-2026 para dar paso a un nuevo Plan de Desarrollo Urbano Local (PDUL) proyectado para las futuras generaciones.</p>
-<p>Durante su intervención, el mandatario destacó tres compromisos clave para el municipio:</p>
-<ul><li>Una construcción participativa que saldrá de las oficinas para debatirse en la calle con todos los sectores.</li><li>El rigor técnico y la seguridad jurídica para impulsar la inversión del sector privado.</li><li>La garantía de una justicia social que no se negocia, sino que se formaliza.</li></ul>`,
+    ],
+    cuerpo: `<p>No se trata de improvisar ni de armar un proyecto de la noche a la mañana. Se encendieron oficialmente los motores para la construcción del nuevo Plan de Desarrollo Urbano Local (PDUL) del municipio Iribarren, una ruta estratégica pensada con visión de futuro para los próximos 20 años (2026-2046).</p>
+<p>Durante la entrega de la sala de espera Divina Pastora del HCAMP, el alcalde Yanys Agüero explicó detalles del nuevo plan de desarrollo urbano, el cual está diseñado para ejecutarse en cuatro etapas claves que sumarán entre un año y medio y dos años de trabajo continuo.</p>
+<p>La primera fase, iniciada con el Decreto N° 48, se enfoca en el diagnóstico exhaustivo de la ciudad, mientras se convoca a la academia, gremios y sector privado bajo la premisa de que «quien se queda como espectador, no tiene derecho a opinar en el futuro».</p>`,
+  },
+  {
+    slug: "vision-de-futuro-conversacion-publica",
+    titulo:
+      "El nuevo PDUL como espacio de conversación pública, técnica y participativa para Barquisimeto",
+    resumen:
+      "Una apuesta por devolverle a Iribarren su sitial de vanguardia urbanística conectado a las nuevas tendencias del derecho urbanístico global.",
+    categoria: "Visión de futuro",
+    formato: "IMAGEN",
+    publicadoEl: "2026-10-04",
+    destacada: true,
+    imagenes: [
+      FOTO(
+        "vision-de-futuro-libros.png",
+        "Dos personas muestran los libros «Nuevas tendencias del derecho urbanístico global» y «La propiedad y los límites de las potestades de corrección patrimonial del Estado»",
+        1168,
+        1527,
+      ),
+    ],
+    cuerpo: `<p>El nuevo Plan de Desarrollo Urbano Local de Barquisimeto representa un espacio para abrir la conversación pública, técnica y participativa donde los guaros decidan el modelo de ciudad en la que desean vivir, devolviéndole al Municipio Iribarren su histórico sitial de vanguardia urbanística en toda Venezuela, y en esta oportunidad conectado a las nuevas tendencias del derecho urbanístico global.</p>`,
+  },
+  {
+    slug: "gaceta-5256-decreto-48-2026",
+    titulo:
+      "Publicada en Gaceta Municipal N° 5256 Extraordinaria la promulgación del Decreto N° 48-2026 de inicio del PDUL Iribarren",
+    resumen:
+      "Queda oficialmente formalizada la publicación en Gaceta Municipal Extraordinaria N° 5256 del Decreto N° 48-2026.",
+    categoria: "Normativa",
+    formato: "DOCUMENTO",
+    publicadoEl: "2026-09-11",
+    imagenes: [],
+    adjunto: GACETA,
+    cuerpo: `<p>Queda oficialmente formalizada la publicación en Gaceta Municipal Extraordinaria N° 5256 del Decreto N° 48-2026, mediante el cual el alcalde del municipio Iribarren, Yanys Agüero, declara el inicio del procedimiento para la formulación del nuevo Plan de Desarrollo Urbano Local (PDUL).</p>
+<p>Este instrumento jurídico ordena la creación de la Comisión Técnica-Organizadora (áreas técnica, legal y administrativa) y establece las directrices para la participación ciudadana y el ordenamiento territorial de Barquisimeto para los próximos 20 años.</p>`,
+    boton: { texto: "Descargar Gaceta Oficial N° 5256", href: GACETA.url },
   },
   {
     slug: "se-prepara-diagnostico-parroquias",
+    ejemplo: true,
     titulo: "Así se preparará el diagnóstico urbano de las diez parroquias",
     resumen:
       "Cuando se apruebe el plan de trabajo, los equipos técnicos recorrerán cada parroquia para levantar vialidad, servicios y uso del suelo.",
-    categoria: "Avances",
+    categoria: "Auditoría y diagnóstico",
     formato: "IMAGEN",
     parroquia: "Todas las parroquias",
     publicadoEl: "2026-10-14",
@@ -341,10 +474,11 @@ export const posts: Post[] = [
   },
   {
     slug: "recorrido-ciudad-en-video",
+    ejemplo: true,
     titulo: "En video: un recorrido por la ciudad que vamos a planificar",
     resumen:
       "Veinte segundos por la Catedral, el Teatro Juares y la Barquisimeto que crece. Con subtítulos.",
-    categoria: "Galería",
+    categoria: "Despliegue territorial",
     formato: "VIDEO",
     publicadoEl: "2026-10-12",
     imagenes: [],
@@ -370,9 +504,10 @@ export const posts: Post[] = [
   },
   {
     slug: "mesa-tecnica-catedral",
+    ejemplo: true,
     titulo: "Mesa técnica con consejos comunales de Catedral",
     resumen: "Vecinos y voceros priorizaron movilidad y espacios públicos del centro histórico.",
-    categoria: "Minutas",
+    categoria: "Mesas de trabajo",
     formato: "DOCUMENTO",
     parroquia: "Catedral",
     publicadoEl: "2026-10-10",
@@ -389,10 +524,11 @@ export const posts: Post[] = [
   },
   {
     slug: "universidades-se-suman",
+    ejemplo: true,
     titulo: "Las universidades de Lara se suman al PDUL",
     resumen:
       "UCLA, UPTAEB y UNEXPO acompañarán el diagnóstico con estudios de suelo, riesgo y movilidad.",
-    categoria: "Comunicados",
+    categoria: "Mensaje institucional",
     formato: "TEXTO",
     publicadoEl: "2026-10-07",
     imagenes: [],
@@ -403,10 +539,11 @@ export const posts: Post[] = [
   },
   {
     slug: "recorrido-centro-historico",
+    ejemplo: true,
     titulo: "Así se ve el centro histórico que vamos a planificar",
     resumen:
       "Un recorrido fotográfico por los lugares que más mencionaron los vecinos en las primeras mesas.",
-    categoria: "Galería",
+    categoria: "Despliegue territorial",
     formato: "GALERIA",
     parroquia: "Catedral",
     publicadoEl: "2026-10-05",
@@ -415,10 +552,11 @@ export const posts: Post[] = [
   },
   {
     slug: "plan-de-trabajo-en-revision",
+    ejemplo: true,
     titulo: "El plan de trabajo para formular el PDUL entra en revisión",
     resumen:
       "El documento fija las fases, los equipos y la forma en que la ciudadanía participa en cada etapa.",
-    categoria: "Comunicados",
+    categoria: "Mensaje institucional",
     formato: "DOCUMENTO",
     publicadoEl: "2026-09-29",
     imagenes: [],
@@ -433,10 +571,11 @@ export const posts: Post[] = [
   },
   {
     slug: "entrevista-equipo-tecnico",
+    ejemplo: true,
     titulo: "«Queremos un plan que se entienda en cada comunidad»",
     resumen:
       "Conversamos con el equipo técnico sobre cómo se recogen las propuestas y qué pasa con cada una.",
-    categoria: "Entrevistas",
+    categoria: "Mensaje institucional",
     formato: "TEXTO",
     publicadoEl: "2026-09-24",
     imagenes: [],
@@ -447,10 +586,11 @@ export const posts: Post[] = [
   },
   {
     slug: "jornada-juan-de-villegas",
+    ejemplo: true,
     titulo: "Jornada de escucha en Santa Rosa",
     resumen:
       "Más de cien vecinos compartieron sus prioridades sobre transporte, agua y espacios deportivos.",
-    categoria: "Avances",
+    categoria: "Auditoría y diagnóstico",
     formato: "IMAGEN",
     parroquia: "Santa Rosa",
     publicadoEl: "2026-09-19",
@@ -459,10 +599,11 @@ export const posts: Post[] = [
   },
   {
     slug: "minuta-mesa-gremios",
+    ejemplo: true,
     titulo: "Gremios técnicos revisan la metodología del diagnóstico",
     resumen:
       "Ingenieros, arquitectos y economistas aportaron observaciones a los instrumentos de campo.",
-    categoria: "Minutas",
+    categoria: "Mesas de trabajo",
     formato: "TEXTO",
     publicadoEl: "2026-09-15",
     imagenes: [],
@@ -470,10 +611,11 @@ export const posts: Post[] = [
   },
   {
     slug: "teatro-juares-espacio-publico",
+    ejemplo: true,
     titulo: "El entorno del Teatro Juares, caso de estudio de espacio público",
     resumen:
       "El equipo técnico analiza cómo mejorar las aceras, la iluminación y los cruces del sector.",
-    categoria: "Avances",
+    categoria: "Auditoría y diagnóstico",
     formato: "IMAGEN",
     parroquia: "Catedral",
     publicadoEl: "2026-09-10",
@@ -482,10 +624,11 @@ export const posts: Post[] = [
   },
   {
     slug: "ciudad-desde-arriba",
+    ejemplo: true,
     titulo: "La ciudad desde arriba: así creció Barquisimeto",
     resumen:
       "Imágenes que muestran el crecimiento vertical y la expansión hacia el este y el oeste.",
-    categoria: "Galería",
+    categoria: "Despliegue territorial",
     formato: "GALERIA",
     publicadoEl: "2026-09-04",
     imagenes: [FOTOS.skylineOeste, FOTOS.skylineCentro, FOTOS.obelisco],
@@ -493,10 +636,11 @@ export const posts: Post[] = [
   },
   {
     slug: "convocatoria-registro-actores",
+    ejemplo: true,
     titulo: "Abierta la inscripción en el Registro municipal de actores",
     resumen:
       "Comunas, consejos comunales, gremios, universidades y empresas pueden inscribirse desde el portal.",
-    categoria: "Comunicados",
+    categoria: "Mensaje institucional",
     formato: "TEXTO",
     publicadoEl: "2026-08-28",
     imagenes: [],
@@ -519,15 +663,26 @@ const pdf = (nombre: string, archivo: string, pesoBytes: number, paginas: number
 export const documentos: Documento[] = [
   {
     slug: "decreto-48-2026",
-    titulo: "Decreto 48-2026 de formulación del PDUL",
+    titulo: "Decreto N° 48-2026 de inicio del PDUL (Gaceta Municipal Extraordinaria N° 5256)",
     descripcion:
-      "Activa la formulación del Plan de Desarrollo Urbano Local y crea el Registro municipal de actores.",
+      "Declara el inicio del procedimiento para la formulación del nuevo PDUL y ordena la creación de la Comisión Técnica-Organizadora.",
     categoria: "Decretos y normativa",
     estado: "OFICIAL",
     version: "1.0",
-    publicadoEl: "2026-08-20",
-    archivo: pdf("Decreto 48-2026 (ejemplo).pdf", "decreto-48-2026-ejemplo.pdf", 3219, 2),
-    versiones: [{ version: "1.0", fecha: "2026-08-20", nota: "Publicación en Gaceta Municipal." }],
+    publicadoEl: "2026-09-11",
+    archivo: pdf(
+      GACETA.nombre,
+      "gaceta-5256-decreto-48-2026.pdf",
+      GACETA.pesoBytes,
+      GACETA.paginas,
+    ),
+    versiones: [
+      {
+        version: "1.0",
+        fecha: "2026-09-11",
+        nota: "Publicación en Gaceta Municipal Extraordinaria N° 5256.",
+      },
+    ],
   },
   {
     slug: "plan-de-trabajo-pdul",

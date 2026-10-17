@@ -40,3 +40,31 @@ describe("datos alineados con la Propuesta v3", () => {
     }
   });
 });
+
+describe("noticias de la Propuesta v4", () => {
+  const reales = posts.filter((p) => !p.ejemplo);
+
+  it("hay 9 noticias reales y las de ejemplo están marcadas", () => {
+    expect(reales).toHaveLength(9);
+    for (const p of posts.filter((x) => x.ejemplo)) expect(p.cuerpo).toMatch(/ejemplo/i);
+  });
+
+  it("las destacadas son las 3 reales más recientes", () => {
+    expect(
+      reales
+        .filter((p) => p.destacada)
+        .map((p) => p.slug)
+        .sort(),
+    ).toEqual(
+      [
+        "primera-mesa-tecnica-concejo-alcaldia",
+        "reunion-auditoria-legal-institucional",
+        "vision-de-futuro-conversacion-publica",
+      ].sort(),
+    );
+  });
+
+  it("el nombre del alcalde se escribe «Yanys»", () => {
+    for (const p of posts) expect(`${p.titulo} ${p.cuerpo}`).not.toMatch(/Yanis/);
+  });
+});

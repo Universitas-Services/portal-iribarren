@@ -2,6 +2,8 @@
 
 Portal ciudadano de la Alcaldía de Iribarren para el proceso del PDUL. Los visitantes consultan noticias, documentos y propuestas publicadas; los ciudadanos registrados completan su perfil, envían opiniones y propuestas, y siguen su estado.
 
+> **¿Retomas el proyecto en otro equipo o en una conversación nueva?** Lee primero [`docs/CONTEXTO.md`](docs/CONTEXTO.md): estado, decisiones, pendientes del portal y del admin, y el contrato supuesto con la API.
+
 La aplicación no llama a la API desde el navegador: lo hace desde su propio servidor Next.js (BFF), que se identifica ante `plataforma-api` con las credenciales del portal (`PORTAL_CLIENT_ID` y `PORTAL_CLIENT_SECRET`).
 
 ## Requisitos

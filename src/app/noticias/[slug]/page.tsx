@@ -13,7 +13,7 @@ import {
 import { EncabezadoPagina } from "@/components/layout/encabezado-pagina";
 import { Galeria } from "@/components/noticias/galeria";
 import { ReproductorVideo } from "@/components/noticias/reproductor-video";
-import { NewsCard } from "@/components/noticias/news-card";
+import { EtiquetaEjemplo, NewsCard } from "@/components/noticias/news-card";
 import { RelacionadasSkeleton } from "@/components/noticias/skeletons";
 import { getPost, getPostSlugs, getRelatedPosts } from "@/lib/api";
 import { formatearFechaLarga } from "@/lib/formato";
@@ -77,6 +77,7 @@ export default async function NoticiaPage({ params }: { params: Params }) {
           >
             {post.categoria}
           </Link>
+          {post.ejemplo && <EtiquetaEjemplo claro />}
           {post.parroquia && <span>{post.parroquia}</span>}
           <span aria-hidden="true">·</span>
           <time dateTime={post.publicadoEl}>{formatearFechaLarga(post.publicadoEl)}</time>
