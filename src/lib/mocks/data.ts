@@ -136,6 +136,8 @@ export const banners: Banner[] = [
       "Comunas, consejos comunales, gremios, universidades y el sector productivo: inscribe a tu organización y sé parte del plan.",
     enlace: { href: "/registro", etiqueta: "Inscribir mi organización" },
     tono: "rojo",
+    orden: 1,
+    vigencia: { desde: "2026-09-14" },
   },
   {
     id: "diagnostico",
@@ -144,6 +146,7 @@ export const banners: Banner[] = [
     enlace: { href: "/noticias/se-prepara-diagnostico-parroquias", etiqueta: "Leer la noticia" },
     tono: "tinta",
     imagen: FOTOS.skylineOeste,
+    orden: 2,
   },
   {
     id: "propuestas-abiertas",
@@ -152,6 +155,7 @@ export const banners: Banner[] = [
       "Antes de la consulta pública formal ya recibimos opiniones y propuestas. Cada una recibe su folio y una respuesta.",
     enlace: { href: "/participa", etiqueta: "Enviar una propuesta" },
     tono: "calido",
+    orden: 3,
   },
   {
     id: "documentos",
@@ -159,6 +163,7 @@ export const banners: Banner[] = [
     texto: "Decreto, plan de trabajo e informes técnicos, en PDF y al alcance de cualquiera.",
     enlace: { href: "/documentos", etiqueta: "Ver el repositorio" },
     tono: "tinta",
+    orden: 4,
   },
 ];
 

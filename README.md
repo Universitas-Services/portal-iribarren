@@ -57,13 +57,14 @@ Mientras no exista `plataforma-api`, el registro, el acceso, el perfil y la part
 - Rutas: `/registro`, `/registro/revisa-tu-correo`, `/verificar`, `/ingresar`, `/unirme`, `/recuperar`, `/restablecer`, `/mi-cuenta` (perfil), `/mi-cuenta/seguridad` (contraseña y cuenta), `/participa` y `/participa/enviada`.
 - Los archivos se validan en el navegador y en el servidor, pero el simulador solo guarda su nombre, tipo y peso. Perfil: PDF, JPG o PNG de hasta 2 MB. Participación: hasta 5 fotos (JPG, PNG o WebP de 2 MB), un enlace de video de YouTube o Instagram y un documento de soporte (obligatorio en la propuesta formal).
 - En desarrollo, el enlace que en producción llega por correo aparece en un recuadro «Solo en desarrollo».
+- El perfil queda **verificado automáticamente** al completarse. El Revisor del admin no verifica perfiles: coteja los documentos de identidad del autor al evaluar cada opinión o propuesta.
 - Cuentas de demostración (contraseña `Iribarren#2026`):
 
 | Correo                  | Caso                                                   |
 | ----------------------- | ------------------------------------------------------ |
 | `ana@ejemplo.com`       | Persona verificada, perfil completo: puede participar  |
 | `jose@ejemplo.com`      | Persona con el perfil vacío: recorre el asistente      |
-| `rosa@ejemplo.com`      | Perfil en «Requiere corrección» (documento ilegible)   |
+| `rosa@ejemplo.com`      | Perfil a medias: tiene el teléfono, falta la cédula    |
 | `luis@ejemplo.com`      | Correo sin verificar                                   |
 | `carla@ejemplo.com`     | Cuenta de otra alcaldía: pasa por «Unirme a Iribarren» |
 | `contacto@cardones.org` | Organización con perfil incompleto                     |

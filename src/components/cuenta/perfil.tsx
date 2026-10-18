@@ -96,8 +96,7 @@ export function FormNombres({ nombres, apellidos }: { nombres?: string; apellido
         />
       </div>
       <p className="text-sm text-tinta/80">
-        Escríbelos como aparecen en tu cédula. Si tu perfil ya estaba verificado, el equipo revisor
-        volverá a revisarlo. Para corregir la cédula, escribe a soporte.
+        Escríbelos como aparecen en tu cédula. Para corregir la cédula, escribe a soporte.
       </p>
       <BotonEnviar enviando="Guardando…">Guardar nombres</BotonEnviar>
     </form>
