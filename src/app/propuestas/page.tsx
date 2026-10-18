@@ -122,7 +122,7 @@ async function Galeria({ searchParams }: { searchParams: SearchParams }) {
           {todas.length === 0
             ? "Sin resultados"
             : `${plural(todas.length, "propuesta publicada", "propuestas publicadas")}${hayFiltros ? " con estos filtros" : ""}`}
-          <span className="text-tinta/55"> · Aportes de ejemplo</span>
+          <span className="text-tinta/75"> · Aportes de ejemplo</span>
         </p>
 
         {items.length > 0 ? (

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { FormIngreso } from "@/components/cuenta/formularios";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
+import { soloInvitados } from "@/lib/auth/sesion";
 
 export const metadata: Metadata = { title: "Iniciar sesión", robots: { index: false } };
 
@@ -26,6 +27,7 @@ export default function IngresarPage({ searchParams }: { searchParams: SearchPar
 async function Contenido({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const volver = typeof sp.volver === "string" ? sp.volver : undefined;
+  await soloInvitados(volver);
 
   return (
     <>

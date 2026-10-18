@@ -33,7 +33,7 @@ export async function FasesPdul({ compacto = false }: { compacto?: boolean }) {
                     ? "bg-rojo text-papel"
                     : enCurso
                       ? "pulso border-4 border-rojo bg-papel text-rojo"
-                      : "border-2 border-linea bg-papel text-tinta/60"
+                      : "border-2 border-linea bg-papel text-tinta/75"
                 }`}
               >
                 {hecha ? <Check size={16} /> : i + 1}

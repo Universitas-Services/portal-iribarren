@@ -13,6 +13,7 @@ import {
   cargarDocumentoAccion,
   guardarAcreditacionAccion,
   guardarDatosNaturalAccion,
+  guardarNombresAccion,
   guardarRepresentanteAccion,
   solicitarBajaAccion,
   type EstadoFormulario,
@@ -59,6 +60,47 @@ function CampoTelefono({
       ayuda={ayuda}
       error={error}
     />
+  );
+}
+
+/** Persona natural: corrige nombres y apellidos. La cédula no se edita. */
+export function FormNombres({ nombres, apellidos }: { nombres?: string; apellidos?: string }) {
+  const [estado, accion] = useActionState(guardarNombresAccion, inicial);
+  const v = estado.valores ?? {};
+  const filtro = {
+    required: true,
+    maxLength: 100,
+    esquema: nombrePersonaSchema,
+    filtrar: soloLetras,
+    avisoFiltro: "Solo letras y espacios: sin números ni símbolos.",
+  };
+  return (
+    <form action={accion} noValidate className="space-y-5">
+      <ResumenErrores estado={estado} />
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Campo
+          id="nombres"
+          etiqueta="Nombres"
+          autoComplete="given-name"
+          defaultValue={v.nombres ?? nombres}
+          error={estado.errores?.nombres}
+          {...filtro}
+        />
+        <Campo
+          id="apellidos"
+          etiqueta="Apellidos"
+          autoComplete="family-name"
+          defaultValue={v.apellidos ?? apellidos}
+          error={estado.errores?.apellidos}
+          {...filtro}
+        />
+      </div>
+      <p className="text-sm text-tinta/80">
+        Escríbelos como aparecen en tu cédula. Si tu perfil ya estaba verificado, el equipo revisor
+        volverá a revisarlo. Para corregir la cédula, escribe a soporte.
+      </p>
+      <BotonEnviar enviando="Guardando…">Guardar nombres</BotonEnviar>
+    </form>
   );
 }
 

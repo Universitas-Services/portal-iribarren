@@ -48,7 +48,10 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
+  /** Pausa automática mientras el puntero o el foco están dentro (WCAG 2.2.2). */
   const [hovered, setHovered] = useState(false);
+  /** Al pulsar «Reanudar» con el puntero encima, se respeta la orden hasta que salga. */
+  const [forzado, setForzado] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -77,12 +80,26 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
-  const autoplay = playing && !hovered && !reducedMotion && banners.length > 1;
-  useEffect(() => {
-    if (!autoplay) return;
-    const t = window.setTimeout(() => goTo(index + 1), INTERVALO);
-    return () => window.clearTimeout(t);
-  }, [autoplay, index, goTo]);
+  // El avance lo marca la barra de progreso del punto activo (onAnimationEnd): así, al pausar y
+  // reanudar, sigue desde donde quedó en lugar de reiniciar un temporizador invisible.
+  const rota = playing && !reducedMotion && banners.length > 1;
+  const autoplay = rota && (!hovered || forzado);
+
+  function alternar() {
+    if (playing) {
+      setPlaying(false);
+      setForzado(false);
+    } else {
+      setPlaying(true);
+      setForzado(true);
+      goTo(index + 1);
+    }
+  }
+
+  function salir() {
+    setHovered(false);
+    setForzado(false);
+  }
 
   if (banners.length === 0) return null;
   const actual = banners[index];
@@ -95,9 +112,11 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
       role="region"
       className="relative flex h-full min-h-[22rem] flex-col"
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={salir}
       onFocusCapture={() => setHovered(true)}
-      onBlurCapture={() => setHovered(false)}
+      onBlurCapture={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) salir();
+      }}
     >
       <div
         ref={track}
@@ -117,7 +136,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
                 <>
                   <Image
                     src={b.imagen.src}
-                    alt=""
+                    alt={b.imagen.alt}
                     fill
                     sizes="(min-width: 1024px) 700px, 100vw"
                     className="object-cover"
@@ -167,11 +186,27 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
               aria-current={i === index}
               className="grid h-11 w-8 place-items-center"
             >
-              <span
-                className={`block h-1.5 rounded-full transition-[width,opacity] duration-200 ease-out-expo ${
-                  i === index ? "w-6 bg-current opacity-100" : "w-2.5 bg-current opacity-45"
-                }`}
-              />
+              {i === index && rota ? (
+                // Punto activo con progreso: se llena en INTERVALO y se congela en pausa.
+                <span className="relative block h-1.5 w-6 overflow-hidden rounded-full">
+                  <span className="absolute inset-0 bg-current opacity-45" />
+                  <span
+                    key={index}
+                    onAnimationEnd={() => goTo(index + 1)}
+                    style={{
+                      animation: `llenar ${INTERVALO}ms linear forwards`,
+                      animationPlayState: autoplay ? "running" : "paused",
+                    }}
+                    className="absolute inset-0 origin-left bg-current"
+                  />
+                </span>
+              ) : (
+                <span
+                  className={`block h-1.5 rounded-full transition-[width,opacity] duration-200 ease-out-expo ${
+                    i === index ? "w-6 bg-current opacity-100" : "w-2.5 bg-current opacity-45"
+                  }`}
+                />
+              )}
             </button>
           ))}
         </div>
@@ -179,7 +214,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
           {!reducedMotion && banners.length > 1 && (
             <button
               type="button"
-              onClick={() => setPlaying((p) => !p)}
+              onClick={alternar}
               className="grid size-11 place-items-center rounded-full transition-colors hover:bg-current/10"
             >
               <span className="sr-only">

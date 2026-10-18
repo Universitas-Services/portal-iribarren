@@ -94,7 +94,7 @@ export function NewsCard({ post }: { post: PostSummary }) {
         {post.portada ? (
           <Image
             src={post.portada.src}
-            alt=""
+            alt={post.portada.alt}
             fill
             sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
             className="object-cover transition-transform duration-500 ease-out-expo group-hover:scale-[1.03]"

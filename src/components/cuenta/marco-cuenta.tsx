@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { EncabezadoPagina } from "@/components/layout/encabezado-pagina";
+import { PestanasCuenta, type PestanaCuenta } from "./pestanas-cuenta";
 
 /**
  * Marco de las pantallas de cuenta: la banda oscura de las páginas internas y una tarjeta
@@ -11,17 +12,21 @@ export function MarcoCuenta({
   migas,
   children,
   ancho = "max-w-xl",
+  pestana,
 }: {
   titulo: string;
   bajada?: ReactNode;
   migas: { href?: string; label: string }[];
   children: ReactNode;
   ancho?: string;
+  /** En las secciones de «Mi cuenta», la pestaña activa. */
+  pestana?: PestanaCuenta;
 }) {
   return (
     <>
       <EncabezadoPagina ancho="max-w-3xl" migas={migas} titulo={titulo} bajada={bajada} />
       <div className={`relative z-10 mx-auto -mt-16 px-4 pb-24 sm:px-6 lg:-mt-20 ${ancho}`}>
+        {pestana && <PestanasCuenta activa={pestana} />}
         <div className="rounded-tarjeta bg-papel p-6 shadow-tarjeta sm:p-10">{children}</div>
       </div>
     </>

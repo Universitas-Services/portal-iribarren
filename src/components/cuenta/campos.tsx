@@ -14,7 +14,7 @@ import { cedulaSchema, DIGITOS_CEDULA, rifSchema } from "@/lib/validation/common
  */
 
 export const claseCampo = (error?: string, ancho = "w-full") =>
-  `h-12 ${ancho} rounded-xl border bg-papel px-4 text-noche outline-none transition-colors placeholder:text-tinta/45 focus-visible:border-rojo ${
+  `h-12 ${ancho} rounded-xl border bg-papel px-4 text-noche outline-none transition-colors placeholder:text-tinta/70 focus-visible:border-rojo ${
     error ? "border-rojo" : "border-linea hover:border-noche/40"
   }`;
 

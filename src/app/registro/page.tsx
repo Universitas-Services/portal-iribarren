@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { FormRegistroNatural, FormRegistroOrganizacion } from "@/components/cuenta/formularios";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
+import { soloInvitados } from "@/lib/auth/sesion";
 
 export const metadata: Metadata = {
   title: "Regístrate",
@@ -46,6 +47,7 @@ export default function RegistroPage({ searchParams }: { searchParams: SearchPar
 }
 
 async function Paso({ searchParams }: { searchParams: SearchParams }) {
+  await soloInvitados();
   const tipo = (await searchParams).tipo;
 
   if (tipo === "natural" || tipo === "organizacion") {

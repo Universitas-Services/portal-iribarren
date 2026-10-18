@@ -1,13 +1,15 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { RedirectType, redirect } from "next/navigation";
 import type { z } from "zod";
 import { getPost } from "@/lib/api";
 import {
   acreditacionSchema,
+  cambiarContrasenaSchema,
   datosNaturalSchema,
   documentoPerfilSchema,
   loginSchema,
+  nombresSchema,
   participacionSchema,
   recuperarSchema,
   registroNaturalSchema,
@@ -17,6 +19,8 @@ import {
 } from "@/lib/validation/schemas";
 import {
   abandonarPortal,
+  actualizarNombres,
+  cambiarContrasena,
   cargarDocumento,
   cerrarSesion,
   cuentaDeSesion,
@@ -54,7 +58,7 @@ export type EstadoFormulario = {
 };
 
 const CASILLAS = ["aceptaTerminos", "aceptaPoliticaDatos", "mostrarNombre"];
-const SECRETOS = ["contrasena", "confirmarContrasena"];
+const SECRETOS = ["contrasenaActual", "contrasena", "confirmarContrasena"];
 
 /** Convierte el FormData en objeto: casillas a booleano y prefijos de cédula/RIF unidos. */
 function leer(fd: FormData) {
@@ -98,6 +102,14 @@ function destinoSeguro(volver: unknown, porDefecto: string) {
     : porDefecto;
 }
 
+/**
+ * Redirección que reemplaza la entrada del historial. En una Server Action, `redirect()` usa
+ * push por defecto: tras iniciar sesión, «atrás» volvería al formulario de ingreso.
+ */
+function ir(ruta: string): never {
+  return redirect(ruta, RedirectType.replace);
+}
+
 const enlace = (ruta: string, token?: string) =>
   esDesarrollo && token ? `${ruta}?token=${token}` : undefined;
 
@@ -119,7 +131,7 @@ async function finalizarRegistro(
     };
   }
   await guardarAviso({ correo, enlaceDesarrollo: enlace("/verificar", r.tokenDesarrollo) });
-  redirect("/registro/revisa-tu-correo");
+  ir("/registro/revisa-tu-correo");
 }
 
 export async function registrarNaturalAccion(
@@ -208,22 +220,22 @@ export async function ingresarAccion(
   }
   await abrirSesion(r.sesion);
   const volver = destinoSeguro(fd.get("volver"), "/mi-cuenta");
-  if (r.siguiente === "UNIRSE") redirect(`/unirme?volver=${encodeURIComponent(volver)}`);
-  if (r.siguiente === "PERFIL") redirect("/mi-cuenta");
-  redirect(volver);
+  if (r.siguiente === "UNIRSE") ir(`/unirme?volver=${encodeURIComponent(volver)}`);
+  if (r.siguiente === "PERFIL") ir("/mi-cuenta");
+  ir(volver);
 }
 
 export async function cerrarSesionAccion() {
   cerrarSesion(almacen(), await idSesion());
   await borrarSesion();
-  redirect("/");
+  ir("/");
 }
 
 /* ---------- Unirse a esta alcaldía ---------- */
 
 export async function unirseAccion(fd: FormData) {
-  if (!unirse(almacen(), await idSesion())) redirect("/ingresar");
-  redirect(destinoSeguro(fd.get("volver"), "/mi-cuenta"));
+  if (!unirse(almacen(), await idSesion())) ir("/ingresar");
+  ir(destinoSeguro(fd.get("volver"), "/mi-cuenta"));
 }
 
 /* ---------- Recuperar y restablecer ---------- */
@@ -255,7 +267,7 @@ export async function restablecerAccion(
   const p = restablecerSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
   const estado = restablecer(almacen(), p.data.token, p.data.contrasena);
-  if (estado === "OK") redirect("/ingresar?aviso=contrasena");
+  if (estado === "OK") ir("/ingresar?aviso=contrasena");
   const texto =
     estado === "VENCIDO"
       ? "El enlace venció. Pide uno nuevo desde «Olvidé mi contraseña»."
@@ -279,7 +291,7 @@ const BLOQUEADO: EstadoFormulario = {
 /** Tras guardar vuelve a «Mi cuenta»; si el perfil quedó completo, con el aviso para participar. */
 async function trasGuardar(estabaCompleto: boolean): Promise<never> {
   const c = cuentaDeSesion(almacen(), await idSesion());
-  redirect(
+  ir(
     !estabaCompleto && c && perfilCompleto(c)
       ? "/mi-cuenta?guardado=completo"
       : "/mi-cuenta?guardado=1",
@@ -289,7 +301,7 @@ async function trasGuardar(estabaCompleto: boolean): Promise<never> {
 async function cuentaActual() {
   const sesion = await idSesion();
   const c = cuentaDeSesion(almacen(), sesion);
-  if (!c) redirect("/ingresar?volver=/mi-cuenta");
+  if (!c) ir("/ingresar?volver=/mi-cuenta");
   return { sesion, completo: perfilCompleto(c) };
 }
 
@@ -364,15 +376,49 @@ export async function cargarDocumentoAccion(
   return trasGuardar(completo);
 }
 
+/** Corrige nombres y apellidos (persona natural). */
+export async function guardarNombresAccion(
+  _prev: EstadoFormulario,
+  fd: FormData,
+): Promise<EstadoFormulario> {
+  const { sesion, completo } = await cuentaActual();
+  const datos = leer(fd);
+  const p = nombresSchema.safeParse(datos);
+  if (!p.success) return conErrores(p.error, datos);
+  const r = actualizarNombres(almacen(), sesion, p.data.nombres, p.data.apellidos);
+  if (r === "BLOQUEADO") return BLOQUEADO;
+  return trasGuardar(completo);
+}
+
+/* ---------- Seguridad ---------- */
+
+/** Cambia la contraseña con la sesión abierta y cierra las demás sesiones. */
+export async function cambiarContrasenaAccion(
+  _prev: EstadoFormulario,
+  fd: FormData,
+): Promise<EstadoFormulario> {
+  const sesion = await idSesion();
+  const datos = leer(fd);
+  const p = cambiarContrasenaSchema.safeParse(datos);
+  if (!p.success) return conErrores(p.error, datos);
+  const r = cambiarContrasena(almacen(), sesion, p.data.contrasenaActual, p.data.contrasena);
+  if (r === "SIN_SESION") ir("/ingresar?volver=/mi-cuenta/seguridad");
+  if (r === "ACTUAL_INCORRECTA")
+    return { errores: { contrasenaActual: "La contraseña actual no es correcta." } };
+  if (r === "IGUAL_A_LA_ACTUAL")
+    return { errores: { contrasena: "La contraseña nueva debe ser distinta de la actual." } };
+  return ir("/mi-cuenta/seguridad?guardado=contrasena");
+}
+
 export async function abandonarAccion() {
   abandonarPortal(almacen(), await idSesion());
   await borrarSesion();
-  redirect("/ingresar?aviso=abandono");
+  ir("/ingresar?aviso=abandono");
 }
 
 export async function solicitarBajaAccion() {
-  if (!solicitarBaja(almacen(), await idSesion())) redirect("/ingresar");
-  redirect("/mi-cuenta?guardado=baja");
+  if (!solicitarBaja(almacen(), await idSesion())) ir("/ingresar");
+  ir("/mi-cuenta/seguridad?guardado=baja");
 }
 
 /* ---------- Participación ---------- */
@@ -382,7 +428,7 @@ export async function enviarParticipacionAccion(
   fd: FormData,
 ): Promise<EstadoFormulario> {
   const sesion = await idSesion();
-  if (!cuentaDeSesion(almacen(), sesion)) redirect("/ingresar?volver=/participa&motivo=participar");
+  if (!cuentaDeSesion(almacen(), sesion)) ir("/ingresar?volver=/participa&motivo=participar");
   const datos = leer(fd);
   const p = participacionSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
@@ -405,11 +451,11 @@ export async function enviarParticipacionAccion(
     imagenes: imagenes.map(metadatos),
     soporte: soporte ? metadatos(soporte) : undefined,
   });
-  if (r.estado === "SIN_SESION") redirect("/ingresar?volver=/participa&motivo=participar");
+  if (r.estado === "SIN_SESION") ir("/ingresar?volver=/participa&motivo=participar");
   if (r.estado === "PERFIL_INCOMPLETO")
     return {
       valores: valoresDe(datos),
       mensaje: { tipo: "error", texto: "Completa tu perfil en Mi cuenta antes de enviar." },
     };
-  redirect(`/participa/enviada?folio=${r.folio}`);
+  ir(`/participa/enviada?folio=${r.folio}`);
 }

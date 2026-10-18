@@ -43,7 +43,7 @@ function Meta({ post, claro = false }: { post: PostSummary; claro?: boolean }) {
     >
       <span
         className={`rounded-full px-2.5 py-0.5 font-display font-bold ${
-          claro ? "bg-papel/20 text-papel backdrop-blur-sm" : "bg-rojo/10 text-rojo"
+          claro ? "bg-noche/30 text-papel backdrop-blur-sm" : "bg-rojo/10 text-rojo"
         }`}
       >
         {post.categoria}
@@ -73,7 +73,7 @@ function PiezaImagen({ post, prioridad }: { post: PostSummary; prioridad: boolea
       {post.portada && (
         <Image
           src={post.portada.src}
-          alt=""
+          alt={post.portada.alt}
           fill
           sizes="(min-width: 1024px) 300px, (min-width: 640px) 50vw, 100vw"
           loading={prioridad ? "eager" : "lazy"}
@@ -106,7 +106,7 @@ function PiezaVideo({ post, prioridad }: { post: PostSummary; prioridad: boolean
       {post.portada && (
         <Image
           src={post.portada.src}
-          alt=""
+          alt={post.portada.alt}
           fill
           sizes="(min-width: 1024px) 620px, (min-width: 640px) 100vw, 100vw"
           loading={prioridad ? "eager" : "lazy"}
@@ -153,12 +153,12 @@ function PiezaGaleria({ post }: { post: PostSummary }) {
   const extra = (post.conteoImagenes ?? fotos.length) - fotos.length;
   return (
     <article className={`${pieza} h-[28rem] bg-noche sm:h-full`}>
-      <div aria-hidden="true" className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-1">
+      <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-1">
         {principal && (
           <div className="relative col-span-2 row-span-2 overflow-hidden">
             <Image
               src={principal.src}
-              alt=""
+              alt={principal.alt}
               fill
               sizes="(min-width: 1024px) 420px, (min-width: 640px) 66vw, 66vw"
               className="object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.05]"
@@ -169,7 +169,7 @@ function PiezaGaleria({ post }: { post: PostSummary }) {
           <div key={foto.src} className="relative overflow-hidden">
             <Image
               src={foto.src}
-              alt=""
+              alt={foto.alt}
               fill
               sizes="(min-width: 1024px) 210px, 33vw"
               className={`object-cover transition-transform duration-700 ease-out-expo ${
@@ -177,7 +177,10 @@ function PiezaGaleria({ post }: { post: PostSummary }) {
               }`}
             />
             {i === 1 && extra > 0 && (
-              <span className="absolute inset-0 grid place-items-center bg-noche/60 font-display text-2xl font-extrabold text-papel">
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 grid place-items-center bg-noche/60 font-display text-2xl font-extrabold text-papel"
+              >
                 +{extra}
               </span>
             )}

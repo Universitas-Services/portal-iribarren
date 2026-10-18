@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { FormReenviar } from "@/components/cuenta/formularios";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
-import { leerAviso } from "@/lib/auth/sesion";
+import { leerAviso, soloInvitados } from "@/lib/auth/sesion";
 
 export const metadata: Metadata = { title: "Revisa tu correo", robots: { index: false } };
 
@@ -26,6 +26,7 @@ export default function RevisaTuCorreoPage() {
 }
 
 async function Contenido() {
+  await soloInvitados();
   const aviso = await leerAviso();
   return (
     <div className="text-center">

@@ -103,7 +103,22 @@ export const restablecerSchema = z
   })
   .refine(contrasenasIguales.check, contrasenasIguales.params);
 
+/** Cambio de contraseña con la sesión abierta: la actual y la nueva con sus reglas. */
+export const cambiarContrasenaSchema = z
+  .object({
+    contrasenaActual: z.string().min(1, "Ingresa tu contraseña actual."),
+    contrasena: contrasenaSchema,
+    confirmarContrasena: z.string(),
+  })
+  .refine(contrasenasIguales.check, contrasenasIguales.params);
+
 /* ---------- Perfil (v3, «Para terminación del perfil») ---------- */
+
+/** Corrección de nombres y apellidos de una persona natural (la cédula no se edita). */
+export const nombresSchema = z.object({
+  nombres: nombrePersonaSchema,
+  apellidos: nombrePersonaSchema,
+});
 
 const opcion = <T extends readonly [string, ...string[]]>(valores: T, error: string) =>
   z.enum(valores, { error });

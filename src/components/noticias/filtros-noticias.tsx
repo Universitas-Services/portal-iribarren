@@ -54,7 +54,7 @@ const PESTANAS: {
 ];
 
 const campo =
-  "h-12 w-full rounded-xl border border-linea bg-papel px-4 text-noche transition-colors outline-none focus-visible:border-rojo";
+  "h-12 w-full rounded-xl border border-linea bg-papel px-4 text-noche transition-colors outline-none placeholder:text-tinta/70 focus-visible:border-rojo";
 const etiqueta = "mb-1.5 block font-display text-sm font-bold text-noche";
 
 /**
@@ -251,8 +251,10 @@ export function FiltrosNoticias({
               className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 font-display text-sm font-bold transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.96] ${
                 activa
                   ? "border-noche bg-noche text-papel"
-                  : "border-linea bg-papel text-noche hover:border-noche/40"
-              } ${n === 0 && !activa ? "opacity-50" : ""}`}
+                  : n === 0
+                    ? "border-dashed border-plata bg-papel text-tinta/80 hover:border-noche/40"
+                    : "border-linea bg-papel text-noche hover:border-noche/40"
+              }`}
             >
               <Icon size={16} aria-hidden="true" />
               {label}

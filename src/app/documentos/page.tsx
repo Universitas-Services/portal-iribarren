@@ -55,7 +55,7 @@ async function Repositorio({ searchParams }: { searchParams: SearchParams }) {
             {total === 0
               ? "Sin resultados"
               : `${plural(total, "documento", "documentos")}${hayFiltros ? " con estos filtros" : ""}`}
-            <span className="text-tinta/60 lg:text-papel/65"> · Documentos de ejemplo</span>
+            <span className="text-tinta/75 lg:text-papel/75"> · Documentos de ejemplo</span>
           </p>
 
           {items.length > 0 ? (

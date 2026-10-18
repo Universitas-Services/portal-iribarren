@@ -8,3 +8,6 @@ next-env.d.ts
 .claude/skills
 .claude/agents
 .agents
+test-results
+playwright-report
+blob-report

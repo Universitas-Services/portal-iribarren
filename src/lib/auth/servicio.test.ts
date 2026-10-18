@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import { CONTRASENA_DEMO, almacenDemo } from "./fixtures";
 import {
   abandonarPortal,
+  actualizarNombres,
+  cambiarContrasena,
+  cambiarEstadoParticipacion,
   cargarDocumento,
   correoDeToken,
   cuentaDeSesion,
@@ -147,6 +150,48 @@ const sesionDe = (alm: ReturnType<typeof almacenDemo>, correo: string) => {
 
 const pdf = { nombre: "cedula.pdf", mime: "application/pdf", tamano: 1000 };
 
+describe("cuenta: contraseña y nombres", () => {
+  it("cambia la contraseña con la actual y cierra solo las otras sesiones", () => {
+    const alm = almacenDemo();
+    const esta = sesionDe(alm, "ana@ejemplo.com");
+    const otra = sesionDe(alm, "ana@ejemplo.com");
+    expect(cambiarContrasena(alm, esta, "NoEsLaClave#1", "Nueva#Clave2026")).toBe(
+      "ACTUAL_INCORRECTA",
+    );
+    expect(cambiarContrasena(alm, esta, CONTRASENA_DEMO, CONTRASENA_DEMO)).toBe(
+      "IGUAL_A_LA_ACTUAL",
+    );
+    expect(cambiarContrasena(alm, esta, CONTRASENA_DEMO, "Nueva#Clave2026")).toBe("OK");
+    expect(cuentaDeSesion(alm, esta)?.correo).toBe("ana@ejemplo.com");
+    expect(cuentaDeSesion(alm, otra)).toBeUndefined();
+    expect(iniciarSesion(alm, "ana@ejemplo.com", CONTRASENA_DEMO).estado).toBe("CREDENCIALES");
+    expect(iniciarSesion(alm, "ana@ejemplo.com", "Nueva#Clave2026").estado).toBe("OK");
+    expect(cambiarContrasena(alm, undefined, "a", "b")).toBe("SIN_SESION");
+  });
+
+  it("corregir el nombre de un perfil verificado lo devuelve a revisión", () => {
+    const alm = almacenDemo();
+    const s = sesionDe(alm, "ana@ejemplo.com");
+    const ana = cuentaDeSesion(alm, s)!;
+    // Sin cambios, el estado se mantiene.
+    expect(actualizarNombres(alm, s, ana.nombres!, ana.apellidos!)).toBe("OK");
+    expect(ana.estadoVerificacion).toBe("VERIFICADO");
+    expect(actualizarNombres(alm, s, "Ana Lucía", ana.apellidos!)).toBe("OK");
+    expect(ana.nombres).toBe("Ana Lucía");
+    expect(ana.estadoVerificacion).toBe("PENDIENTE");
+  });
+
+  it("no edita nombres de organizaciones ni de perfiles en corrección", () => {
+    const alm = almacenDemo();
+    expect(actualizarNombres(alm, sesionDe(alm, "contacto@cardones.org"), "A", "B")).toBe(
+      "SIN_SESION",
+    );
+    expect(actualizarNombres(alm, sesionDe(alm, "rosa@ejemplo.com"), "Rosa", "Pérez")).toBe(
+      "BLOQUEADO",
+    );
+  });
+});
+
 describe("perfil", () => {
   it("se completa al guardar el teléfono y el documento de identidad", () => {
     const alm = almacenDemo();
@@ -261,6 +306,66 @@ describe("participación", () => {
     const r = enviarParticipacion(alm, ana, "k", datos);
     if (r.estado !== "OK") throw new Error("debía enviarse");
     expect(participacionPropia(alm, rosa, r.folio)).toBeUndefined();
+  });
+});
+
+describe("cambio de estado (Revisor)", () => {
+  const datos = {
+    tipo: "OPINION_GENERAL" as const,
+    parroquia: "Catedral" as const,
+    sector: "Centro",
+    categoriaTecnica: "Vialidad y Transporte" as const,
+    descripcion: "Una opinión de prueba con suficiente detalle para el plan de desarrollo.",
+    imagenes: [],
+  };
+
+  function nueva(mostrarNombre: boolean) {
+    const alm = almacenDemo();
+    const s = sesionDe(alm, "ana@ejemplo.com");
+    const r = enviarParticipacion(alm, s, "k", { ...datos, mostrarNombre });
+    if (r.estado !== "OK") throw new Error("debía enviarse");
+    return { alm, s, folio: r.folio };
+  }
+
+  it("sigue PENDIENTE → EN_REVISION → APROBADA → PUBLICADA y lo deja en el historial", () => {
+    const { alm, s, folio } = nueva(true);
+    expect(cambiarEstadoParticipacion(alm, folio, "EN_REVISION")).toEqual({ estado: "OK" });
+    expect(cambiarEstadoParticipacion(alm, folio, "APROBADA", " Buen aporte ")).toEqual({
+      estado: "OK",
+    });
+    expect(cambiarEstadoParticipacion(alm, folio, "PUBLICADA")).toEqual({ estado: "OK" });
+    const p = participacionPropia(alm, s, folio)!;
+    expect(p.historial.map((h) => h.estado)).toEqual([
+      "PENDIENTE",
+      "EN_REVISION",
+      "APROBADA",
+      "PUBLICADA",
+    ]);
+    expect(p.historial[2]?.comentario).toBe("Buen aporte");
+    expect(propuestaPublica(alm, folio)?.folio).toBe(folio);
+  });
+
+  it("rechaza saltos de estado y estados finales", () => {
+    const { alm, folio } = nueva(true);
+    expect(cambiarEstadoParticipacion(alm, folio, "APROBADA").estado).toBe("TRANSICION_INVALIDA");
+    cambiarEstadoParticipacion(alm, folio, "EN_REVISION");
+    cambiarEstadoParticipacion(alm, folio, "RECHAZADA", "Identidad no acreditada");
+    expect(cambiarEstadoParticipacion(alm, folio, "EN_REVISION").estado).toBe(
+      "TRANSICION_INVALIDA",
+    );
+    expect(cambiarEstadoParticipacion(alm, "IRI-1999-0001", "EN_REVISION").estado).toBe(
+      "NO_EXISTE",
+    );
+  });
+
+  it("rechazar exige un motivo y publicar exige el nombre autorizado", () => {
+    const { alm, folio } = nueva(false);
+    cambiarEstadoParticipacion(alm, folio, "EN_REVISION");
+    expect(cambiarEstadoParticipacion(alm, folio, "RECHAZADA", "  ").estado).toBe("FALTA_MOTIVO");
+    cambiarEstadoParticipacion(alm, folio, "APROBADA");
+    expect(cambiarEstadoParticipacion(alm, folio, "PUBLICADA").estado).toBe(
+      "SIN_NOMBRE_AUTORIZADO",
+    );
   });
 });
 
