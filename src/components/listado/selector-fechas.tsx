@@ -139,7 +139,7 @@ export function SelectorFechas({
         <CalendarDays size={18} aria-hidden="true" className="shrink-0 text-rojo" />
         <span
           id={`${idPanel}-valor`}
-          className={`flex-1 truncate ${hayRango ? "font-semibold text-noche" : "text-tinta/60"}`}
+          className={`flex-1 truncate ${hayRango ? "font-semibold text-noche" : "text-tinta/70"}`}
         >
           {textoRango(desde, hasta)}
         </span>
@@ -224,7 +224,7 @@ export function SelectorFechas({
                     "grid size-10 place-items-center rounded-full text-noche hover:bg-superficie disabled:opacity-30",
                   month_grid: "border-collapse",
                   weekdays: "",
-                  weekday: "size-10 text-xs font-semibold text-tinta/60 capitalize",
+                  weekday: "size-10 text-xs font-semibold text-tinta/75 capitalize",
                   week: "",
                   day: "p-0 text-center text-sm",
                   day_button:
@@ -234,7 +234,7 @@ export function SelectorFechas({
                   range_start: "rounded-l-full bg-rojo/10 [&>button]:bg-rojo [&>button]:text-papel",
                   range_end: "rounded-r-full bg-rojo/10 [&>button]:bg-rojo [&>button]:text-papel",
                   range_middle: "bg-rojo/10 [&>button]:rounded-none [&>button]:text-rojo-oscuro",
-                  outside: "opacity-40",
+                  outside: "[&>button]:font-normal [&>button]:text-tinta/70",
                   disabled: "",
                   hidden: "invisible",
                 }}

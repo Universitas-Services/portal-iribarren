@@ -3,7 +3,6 @@ import {
   CircleCheck,
   ClipboardList,
   Clock,
-  LogOut,
   MessageSquareText,
   ShieldCheck,
   TriangleAlert,
@@ -17,12 +16,11 @@ import {
   FormAcreditacion,
   FormDatosNatural,
   FormDocumento,
+  FormNombres,
   FormRepresentante,
-  ZonaCuenta,
 } from "@/components/cuenta/perfil";
 import { Progreso } from "@/components/cuenta/piezas";
 import type { EstadoVerificacion } from "@/lib/api/types";
-import { cerrarSesionAccion } from "@/lib/auth/acciones";
 import type { PasoPerfil, VistaPerfil } from "@/lib/auth/servicio";
 import { getPerfil } from "@/lib/auth/sesion";
 
@@ -36,6 +34,7 @@ export default function MiCuentaPage({ searchParams }: { searchParams: SearchPar
       migas={[{ href: "/", label: "Inicio" }, { label: "Mi cuenta" }]}
       titulo="Mi cuenta"
       ancho="max-w-2xl"
+      pestana="perfil"
     >
       <Suspense fallback={<FormularioSkeleton campos={3} />}>
         <Contenido searchParams={searchParams} />
@@ -131,7 +130,7 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
         <Progreso pasos={u.pasos} />
       </div>
 
-      <Datos u={u} />
+      <Datos u={u} bloqueado={enCorreccion} />
 
       <div className="mt-8 space-y-4">
         {u.tipo === "NATURAL" ? (
@@ -217,21 +216,16 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
         </li>
       </ul>
 
-      <section aria-labelledby="zona-cuenta" className="mt-10 border-t border-linea pt-6">
-        <h3 id="zona-cuenta" className="mb-2 font-display font-extrabold text-noche">
-          Tu cuenta
-        </h3>
-        <form action={cerrarSesionAccion}>
-          <button
-            type="submit"
-            className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left font-semibold text-noche hover:bg-superficie"
-          >
-            <LogOut size={18} aria-hidden="true" className="shrink-0 text-rojo" />
-            Cerrar sesión
-          </button>
-        </form>
-        <ZonaCuenta bajaSolicitada={u.bajaSolicitada} />
-      </section>
+      <p className="mt-8 text-sm text-tinta/80">
+        La contraseña, el cierre de sesión y la baja de la cuenta están en{" "}
+        <Link
+          href="/mi-cuenta/seguridad"
+          className="font-semibold text-rojo underline underline-offset-2"
+        >
+          Seguridad
+        </Link>
+        .
+      </p>
     </div>
   );
 }
@@ -267,12 +261,7 @@ function Aviso({ guardado }: { guardado: unknown }) {
       </div>
     );
   }
-  const texto =
-    guardado === "baja"
-      ? "Recibimos tu solicitud de baja. Te escribiremos al correo de la cuenta."
-      : guardado === "1"
-        ? "Cambios guardados."
-        : null;
+  const texto = guardado === "1" ? "Cambios guardados." : null;
   if (!texto) return null;
   return (
     <p
@@ -285,8 +274,11 @@ function Aviso({ guardado }: { guardado: unknown }) {
   );
 }
 
-/** Datos del registro: no se editan aquí (cambian con una solicitud a soporte). */
-function Datos({ u }: { u: VistaPerfil }) {
+/**
+ * Datos del registro. La persona natural puede corregir nombres y apellidos; la cédula, el RIF
+ * y la razón social cambian con una solicitud a soporte.
+ */
+function Datos({ u, bloqueado }: { u: VistaPerfil; bloqueado: boolean }) {
   const filas: [string, string | undefined][] =
     u.tipo === "NATURAL"
       ? [
@@ -299,8 +291,8 @@ function Datos({ u }: { u: VistaPerfil }) {
           ["RIF", u.rif],
           ["Tipo de entidad", u.tipoEntidad],
         ];
-  return (
-    <dl className="mt-6 grid gap-x-6 gap-y-3 sm:grid-cols-3">
+  const lista = (
+    <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
       {filas.map(([k, v]) => (
         <div key={k}>
           <dt className="text-sm text-tinta/75">{k}</dt>
@@ -308,6 +300,19 @@ function Datos({ u }: { u: VistaPerfil }) {
         </div>
       ))}
     </dl>
+  );
+  if (u.tipo !== "NATURAL" || bloqueado) return <div className="mt-6">{lista}</div>;
+
+  return (
+    <details className="group mt-6 rounded-2xl border border-linea open:border-noche/20">
+      <summary className="flex cursor-pointer list-none items-start gap-3 p-4 [&::-webkit-details-marker]:hidden">
+        <div className="min-w-0 flex-1">{lista}</div>
+        <span className="text-sm font-semibold text-rojo group-open:hidden">Editar</span>
+      </summary>
+      <div className="border-t border-linea p-4 sm:p-5">
+        <FormNombres nombres={u.nombres} apellidos={u.apellidos} />
+      </div>
+    </details>
   );
 }
 

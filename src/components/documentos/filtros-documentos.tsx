@@ -98,9 +98,13 @@ export function FiltrosDocumentos({
     }
   }, []);
 
-  const opcion = (activa: boolean) =>
+  const opcion = (activa: boolean, vacia = false) =>
     `flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-3 text-left text-sm transition-colors ${
-      activa ? "bg-noche font-semibold text-papel" : "text-tinta hover:bg-superficie"
+      activa
+        ? "bg-noche font-semibold text-papel"
+        : vacia
+          ? "text-tinta/75 hover:bg-superficie"
+          : "text-tinta hover:bg-superficie"
     }`;
   const conteo = (activa: boolean) =>
     `rounded-full px-2 py-0.5 text-xs font-semibold ${activa ? "bg-papel/15" : "bg-superficie text-tinta/80"}`;
@@ -153,7 +157,7 @@ export function FiltrosDocumentos({
               placeholder="Título o tema"
               value={valores.q}
               onChange={(e) => cambiar({ q: e.target.value }, true)}
-              className="h-12 w-full rounded-xl border border-linea bg-papel pr-3 pl-10 text-noche outline-none focus-visible:border-rojo"
+              className="h-12 w-full rounded-xl border border-linea bg-papel pr-3 pl-10 text-noche outline-none placeholder:text-tinta/70 focus-visible:border-rojo"
             />
           </div>
         </div>
@@ -179,7 +183,7 @@ export function FiltrosDocumentos({
                   }`}
                 >
                   {label}
-                  <span className="font-normal opacity-70">{porEstado[clave]}</span>
+                  <span className="font-normal tabular-nums">{porEstado[clave]}</span>
                 </button>
               );
             })}
@@ -202,7 +206,7 @@ export function FiltrosDocumentos({
                       e.preventDefault();
                       cambiar({ categoria: c });
                     }}
-                    className={`${opcion(activa)} ${n === 0 && !activa ? "opacity-50" : ""}`}
+                    className={opcion(activa, n === 0)}
                   >
                     <span className="inline-flex items-center gap-2">
                       <FolderOpen

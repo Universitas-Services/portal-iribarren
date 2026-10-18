@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { almacenDemo } from "./fixtures";
 import {
@@ -83,6 +84,16 @@ export async function getPropuestaPublica(folio: string) {
 
 export async function idSesion() {
   return (await cookies()).get(COOKIE_SESION)?.value;
+}
+
+/**
+ * Páginas de invitado (ingreso, registro, recuperación): con la sesión abierta no se muestran y
+ * llevan a la cuenta. En el render, `redirect()` reemplaza la entrada del historial.
+ */
+export async function soloInvitados(destino = "/mi-cuenta") {
+  if (!(await getUsuario())) return;
+  const seguro = destino.startsWith("/") && !destino.startsWith("//") ? destino : "/mi-cuenta";
+  redirect(seguro);
 }
 
 /** Solo en Server Actions: Next no permite escribir cookies durante el render. */

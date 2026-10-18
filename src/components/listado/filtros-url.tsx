@@ -110,7 +110,7 @@ export function FiltrosUrl({
                   placeholder={c.placeholder}
                   value={valores[c.nombre] ?? ""}
                   onChange={(e) => cambiar(c.nombre, e.target.value, true)}
-                  className="h-12 w-full rounded-xl border border-linea bg-papel pr-4 pl-11 text-noche transition-colors outline-none placeholder:text-tinta/45 hover:border-noche/40 focus-visible:border-rojo"
+                  className="h-12 w-full rounded-xl border border-linea bg-papel pr-4 pl-11 text-noche transition-colors outline-none placeholder:text-tinta/70 hover:border-noche/40 focus-visible:border-rojo"
                 />
               </div>
             </div>

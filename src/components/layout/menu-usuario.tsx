@@ -1,11 +1,11 @@
 "use client";
 
-import { ChevronDown, ClipboardList, LogOut, UserRound } from "lucide-react";
+import { ChevronDown, ClipboardList, LogOut, ShieldCheck, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { cerrarSesionAccion } from "@/lib/auth/acciones";
 
-/** Menú de la cuenta en el encabezado de escritorio: Mi cuenta y Cerrar sesión. */
+/** Menú de la cuenta en el encabezado de escritorio: Mi cuenta, Seguridad y Cerrar sesión. */
 export function MenuUsuario({ nombre, corto }: { nombre: string; corto: string }) {
   const [abierto, setAbierto] = useState(false);
   const caja = useRef<HTMLDivElement>(null);
@@ -49,7 +49,7 @@ export function MenuUsuario({ nombre, corto }: { nombre: string; corto: string }
         >
           {inicial}
         </span>
-        <span className="max-w-40 truncate">{corto}</span>
+        <span className="max-w-28 truncate xl:max-w-40">{corto}</span>
         <ChevronDown
           size={16}
           aria-hidden="true"
@@ -77,6 +77,14 @@ export function MenuUsuario({ nombre, corto }: { nombre: string; corto: string }
           >
             <ClipboardList size={18} aria-hidden="true" className="text-rojo" />
             Mis participaciones
+          </Link>
+          <Link
+            href="/mi-cuenta/seguridad"
+            onClick={() => setAbierto(false)}
+            className="flex min-h-11 items-center gap-2.5 rounded-xl px-3 font-semibold text-noche hover:bg-superficie"
+          >
+            <ShieldCheck size={18} aria-hidden="true" className="text-rojo" />
+            Seguridad y contraseña
           </Link>
           <form action={cerrarSesionAccion}>
             <button

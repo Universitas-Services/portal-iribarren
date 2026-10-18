@@ -308,6 +308,28 @@ export function restablecer(
   return "OK";
 }
 
+export type ResultadoCambioContrasena =
+  "OK" | "SIN_SESION" | "ACTUAL_INCORRECTA" | "IGUAL_A_LA_ACTUAL";
+
+/**
+ * Cambio de contraseña con la sesión abierta (POST /portal/auth/password/change, por pedir a
+ * backend). Exige la actual y cierra las demás sesiones de la cuenta; la actual sigue abierta.
+ */
+export function cambiarContrasena(
+  alm: Almacen,
+  sesion: string | undefined,
+  actual: string,
+  nueva: string,
+): ResultadoCambioContrasena {
+  const c = cuentaDeSesion(alm, sesion);
+  if (!c) return "SIN_SESION";
+  if (!coincide(actual, c.hash)) return "ACTUAL_INCORRECTA";
+  if (actual === nueva) return "IGUAL_A_LA_ACTUAL";
+  c.hash = cifrar(nueva);
+  for (const [s, id] of alm.sesiones) if (id === c.id && s !== sesion) alm.sesiones.delete(s);
+  return "OK";
+}
+
 /* ---------- Perfil ---------- */
 
 export type PasoPerfil = {
@@ -377,6 +399,27 @@ export function guardarPerfil(
   if (!c) return "SIN_SESION";
   if (soloCorreccion(c)) return "BLOQUEADO";
   c.perfil = { ...c.perfil, ...datos };
+  return "OK";
+}
+
+/**
+ * Corrige nombres y apellidos de una persona natural (PATCH /portal/me/profile). La cédula no
+ * se edita. Si el perfil ya estaba verificado y el nombre cambia, vuelve a «En revisión» para
+ * que el Revisor lo coteje con la cédula; los aportes enviados conservan el nombre de entonces.
+ */
+export function actualizarNombres(
+  alm: Almacen,
+  sesion: string | undefined,
+  nombres: string,
+  apellidos: string,
+): ResultadoPerfil {
+  const c = cuentaDeSesion(alm, sesion);
+  if (!c || c.tipo !== "NATURAL") return "SIN_SESION";
+  if (soloCorreccion(c)) return "BLOQUEADO";
+  const cambio = c.nombres !== nombres || c.apellidos !== apellidos;
+  c.nombres = nombres;
+  c.apellidos = apellidos;
+  if (cambio && c.estadoVerificacion === "VERIFICADO") c.estadoVerificacion = "PENDIENTE";
   return "OK";
 }
 
@@ -503,6 +546,47 @@ export function enviarParticipacion(
   });
   alm.idempotencia.set(clave, folio);
   return { estado: "OK", folio };
+}
+
+/**
+ * Transiciones que puede hacer el Revisor desde el admin (v3, 5.1). Despublicar devuelve una
+ * propuesta PUBLICADA a APROBADA.
+ */
+export const TRANSICIONES: Record<EstadoParticipacion, EstadoParticipacion[]> = {
+  PENDIENTE: ["EN_REVISION"],
+  EN_REVISION: ["APROBADA", "RECHAZADA"],
+  APROBADA: ["PUBLICADA"],
+  RECHAZADA: [],
+  PUBLICADA: ["APROBADA"],
+};
+
+export type ResultadoTransicion =
+  | { estado: "OK" }
+  | { estado: "NO_EXISTE" }
+  | { estado: "TRANSICION_INVALIDA" }
+  | { estado: "FALTA_MOTIVO" }
+  | { estado: "SIN_NOMBRE_AUTORIZADO" };
+
+/**
+ * Cambio de estado de una participación, como lo hará el Revisor en plataforma-admin. En el
+ * portal solo lo usa el simulador de desarrollo (y las pruebas E2E) para ver el seguimiento.
+ */
+export function cambiarEstadoParticipacion(
+  alm: Almacen,
+  folio: string,
+  nuevo: EstadoParticipacion,
+  comentario?: string,
+  ahora = Date.now(),
+): ResultadoTransicion {
+  const p = alm.participaciones.get(folio.toUpperCase());
+  if (!p) return { estado: "NO_EXISTE" };
+  if (!TRANSICIONES[p.estado].includes(nuevo)) return { estado: "TRANSICION_INVALIDA" };
+  const texto = comentario?.trim() || undefined;
+  if (nuevo === "RECHAZADA" && !texto) return { estado: "FALTA_MOTIVO" };
+  if (nuevo === "PUBLICADA" && !p.mostrarNombre) return { estado: "SIN_NOMBRE_AUTORIZADO" };
+  p.estado = nuevo;
+  p.historial.push({ estado: nuevo, fecha: new Date(ahora).toISOString(), comentario: texto });
+  return { estado: "OK" };
 }
 
 /** Una participación propia; nadie ve los folios de otra cuenta. */

@@ -21,7 +21,7 @@ function Portada({ video }: { video: Video }) {
     <>
       <Image
         src={video.portada.src}
-        alt=""
+        alt={video.portada.alt}
         fill
         sizes="(min-width: 896px) 864px, 100vw"
         className="object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.03]"

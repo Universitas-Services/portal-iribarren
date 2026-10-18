@@ -27,6 +27,7 @@ pnpm dev                     # http://localhost:3000
 | `pnpm lint`      | ESLint, sin advertencias permitidas                                  |
 | `pnpm typecheck` | Chequeo de tipos de TypeScript                                       |
 | `pnpm test`      | Pruebas unitarias con Vitest (`pnpm test:watch` en modo observación) |
+| `pnpm test:e2e`  | E2E y auditoría WCAG 2.1 AA con Playwright y axe (ver abajo)         |
 | `pnpm format`    | Formatea todo con Prettier (`pnpm format:check` solo verifica)       |
 
 Al hacer commit, Husky ejecuta lint-staged: ESLint y Prettier sobre los archivos modificados.
@@ -53,7 +54,7 @@ Next.js (App Router) · TypeScript · Tailwind CSS · Zod · ESLint · Prettier 
 
 Mientras no exista `plataforma-api`, el registro, el acceso, el perfil y la participación usan una autenticación simulada en memoria (`src/lib/auth/`), con las mismas reglas de `/portal/auth/*`. Se reinicia al reiniciar el servidor.
 
-- Rutas: `/registro`, `/registro/revisa-tu-correo`, `/verificar`, `/ingresar`, `/unirme`, `/recuperar`, `/restablecer`, `/mi-cuenta` (asistente de perfil), `/participa` y `/participa/enviada`.
+- Rutas: `/registro`, `/registro/revisa-tu-correo`, `/verificar`, `/ingresar`, `/unirme`, `/recuperar`, `/restablecer`, `/mi-cuenta` (perfil), `/mi-cuenta/seguridad` (contraseña y cuenta), `/participa` y `/participa/enviada`.
 - Los archivos se validan en el navegador y en el servidor, pero el simulador solo guarda su nombre, tipo y peso. Perfil: PDF, JPG o PNG de hasta 2 MB. Participación: hasta 5 fotos (JPG, PNG o WebP de 2 MB), un enlace de video de YouTube o Instagram y un documento de soporte (obligatorio en la propuesta formal).
 - En desarrollo, el enlace que en producción llega por correo aparece en un recuadro «Solo en desarrollo».
 - Cuentas de demostración (contraseña `Iribarren#2026`):
@@ -70,9 +71,15 @@ Mientras no exista `plataforma-api`, el registro, el acceso, el perfil y la part
 - Enlaces de ejemplo: `/verificar?token=demo-vencido` y `/verificar?token=demo-usado`.
 - Hay 7 participaciones de ejemplo (`IRI-2026-0001` a `0007`): 5 de Ana en todos los estados, para ver «Mis participaciones» (`/mi-cuenta/participaciones`), y 3 publicadas, para la galería pública `/propuestas`. Los aportes nuevos siguen desde `IRI-2026-0008` y la numeración vuelve a empezar al reiniciar el servidor.
 
+## Pruebas E2E y accesibilidad
+
+`e2e/` tiene el flujo completo del ciudadano (registro → verificar → perfil → propuesta → cambio de estado), la auditoría WCAG 2.1 AA con axe-core y las pruebas de teclado y reflujo, en escritorio y a 375 px. Corren contra `pnpm dev` (lo levantan o reutilizan el que esté abierto). La primera vez: `pnpm exec playwright install chromium`. Detalle, hallazgos y revisión manual en [`docs/ACCESIBILIDAD.md`](docs/ACCESIBILIDAD.md).
+
+En desarrollo, `POST /api/desarrollo/participaciones/{folio}/estado` con `{ "estado": "EN_REVISION", "comentario": "…" }` simula al Revisor del admin (en producción responde 404).
+
 ## Integración continua
 
-`.github/workflows/ci.yml` se ejecuta en cada pull request y en cada push a `main`: Prettier, ESLint, TypeScript, Vitest y `next build`. Dependabot propone actualizaciones semanales de dependencias y de acciones.
+`.github/workflows/ci.yml` se ejecuta en cada pull request y en cada push a `main`: Prettier, ESLint, TypeScript, Vitest y `next build`, y en un trabajo aparte las pruebas de Playwright (con su informe como artefacto). Dependabot propone actualizaciones semanales de dependencias y de acciones.
 
 ## Herramientas de diseño para Claude Code
 

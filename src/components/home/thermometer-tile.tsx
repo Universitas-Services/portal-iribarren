@@ -87,7 +87,7 @@ export async function ThermometerTile({ className = "" }: { className?: string }
                 {fase.nombre}
                 <span
                   className={`mt-0.5 block font-sans text-xs font-normal ${
-                    estado === "actual" ? "text-rojo" : "text-tinta/65"
+                    estado === "actual" ? "text-rojo" : "text-tinta/75"
                   }`}
                 >
                   <span className="sr-only">: </span>

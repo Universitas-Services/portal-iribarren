@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { PestanasCuenta } from "@/components/cuenta/pestanas-cuenta";
 import { EncabezadoPagina } from "@/components/layout/encabezado-pagina";
 import { FiltrosUrl, type CampoFiltro } from "@/components/listado/filtros-url";
 import { TransicionListado, ZonaResultados } from "@/components/listado/transicion";
@@ -67,6 +68,9 @@ export default function MisParticipacionesPage({ searchParams }: { searchParams:
         bajada="Cada aporte que enviaste, con su folio y el estado de su revisión."
       />
       <div className="relative z-10 mx-auto -mt-16 max-w-5xl px-4 pb-24 sm:px-6 lg:-mt-20 lg:px-8">
+        <div className="mx-auto max-w-2xl">
+          <PestanasCuenta activa="participaciones" />
+        </div>
         <Suspense fallback={<ListadoSkeleton />}>
           <Listado searchParams={searchParams} />
         </Suspense>

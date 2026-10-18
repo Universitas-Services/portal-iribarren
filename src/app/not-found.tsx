@@ -52,7 +52,7 @@ export default function NotFound() {
         </div>
         <Image
           src="/brand/pdul-ya-isotipo.png"
-          alt=""
+          alt="Isotipo de PDUL YA"
           width={512}
           height={588}
           className="flotar mx-auto hidden w-full max-w-sm drop-shadow-2xl lg:block"

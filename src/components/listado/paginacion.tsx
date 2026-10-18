@@ -54,7 +54,7 @@ export function Paginacion({
         </li>
         {numeros(pagina, paginas).map((n, i) =>
           n === "…" ? (
-            <li key={`salto-${i}`} aria-hidden="true" className="px-1 text-tinta/60">
+            <li key={`salto-${i}`} aria-hidden="true" className="px-1 text-tinta/70">
               …
             </li>
           ) : (

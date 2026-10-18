@@ -146,7 +146,11 @@ export function CampoArchivo({
         <div className="flex items-center gap-4 rounded-2xl border border-linea p-3">
           {sel.url ? (
             // eslint-disable-next-line @next/next/no-img-element -- vista previa local (blob:)
-            <img src={sel.url} alt="" className="size-16 shrink-0 rounded-xl object-cover" />
+            <img
+              src={sel.url}
+              alt={`Vista previa de ${sel.nombre}`}
+              className="size-16 shrink-0 rounded-xl object-cover"
+            />
           ) : (
             <span className="grid size-16 shrink-0 place-items-center rounded-xl bg-rojo/10 text-rojo">
               <FileText size={28} aria-hidden="true" />
@@ -276,7 +280,7 @@ export function CampoImagenes({
               {/* eslint-disable-next-line @next/next/no-img-element -- vista previa local (blob:) */}
               <img
                 src={f.url}
-                alt=""
+                alt={`Vista previa de ${f.file.name}`}
                 className="aspect-square w-full rounded-xl object-cover ring-1 ring-linea"
               />
               <button

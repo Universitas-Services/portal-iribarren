@@ -223,7 +223,7 @@ export function Selector({
               ? compacto
                 ? "font-display font-bold text-noche"
                 : "font-semibold text-noche"
-              : "text-tinta/60"
+              : "text-tinta/70"
           }`}
         >
           {elegida?.texto ?? vacio}

@@ -8,11 +8,11 @@ import { NAV_LINKS } from "./nav-links";
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-linea bg-papel/95 backdrop-blur-sm supports-[backdrop-filter]:bg-papel/85 print:hidden">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:h-20 lg:px-8">
-        <Link href="/" className="shrink-0" aria-label="PDUL YA, ir al inicio">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:h-20 lg:gap-4 lg:px-8 xl:gap-6">
+        <Link href="/" className="shrink-0">
           <Image
             src="/brand/pdul-ya-horizontal-divisor.png"
-            alt=""
+            alt="PDUL YA, ir al inicio"
             width={960}
             height={346}
             loading="eager"
@@ -22,12 +22,13 @@ export function SiteHeader() {
         </Link>
 
         <nav aria-label="Principal" className="hidden lg:block">
-          <ul className="flex items-center gap-1">
+          {/* Una sola línea por enlace: entre 1024 y 1280 px el menú se compacta. */}
+          <ul className="flex items-center xl:gap-1">
             {NAV_LINKS.map((l) => (
-              <li key={l.href}>
+              <li key={l.href} className="shrink-0">
                 <Link
                   href={l.href}
-                  className="px-3 py-2 font-display text-[0.9375rem] font-semibold text-tinta transition-colors duration-150 hover:text-rojo"
+                  className="px-2 py-2 font-display text-sm font-semibold whitespace-nowrap text-tinta transition-colors duration-150 hover:text-rojo xl:px-3 xl:text-[0.9375rem]"
                 >
                   {l.label}
                 </Link>
@@ -36,7 +37,7 @@ export function SiteHeader() {
           </ul>
         </nav>
 
-        <div className="hidden lg:block">
+        <div className="hidden shrink-0 lg:block">
           <Suspense fallback={<AccesoEscritorio />}>
             <CuentaEscritorio />
           </Suspense>

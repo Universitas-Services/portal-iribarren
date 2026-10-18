@@ -4,6 +4,8 @@ import Link from "next/link";
 
 export type Foto = {
   src: string;
+  /** Qué muestra la foto, para quien no la ve. */
+  alt: string;
   autor: string;
   licencia: { nombre: string; url: string };
   /** Página de la obra original (exigida por licencias CC BY y CC BY-SA). */
@@ -12,19 +14,18 @@ export type Foto = {
 
 /**
  * Hero de la guía: foto de la ciudad a sangre con velo oscuro.
- * Sin foto, usa el patrón urbano de la guía y el isotipo. La foto es decorativa (alt vacío):
- * el mensaje lo lleva el titular.
+ * Sin foto, usa el patrón urbano de la guía y el isotipo.
  */
 export function Hero({ foto }: { foto?: Foto }) {
   return (
     <section aria-labelledby="hero-titulo" className="relative isolate overflow-hidden bg-noche">
-      <div aria-hidden="true" className="absolute inset-0 -z-10">
+      <div className="absolute inset-0 -z-10">
         {foto ? (
           // En escritorio la foto ocupa la mitad derecha para que el motivo no quede tras el titular.
           <div className="absolute inset-0 lg:left-[36%]">
             <Image
               src={foto.src}
-              alt=""
+              alt={foto.alt}
               fill
               preload
               sizes="(min-width: 1024px) 64vw, 100vw"
@@ -32,9 +33,12 @@ export function Hero({ foto }: { foto?: Foto }) {
             />
           </div>
         ) : (
-          <div className="hero-fondo patron-urbano absolute inset-0" />
+          <div aria-hidden="true" className="hero-fondo patron-urbano absolute inset-0" />
         )}
-        <div className="absolute inset-0 bg-noche/80 lg:bg-transparent lg:bg-[linear-gradient(90deg,rgb(35_42_54)_0%,rgb(35_42_54)_36%,rgb(35_42_54/0.55)_52%,rgb(35_42_54/0.1)_100%)]" />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-noche/80 lg:bg-transparent lg:bg-[linear-gradient(90deg,rgb(35_42_54)_0%,rgb(35_42_54)_36%,rgb(35_42_54/0.55)_52%,rgb(35_42_54/0.1)_100%)]"
+        />
       </div>
 
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 pt-14 pb-36 sm:px-6 sm:pt-20 lg:grid-cols-[1.25fr_0.75fr] lg:px-8 lg:pt-20 lg:pb-48">
@@ -91,7 +95,7 @@ export function Hero({ foto }: { foto?: Foto }) {
         {!foto && (
           <Image
             src="/brand/pdul-ya-isotipo.png"
-            alt=""
+            alt="Isotipo de PDUL YA"
             width={512}
             height={588}
             loading="eager"

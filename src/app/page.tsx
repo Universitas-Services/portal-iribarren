@@ -14,6 +14,7 @@ import { ValuesSection } from "@/components/home/values-section";
 
 const FOTO_HERO: Foto = {
   src: "/fotos/catedral-metropolitana.jpg",
+  alt: "Catedral Metropolitana de Barquisimeto, con su torre blanca y techo de cristal",
   autor: "Rube96pinto, Wikimedia Commons",
   licencia: {
     nombre: "CC BY-SA 4.0",
