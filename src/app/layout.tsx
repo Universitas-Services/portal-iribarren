@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Roboto } from "next/font/google";
+import { AgenteIus } from "@/components/layout/agente-ius";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { siteUrl } from "@/env";
@@ -10,6 +11,8 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
   weight: ["600", "700", "800"],
+  // La cursiva destaca «Pensando en grande» en el titular del inicio.
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -35,7 +38,7 @@ export const metadata: Metadata = {
       "Plan de Desarrollo Urbano Local de Iribarren: infórmate y participa en el Barquisimeto del futuro.",
     locale: "es_VE",
     type: "website",
-    images: [{ url: "/brand/pdul-ya-horizontal.png", width: 960, height: 362, alt: "PDUL YA" }],
+    images: [{ url: "/brand/pdul-ya-horizontal.png", width: 1200, height: 412, alt: "PDUL YA" }],
   },
 };
 
@@ -66,6 +69,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <SiteFooter />
+        <AgenteIus />
       </body>
     </html>
   );

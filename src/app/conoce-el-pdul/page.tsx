@@ -3,9 +3,12 @@ import {
   Ban,
   Database,
   Droplets,
+  Landmark,
   Leaf,
   Network,
   Scale,
+  UsersRound,
+  ClipboardList,
   type LucideIcon,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -21,6 +24,7 @@ import {
   CIFRAS,
   COMPONENTES,
   FASES,
+  INSTANCIAS,
   LINEA_TIEMPO,
   LLAMADO,
   MARCO,
@@ -43,8 +47,15 @@ const SECCIONES: SeccionIndice[] = [
   { id: "marco-legal", label: "Marco legal" },
   { id: "procedimiento", label: "Procedimiento" },
   { id: "objetivos", label: "Objetivos" },
+  { id: "instancias", label: "Instancias" },
   { id: "alcance", label: "¿Qué no gestiona?" },
 ];
+
+const ICONO_INSTANCIA: Record<(typeof INSTANCIAS)[number]["clave"], LucideIcon> = {
+  alcalde: Landmark,
+  concejo: UsersRound,
+  comision: ClipboardList,
+};
 
 const ICONO_OBJETIVO: Record<(typeof OBJETIVOS)[number]["clave"], LucideIcon> = {
   juridica: Scale,
@@ -55,10 +66,10 @@ const ICONO_OBJETIVO: Record<(typeof OBJETIVOS)[number]["clave"], LucideIcon> = 
 };
 
 const FUERA_DE_ALCANCE = [
-  "Licencias de construcción",
-  "Certificaciones de zonificación",
-  "Variables urbanas fundamentales",
-  "Permisos de edificación",
+  "Constancia de adecuación de Variables Urbanas Fundamentales",
+  "Consulta de Zonificación",
+  "Certificado de entrega de obra (habitabilidad)",
+  "Certificación Urbanística",
 ];
 
 function Seccion({ id, titulo, children }: { id: string; titulo: string; children: ReactNode }) {
@@ -299,6 +310,40 @@ export default function ConocePage() {
                 );
               })}
             </ol>
+          </Seccion>
+
+          <Seccion id="instancias" titulo="Instancias y aspectos organizativos">
+            <p className="prosa">
+              Las competencias del Alcalde, del Concejo Municipal y de la Comisión Técnica
+              Organizadora en la elaboración del PDUL, según el artículo 2 del Decreto N° 48-2026.
+            </p>
+            <ul className="mt-6 grid gap-4 lg:grid-cols-3">
+              {INSTANCIAS.map(({ clave, titulo, competencias }) => {
+                const Icon = ICONO_INSTANCIA[clave];
+                return (
+                  <li key={clave} className="flex flex-col rounded-2xl border border-linea p-5">
+                    <span className="grid size-11 place-items-center rounded-full bg-naranja/15 text-rojo-oscuro">
+                      <Icon size={22} aria-hidden="true" />
+                    </span>
+                    <h3 className="mt-4 font-display text-lg font-extrabold text-noche">
+                      {titulo}
+                    </h3>
+                    {competencias.length ? (
+                      <ul className="mt-2 list-disc space-y-1 pl-5 leading-relaxed text-tinta">
+                        {competencias.map((c) => (
+                          <li key={c}>{c}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="mt-2 rounded-xl border border-dashed border-linea bg-superficie px-3 py-2 text-sm text-tinta/75">
+                        Contenido en espera: competencias según el artículo 2 del Decreto N°
+                        48-2026.
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
           </Seccion>
 
           <Seccion id="alcance" titulo="¿Qué no gestiona este portal?">
