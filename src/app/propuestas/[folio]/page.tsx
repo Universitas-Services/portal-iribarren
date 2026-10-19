@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { NOMBRE_TIPO_PARTICIPACION } from "@/lib/api/types";
 import { getPropuestaPublica } from "@/lib/auth/sesion";
 import { formatearFechaHora } from "@/lib/formato";
+import { FOLIOS_PRERENDER } from "@/lib/folios";
 
 type Params = Promise<{ folio: string }>;
 
@@ -16,7 +17,7 @@ type Params = Promise<{ folio: string }>;
  * estructura en el build. Se prerenderiza solo la estructura; la propuesta se lee al pedirla.
  */
 export function generateStaticParams() {
-  return [{ folio: "IRI-2026-0001" }];
+  return FOLIOS_PRERENDER.map((folio) => ({ folio }));
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {

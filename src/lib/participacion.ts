@@ -16,8 +16,8 @@ export const ESTADO_PARTICIPACION: Record<
     clase: "bg-amarillo/20 text-noche ring-amarillo/60",
   },
   APROBADA: {
-    texto: "Aprobada",
-    ayuda: "Se incorpora como insumo del plan.",
+    texto: "Verificada",
+    ayuda: "El equipo la verificó; se incorpora como insumo del plan.",
     clase: "bg-exito/10 text-exito-oscuro ring-exito/30",
   },
   RECHAZADA: {
@@ -27,7 +27,7 @@ export const ESTADO_PARTICIPACION: Record<
   },
   PUBLICADA: {
     texto: "Publicada",
-    ayuda: "Aprobada y visible en Propuestas publicadas.",
+    ayuda: "Verificada y visible en Propuestas publicadas.",
     clase: "bg-noche text-papel ring-noche",
   },
 };

@@ -304,19 +304,22 @@ export function FormParticipacion({
         error={errores.soporte}
       />
 
-      <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-superficie p-4">
-        <input
-          type="checkbox"
-          name="mostrarNombre"
-          defaultChecked={v.mostrarNombre === "true"}
-          className="mt-0.5 size-5 shrink-0 accent-rojo"
-        />
-        <span className="leading-relaxed text-tinta">
-          <span className="font-semibold text-noche">Mostrar mi nombre si se publica.</span> Si tu
-          aporte es seleccionado para el portal público, aparecerá como «{autor}». Si no lo
+      <div className="rounded-2xl bg-superficie p-4">
+        <p id="mostrar-nombre-ayuda" className="leading-relaxed text-tinta">
+          Si tu aporte es seleccionado para el portal público, aparecerá como «{autor}». Si no lo
           autorizas, se evalúa igual, pero no se publica.
-        </span>
-      </label>
+        </p>
+        <label className="mt-3 flex cursor-pointer items-center gap-3">
+          <input
+            type="checkbox"
+            name="mostrarNombre"
+            defaultChecked={v.mostrarNombre === "true"}
+            aria-describedby="mostrar-nombre-ayuda"
+            className="size-5 shrink-0 accent-rojo"
+          />
+          <span className="font-semibold text-noche">Mostrar mi nombre si se publica.</span>
+        </label>
+      </div>
 
       <div>
         <button
