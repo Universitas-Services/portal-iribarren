@@ -7,6 +7,7 @@ import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuent
 import { FichaAporte, InsigniaEstado, LineaTiempoEstados } from "@/components/participacion/aporte";
 import { getParticipacion, getUsuario } from "@/lib/auth/sesion";
 import { formatearFechaHora } from "@/lib/formato";
+import { FOLIOS_PRERENDER } from "@/lib/folios";
 
 export const metadata: Metadata = { title: "Detalle de mi aporte", robots: { index: false } };
 
@@ -14,7 +15,7 @@ type Params = Promise<{ folio: string }>;
 
 /** Ver el comentario en /propuestas/[folio]: un folio de muestra para validar la ruta. */
 export function generateStaticParams() {
-  return [{ folio: "IRI-2026-0001" }];
+  return FOLIOS_PRERENDER.map((folio) => ({ folio }));
 }
 
 /** Backlog 3.11: detalle con la línea de tiempo de estados; sin editar ni eliminar. */

@@ -112,7 +112,7 @@ test("de registrarse a ver el cambio de estado de su propuesta", async ({ page }
   await test.step("ve el cambio de estado y el comentario del revisor", async () => {
     await page.reload();
     const ultimo = lineaDeTiempo(page).getByRole("listitem").last();
-    await expect(ultimo).toContainText("Aprobada");
+    await expect(ultimo).toContainText("Verificada");
     await expect(ultimo).toContainText("(estado actual)");
     await expect(ultimo).toContainText("Se incorpora al diagnóstico de movilidad del centro.");
     await expect(lineaDeTiempo(page).getByRole("listitem")).toHaveCount(3);

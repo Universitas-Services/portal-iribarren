@@ -256,33 +256,33 @@ export const OBJETIVOS: {
 }[] = [
   {
     clave: "juridica",
-    titulo: "Seguridad jurídica y reactivación productiva",
+    titulo: "Seguridad jurídica y desarrollo productivo",
     texto:
-      "Establecer reglas claras, predecibles y transparentes de zonificación y Variables Urbanas Fundamentales que impulsen la inversión privada, el comercio formal, la construcción y la consolidación de nuestras zonas industriales.",
+      "Establecer criterios claros y transparentes para regular los usos del suelo y las condiciones de desarrollo urbano, contribuyendo a la seguridad jurídica y a la creación de condiciones favorables para la inversión, el comercio y la actividad industrial.",
   },
   {
     clave: "policentrica",
     titulo: "Ciudad policéntrica, compacta y conectada",
     texto:
-      "Superar la fragmentación espacial promoviendo usos mixtos compatibles, una red vial jerarquizada y un sistema de movilidad sostenible que acerque el empleo, el comercio y los servicios a la gente.",
+      "Promover una estructura urbana integrada, con usos del suelo compatibles, centralidades articuladas y un sistema de movilidad sostenible que facilite el acceso al empleo, los servicios y las actividades económicas.",
   },
   {
     clave: "justicia",
     titulo: "Justicia territorial y servicios públicos",
     texto:
-      "Armonizar el crecimiento urbano con la capacidad real de las redes de acueductos, drenajes, electricidad y gestión integral de residuos sólidos, priorizando la dotación de equipamiento urbano en las parroquias y sectores históricamente desasistidos.",
+      "Orientar el crecimiento urbano de acuerdo con la capacidad de las infraestructuras y las necesidades de la población, priorizando la mejora de los servicios públicos, los espacios públicos y los equipamientos en los distintos sectores del municipio.",
   },
   {
     clave: "resiliencia",
     titulo: "Resiliencia ambiental y gestión de riesgos",
     texto:
-      "Proteger de forma estricta el patrimonio ecológico estructurante del municipio e incorporar criterios de microzonificación sísmica y adaptación climática en la norma edificatoria.",
+      "Orientar la ocupación del territorio con criterios de protección ambiental, prevención de riesgos y adaptación al cambio climático, considerando las amenazas naturales y las condiciones de vulnerabilidad identificadas mediante estudios técnicos.",
   },
   {
     clave: "digital",
     titulo: "Modernización y gobernanza digital",
     texto:
-      "Transitar del plano estático en papel hacia sistemas de información geográfica (SIG), catastro multifinalitario y trazabilidad digital, garantizando que cada propuesta ciudadana reciba un tratamiento técnico riguroso y auditable.",
+      "Fortalecer la planificación y la gestión urbana mediante sistemas de información geográfica (SIG), información catastral actualizada y herramientas de seguimiento y trazabilidad que faciliten la transparencia y la participación ciudadana.",
   },
 ];
 
