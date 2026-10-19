@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { CarruselProvider, CreditoCarrusel, FondoCarrusel } from "./hero-carrusel";
 
 export type Foto = {
   src: string;
@@ -10,28 +11,22 @@ export type Foto = {
   licencia: { nombre: string; url: string };
   /** Página de la obra original (exigida por licencias CC BY y CC BY-SA). */
   fuente: string;
+  /** Encuadre (`object-position`) para que el motivo no quede tras el titular. */
+  posicion?: string;
 };
 
 /**
- * Hero de la guía: foto de la ciudad a sangre con velo oscuro.
- * Sin foto, usa el patrón urbano de la guía y el isotipo.
+ * Hero de la guía: fotos de la ciudad a sangre con velo oscuro, que se alternan con un fundido.
+ * Sin fotos, usa el patrón urbano de la guía y el isotipo.
  */
-export function Hero({ foto }: { foto?: Foto }) {
-  return (
+export function Hero({ fotos = [] }: { fotos?: Foto[] }) {
+  const foto = fotos[0];
+  const contenido = (
     <section aria-labelledby="hero-titulo" className="relative isolate overflow-hidden bg-noche">
       <div className="absolute inset-0 -z-10">
         {foto ? (
-          // En escritorio la foto ocupa la mitad derecha para que el motivo no quede tras el titular.
-          <div className="absolute inset-0 lg:left-[36%]">
-            <Image
-              src={foto.src}
-              alt={foto.alt}
-              fill
-              preload
-              sizes="(min-width: 1024px) 64vw, 100vw"
-              className="hero-fondo object-cover object-[50%_35%]"
-            />
-          </div>
+          // En escritorio las fotos ocupan la mitad derecha para que el motivo no quede tras el titular.
+          <FondoCarrusel />
         ) : (
           <div aria-hidden="true" className="hero-fondo patron-urbano absolute inset-0" />
         )}
@@ -47,8 +42,8 @@ export function Hero({ foto }: { foto?: Foto }) {
             id="hero-titulo"
             className="font-display text-[clamp(2.1rem,5.2vw,4.25rem)] leading-[1.04] font-extrabold tracking-[-0.03em] text-papel"
           >
-            <span className="text-amarillo">PDUL YA:</span> Construyendo el Barquisimeto del futuro,
-            humano y sostenible
+            <span className="text-amarillo italic">Pensando en grande:</span> Construyendo el
+            Barquisimeto del futuro, humano y sostenible
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-papel/85">
             Planificación urbana participativa para la ciudad humana. Infórmate, opina y propón: el
@@ -70,39 +65,27 @@ export function Hero({ foto }: { foto?: Foto }) {
               href="/registro"
               className="inline-flex min-h-13 items-center justify-center rounded-xl bg-papel px-6 font-display font-bold text-noche transition-[background-color,transform] duration-150 ease-out-expo hover:bg-superficie active:scale-[0.97]"
             >
-              Registro municipal de actores
+              Registro municipal de actores sociales
             </Link>
           </div>
-          {foto && (
-            <p className="mt-6 text-xs text-papel/70">
-              Foto:{" "}
-              <a href={foto.fuente} rel="noopener noreferrer" target="_blank" className="underline">
-                {foto.autor}
-              </a>{" "}
-              ·{" "}
-              <a
-                href={foto.licencia.url}
-                rel="noopener noreferrer license"
-                target="_blank"
-                className="underline"
-              >
-                {foto.licencia.nombre}
-              </a>
-            </p>
-          )}
+          {foto && <CreditoCarrusel />}
         </div>
 
         {!foto && (
-          <Image
-            src="/brand/pdul-ya-isotipo.png"
-            alt="Isotipo de PDUL YA"
-            width={512}
-            height={588}
-            loading="eager"
-            className="flotar mx-auto hidden w-full max-w-[19rem] drop-shadow-[0_24px_40px_rgb(0_0_0/0.35)] lg:block"
-          />
+          // El isotipo tiene manzanas azul noche: sobre el fondo oscuro va en una tarjeta clara.
+          <div className="flotar mx-auto hidden w-full max-w-[19rem] rounded-3xl bg-papel p-6 drop-shadow-[0_24px_40px_rgb(0_0_0/0.35)] lg:block">
+            <Image
+              src="/brand/pdul-ya-isotipo.png"
+              alt="Isotipo de PDUL YA"
+              width={800}
+              height={708}
+              loading="eager"
+              className="w-full"
+            />
+          </div>
         )}
       </div>
     </section>
   );
+  return foto ? <CarruselProvider fotos={fotos}>{contenido}</CarruselProvider> : contenido;
 }

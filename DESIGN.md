@@ -13,7 +13,7 @@ Maqueta de la Guía de Identidad Urbana llevada a un tablero vivo: hero oscuro a
 | `rojo`                           | `#C32026`                      | Acción principal, fase en curso, marca                                      |
 | `rojo-oscuro`                    | `#A61C00`                      | Hover de rojo, fondos de anuncio                                            |
 | `naranja`                        | `#F39200`                      | Acentos, 404, íconos sobre fondo oscuro. Nunca texto blanco encima          |
-| `amarillo`                       | `#ECA52B`                      | «PDUL YA:» del hero, anuncios cálidos (texto `noche`)                       |
+| `amarillo`                       | `#ECA52B`                      | «Pensando en grande:» del hero, anuncios cálidos (texto `noche`)            |
 | `noche`                          | `#232A36`                      | Hero, mensaje del alcalde, títulos                                          |
 | `tinta`                          | `#333333`                      | Texto de cuerpo (`tinta/70` como mínimo para secundarios sobre blanco)      |
 | `papel` / `superficie` / `linea` | `#FFF` / `#F7F7F8` / `#E5E7EB` | Tarjetas / fondo de página / bordes                                         |
@@ -79,4 +79,4 @@ Todo bajo `prefers-reduced-motion: no-preference`; las animaciones ligadas al sc
 
 ## Pendientes de marca
 
-Fotos propias de la Alcaldía (el hero usa por ahora una foto CC BY-SA con crédito), logos de Yanys Agüero, Iribarren para la Vida y Gente que Resuelve, y el texto oficial del alcalde.
+Fotos propias de la Alcaldía (el hero alterna por ahora cinco fotos CC BY-SA con fundido cada 7 s, crédito de la foto visible y botón de pausa; con «reducir movimiento» no avanzan solas), logos de Yanys Agüero, Iribarren para la Vida y Gente que Resuelve, y el texto oficial del alcalde.

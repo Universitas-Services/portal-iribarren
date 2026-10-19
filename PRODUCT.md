@@ -53,7 +53,7 @@ La recepción de propuestas está abierta antes de la consulta pública formal (
 
 - Nombre: **PDUL YA** — «Planificación Urbana Participativa para la Ciudad Humana».
 - Frase de marca: «La ciudad que planificamos juntos».
-- Titular rector: «PDUL YA: Construyendo el Barquisimeto del futuro, humano y sostenible».
+- Titular rector: «Pensando en grande: Construyendo el Barquisimeto del futuro, humano y sostenible» (19-10-2026). El botón secundario del inicio dice «Registro municipal de actores sociales».
 - Marcas institucionales y de gestión que deben convivir: Alcaldía Bolivariana de Iribarren (escudo), Yanys Agüero — Alcalde, «Iribarren para la Vida», «Gente que Resuelve», «Pensar en grande».
 - Voz: una mezcla de institucional y cercano con energía de campaña; trato de tú al vecino, serio y confiable, sin jerga técnica innecesaria, con la voz de la gestión presente.
 - Paleta y tipografía institucionales fijadas por el cliente en la Guía de Identidad Urbana PDUL YA (vinculantes).
@@ -61,9 +61,9 @@ La recepción de propuestas está abierta antes de la consulta pública formal (
 
 ## Evidence on Hand
 
-- Logos oficiales PDUL YA (isotipo, horizontal, horizontal con divisor, vertical, lámina) y logo de la Alcaldía de Iribarren (`alcaldia-iribarren.png`, texto gris oscuro: solo sobre fondo claro; va en el footer, lado derecho): `public/brand/`.
+- Logos oficiales PDUL YA (isotipo, horizontal, horizontal con divisor, vertical, lámina; identidad nueva de manzanas recibida el 19-10-2026, en `public/brand/` recortados a 1200 y 800 px; el isotipo tiene manzanas azul noche, así que sobre fondos oscuros va en una tarjeta clara) y logo de la Alcaldía de Iribarren (`alcaldia-iribarren.png`, texto gris oscuro: solo sobre fondo claro; va en el footer, lado derecho): `public/brand/`.
 - Guía de identidad y lineamientos: `C:\Users\unive\Downloads\para iribarren portal\` (Guía de Identidad Urbana PDUL YA.png, propuesta visual.pdf, Propuesta Gestión Ciudadana PDUL YA (2).pdf).
-- Foto del hero: «Santa Iglesia Catedral Metropolitana, Catedral de Barquisimeto», Rube96pinto, CC BY-SA 4.0 (Wikimedia Commons), en `public/fotos/catedral-metropolitana.jpg`; exige crédito visible con autor, licencia y fuente. Se reemplaza cuando la Alcaldía entregue fotos propias.
+- Fotos del hero (19-10-2026): diez lugares emblemáticos de Barquisimeto que se alternan con fundido, empezando por Plaza Ayacucho: Plaza Ayacucho y Estadio Antonio Herrera Gutiérrez (Rodolfo pimentel, CC BY-SA 4.0), Catedral (Rube96pinto, CC BY-SA 4.0), Obelisco y Flor de Venezuela (Miguel Ahiezer Salcedo, CC BY-SA 3.0), Iglesia El Cristo (Male3285, CC BY-SA 3.0), Manto de la Divina Pastora (José Ocanto, CC BY-SA 4.0), Parque El Cardenalito (Angel Pérez Santamaria, CC0), Iglesia de Santa Rosa (Jesús David Ríos, CC BY-SA 2.0) y Teatro Juares (Wilfredor, CC BY-SA 3.0), todas de Wikimedia Commons en `public/fotos/`. El crédito de la foto visible se muestra en el hero (lo exigen las licencias). Faltan Monumento al Sol, Plaza Miranda y Edificio Nacional (sin foto libre adecuada); se reemplazan cuando la Alcaldía entregue fotos propias.
 - Propuesta de Gestión Ciudadana v3 (`Downloads/Propuesta Gestión Ciudadana PDUL YA (3).pdf`): fases con su estado, noticias reales con «puntos de análisis», antecedentes legales (Ordenanza 2003, Sentencias TSJ 928/2018 y 0171/2021, Decreto 48-2026) y lineamientos de marca. Sus fotos están en Google Drive con acceso restringido; mientras tanto esas noticias usan fotos libres de Commons rotuladas «Foto ilustrativa».
 - Ausentes (no inventar): logos de Yanys Agüero, Iribarren para la Vida y Gente que Resuelve (espacios reservados hasta recibirlos); mensaje textual del alcalde; noticias, documentos y cifras reales. Los datos actuales son de ejemplo y deben verse como tales.
 

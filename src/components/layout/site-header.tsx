@@ -13,8 +13,8 @@ export function SiteHeader() {
           <Image
             src="/brand/pdul-ya-horizontal-divisor.png"
             alt="PDUL YA, ir al inicio"
-            width={960}
-            height={346}
+            width={1200}
+            height={403}
             loading="eager"
             fetchPriority="high"
             className="h-9 w-auto lg:h-11"

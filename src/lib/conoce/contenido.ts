@@ -81,6 +81,11 @@ export const MARCO: {
       "Consagra el gobierno local y otorga la competencia exclusiva e intangible a los municipios para regular la ordenación urbanística y el uso del suelo.",
   },
   {
+    nombre: "Agenda Hábitat III y ODS",
+    texto:
+      "Alineado con los Objetivos de Desarrollo Sostenible (Agenda 2030) y ONU-Hábitat para una Barquisimeto compacta, verde, accesible y resiliente al cambio climático.",
+  },
+  {
     nombre: "Ley Orgánica de Ordenación Urbanística (LOOU, 1987, arts. 10 y 34)",
     texto:
       "Delimita el contenido obligatorio del PDUL y la potestad del Concejo Municipal para sancionar mediante Ordenanza.",
@@ -284,6 +289,20 @@ export const OBJETIVOS: {
     texto:
       "Fortalecer la planificación y la gestión urbana mediante sistemas de información geográfica (SIG), información catastral actualizada y herramientas de seguimiento y trazabilidad que faciliten la transparencia y la participación ciudadana.",
   },
+];
+
+/**
+ * Bloque VII: instancias y aspectos organizativos (artículo 2 del Decreto 48-2026). Las
+ * competencias de cada instancia están en espera del texto oficial: no se redactan aquí.
+ */
+export const INSTANCIAS: {
+  clave: "alcalde" | "concejo" | "comision";
+  titulo: string;
+  competencias: string[];
+}[] = [
+  { clave: "alcalde", titulo: "Alcalde del Municipio Iribarren", competencias: [] },
+  { clave: "concejo", titulo: "Concejo Municipal", competencias: [] },
+  { clave: "comision", titulo: "Comisión Técnica Organizadora", competencias: [] },
 ];
 
 /** Cierre: llamada a registrarse y participar. */
