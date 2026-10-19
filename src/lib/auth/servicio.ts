@@ -46,6 +46,10 @@ export type Cuenta = {
   razonSocial?: string;
   rif?: string;
   tipoEntidad?: string;
+  /** Epoch ms desde el que valen sus sesiones (cambio o restablecimiento de contraseña). */
+  sesionesDesde?: number;
+  /** Epoch ms del último cambio, para saber qué instantánea de la sesión es más nueva. */
+  actualizadaEl?: number;
 };
 
 export type TipoDocumento = "IDENTIDAD" | "REPRESENTACION" | "ENTIDAD";
@@ -306,6 +310,7 @@ export function restablecer(
   c.hash = cifrar(contrasena);
   // Cambiar la contraseña cierra las sesiones abiertas de la cuenta.
   for (const [s, id] of alm.sesiones) if (id === c.id) alm.sesiones.delete(s);
+  c.sesionesDesde = ahora;
   return "OK";
 }
 
@@ -328,6 +333,8 @@ export function cambiarContrasena(
   if (actual === nueva) return "IGUAL_A_LA_ACTUAL";
   c.hash = cifrar(nueva);
   for (const [s, id] of alm.sesiones) if (id === c.id && s !== sesion) alm.sesiones.delete(s);
+  // Los tokens anteriores dejan de valer; la sesión actual se vuelve a firmar al terminar.
+  c.sesionesDesde = Date.now();
   return "OK";
 }
 

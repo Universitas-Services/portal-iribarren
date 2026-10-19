@@ -223,6 +223,17 @@ Los dos repos traen en `.claude/skills/` las skills `flujo-git` (la regla de los
 - **Diseño:** reutilizar los tokens del portal (`globals.css`) y adaptar el `Selector`, `Dialogo` y `CampoArchivo` del portal en lugar de crearlos de cero. El backlog pide shadcn/ui: si se usa, que tome estos tokens.
 - **Sin API:** simularla igual que en el portal, con un servicio puro en memoria y sus pruebas más fixtures, para construir las pantallas sin bloquearse.
 
+## 6.1 Demo en Netlify: sesión firmada y modo demo (19-10-2026)
+
+- **Problema:** en Netlify cada petición puede caer en otra instancia de la función, y la sesión guardada en memoria se perdía (parpadeos y vuelta al inicio de sesión).
+- **Portal:** la cookie `pdul_sesion` es un token firmado con HMAC (`SESION_SECRETO`, `src/lib/auth/token-sesion.ts`) que lleva una instantánea de la cuenta sin la contraseña. Cualquier instancia la valida y, si no conoce la cuenta o la tiene más vieja, la recrea. Cada acción que cambia la cuenta vuelve a firmar la cookie (`refrescarSesion`).
+- **Admin:** el mismo token firmado en `pp_sesion` (`src/lib/plataforma/token-sesion.ts`), con la alcaldía en uso.
+- **Modo demo (`DEMO=1`):** en el portal, el registro entra directo sin el paso del correo; en los dos, enlaces de recuperación en pantalla y cinta «Entorno de demostración». En desarrollo el portal sigue el flujo real para que las E2E no cambien. Se mantienen las validaciones de formato. **Endurecer al conectar la API.**
+- **Sigue en memoria:** los aportes y lo que se crea en el admin pueden reiniciarse, y el portal y el admin no comparten datos. Una cuenta registrada en la demo no puede volver a iniciar sesión en otra instancia (su contraseña no viaja en la cookie).
+- **Revisor (2.10) hecho en el admin**, en la rama `feat/alcaldia-revisor`: bandeja con todos los estados, detalle en dos columnas, cotejo de identidad, transiciones válidas, rechazo con motivo de catálogo (propuesta, por confirmar), publicar solo con nombre autorizado, notas internas y CSV.
+- **Capa de alcaldía hecha en el admin** (misma rama): Equipo, Ciudadanos, Configuración (marca, catálogos y fases) y Bitácora. Los catálogos y las fases todavía no llegan al portal: se conectan con la API.
+- **E2E opcionales en CI (los dos repos):** corren solo con la etiqueta `e2e` en el PR o lanzándolas a mano (_Run workflow_); los PR normales pasan solo los checks rápidos.
+
 ## 7. Noticias reales (Propuesta v4), ya cargadas
 
 | Slug                                    | Fecha | Categoría               | Formato                                            |

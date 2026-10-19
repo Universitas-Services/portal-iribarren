@@ -18,7 +18,7 @@ export async function ThermometerTile({ className = "" }: { className?: string }
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div className="max-w-md">
           <h2 id="proceso-titulo" className="font-display text-2xl font-extrabold text-noche">
-            ¿En qué va el PDUL?
+            ¿En qué etapa está el PDUL?
           </h2>
           {actual && (
             <p className="mt-2 leading-relaxed text-tinta">

@@ -480,9 +480,9 @@ export const posts: Post[] = [
   {
     slug: "recorrido-ciudad-en-video",
     ejemplo: true,
-    titulo: "En video: un recorrido por la ciudad que vamos a planificar",
+    titulo: "En video: Un recorrido por la ciudad que vamos a planificar",
     resumen:
-      "Veinte segundos por la Catedral, el Teatro Juares y la Barquisimeto que crece. Con subtítulos.",
+      "Veinte segundos por la Catedral, el Teatro Juares y el Barquisimeto que crece. Con subtítulos.",
     categoria: "Despliegue territorial",
     formato: "VIDEO",
     publicadoEl: "2026-10-12",

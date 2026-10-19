@@ -6,8 +6,8 @@
 
 /** Bloque I: ¿Qué es un PDUL y por qué es crucial para Barquisimeto? */
 export const QUE_ES = [
-  "El Plan de Desarrollo Urbano Local (PDUL) es el instrumento jurídico y técnico mediante el cual el Municipio organiza, regula y orienta el uso del suelo, la expansión física, los servicios públicos, la movilidad y la edificación en la ciudad de Barquisimeto y su área funcional para un horizonte estratégico de 20 años (2026–2046).",
-  "No se trata de un simple conjunto de mapas o declaraciones de intención; es la ley marco municipal del suelo que otorga certeza y seguridad jurídica a la propiedad privada, fija las reglas claras y transparentes para impulsar la inversión productiva, comercial e inmobiliaria, y programa la infraestructura requerida por la comunidad.",
+  "El Plan de Desarrollo Urbano Local (PDUL) es el instrumento jurídico de planificación mediante el cual el Municipio establece las directrices para organizar y orientar el desarrollo urbano, regular los usos del suelo y definir las condiciones para el crecimiento ordenado de la ciudad. Comprende, entre otros aspectos, la ocupación del territorio, la movilidad, los servicios públicos, los espacios públicos, los equipamientos urbanos y la protección ambiental, con un horizonte de planificación de veinte años (2026–2046).",
+  "Su importancia va más allá de la elaboración de mapas y documentos técnicos. El PDUL busca establecer un marco de referencia claro para las decisiones públicas y las actuaciones privadas que inciden en la ciudad.",
 ];
 
 export const CIFRAS: [string, string][] = [
@@ -20,27 +20,26 @@ export const CIFRAS: [string, string][] = [
 /** Bloque II: los tres componentes del PDUL. */
 export const COMPONENTES: { titulo: string; texto: string; lista?: string[] }[] = [
   {
-    titulo: "El estudio técnico y prospectivo (el plan)",
+    titulo: "El estudio técnico y prospectivo",
     texto:
-      "Diagnóstico integral físico-natural, socioeconómico, de movilidad y de redes de servicios (agua, energía, drenajes y residuos), que define la estrategia territorial y el modelo de ciudad a 20 años.",
+      "Analiza las condiciones físicas, ambientales, socioeconómicas y urbanas de Barquisimeto, incluyendo la movilidad y las infraestructuras de servicios. Sus resultados fundamentan la estrategia territorial y el modelo de desarrollo urbano propuesto para el período 2026–2046.",
   },
   {
-    titulo: "La ordenanza de zonificación",
+    titulo: "Ordenanza de Zonificación",
     texto:
-      "El cuerpo normativo de obligatorio cumplimiento que traduce la planificación en reglas jurídicas claras por sector y parcela:",
+      "Establece las disposiciones que regulan el uso y la ocupación del suelo, conforme a la normativa aplicable. Incluye determinaciones urbanísticas como:",
     lista: [
       "Usos permitidos",
       "Variables Urbanas Fundamentales (VUF)",
-      "Densidades",
-      "Alturas",
-      "Retiros",
-      "Mecanismos modernos de gestión del suelo",
+      "Densidades y alturas",
+      "Retiros y demás condiciones de edificación",
+      "Instrumentos de gestión del suelo, cuando corresponda",
     ],
   },
   {
-    titulo: "El programa de actuaciones urbanas (PAU)",
+    titulo: "El programa de actuaciones urbanísticas",
     texto:
-      "El catálogo plurianual priorizado de obras públicas, proyectos de infraestructura vial, redes de servicios, espacios públicos y equipamientos que el Municipio y los entes concertados ejecutarán a corto, mediano y largo plazo.",
+      "Organiza y prioriza las actuaciones propuestas para orientar el desarrollo urbano, como obras de vialidad, infraestructura de servicios, espacios públicos y equipamientos. Su programación permite establecer prioridades, horizontes de ejecución y necesidades de inversión a corto, mediano y largo plazo.",
   },
 ];
 
@@ -65,9 +64,11 @@ export const LINEA_TIEMPO = [
   { fecha: "Septiembre de 2026", texto: "Inicio formal del proceso del nuevo PDUL." },
 ];
 
-/** Bloque IV: Naturaleza jurídica y marco de obligatorio cumplimiento. */
-export const MARCO_INTRO =
-  "El PDUL posee una jerarquía normativa superior dentro del ordenamiento local, derivado de la autonomía municipal protegida por la Constitución de la República Bolivariana de Venezuela (CRBV). Cada disposición del plan se fundamenta en un andamio legal estricto:";
+/** Bloque IV: Naturaleza jurídica y marco legal del PDUL. */
+export const MARCO_INTRO = [
+  "El Plan de Desarrollo Urbano Local (PDUL) es un instrumento de planificación urbana de ámbito municipal, formulado conforme a la Constitución y las leyes aplicables. Su contenido técnico orienta el desarrollo urbano, mientras que sus disposiciones normativas, una vez aprobadas mediante el instrumento jurídico correspondiente, establecen reglas de obligatorio cumplimiento dentro de su ámbito de aplicación.",
+  "Su formulación y aprobación deben respetar las competencias municipales, la legislación urbanística y el procedimiento legal establecido.",
+];
 
 export const MARCO: {
   nombre: string;

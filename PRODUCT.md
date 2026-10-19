@@ -53,7 +53,7 @@ La recepción de propuestas está abierta antes de la consulta pública formal (
 
 - Nombre: **PDUL YA** — «Planificación Urbana Participativa para la Ciudad Humana».
 - Frase de marca: «La ciudad que planificamos juntos».
-- Titular rector: «PDUL YA: Construyendo la Barquisimeto del Futuro, Humana y Sostenible».
+- Titular rector: «PDUL YA: Construyendo el Barquisimeto del futuro, humano y sostenible».
 - Marcas institucionales y de gestión que deben convivir: Alcaldía Bolivariana de Iribarren (escudo), Yanys Agüero — Alcalde, «Iribarren para la Vida», «Gente que Resuelve», «Pensar en grande».
 - Voz: una mezcla de institucional y cercano con energía de campaña; trato de tú al vecino, serio y confiable, sin jerga técnica innecesaria, con la voz de la gestión presente.
 - Paleta y tipografía institucionales fijadas por el cliente en la Guía de Identidad Urbana PDUL YA (vinculantes).
