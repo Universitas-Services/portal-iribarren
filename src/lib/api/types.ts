@@ -77,6 +77,13 @@ export type Banner = {
   tono: BannerTone;
   /** Con imagen, el banner la muestra de fondo con un velo para el contraste. */
   imagen?: Imagen;
+  /** Posición en el carrusel, de menor a mayor (el Operador la cambia arrastrando). */
+  orden: number;
+  /**
+   * Fechas entre las que se muestra, ambas incluidas. «AAAA-MM-DD» (día completo en hora de
+   * Venezuela) o fecha y hora ISO. Sin una de ellas, el banner no tiene ese límite.
+   */
+  vigencia?: { desde?: string; hasta?: string };
 };
 
 /**
@@ -147,13 +154,11 @@ export const CONDICIONES_REPRESENTANTE = [
 /** ¿Tiene un documento que acredite su condición? */
 export const ACREDITACION_REPRESENTANTE = ["Sí", "No", "No aplica"] as const;
 
-/** Estado de la revisión de identidad que hace el Revisor desde el admin. */
-export const ESTADOS_VERIFICACION = [
-  "PENDIENTE",
-  "VERIFICADO",
-  "RECHAZADO",
-  "REQUIERE_CORRECCION",
-] as const;
+/**
+ * Estado de verificación del perfil: PENDIENTE mientras está incompleto y VERIFICADO en cuanto
+ * se completa (automático). RECHAZADO lo pone el admin y bloquea el envío de aportes.
+ */
+export const ESTADOS_VERIFICACION = ["PENDIENTE", "VERIFICADO", "RECHAZADO"] as const;
 export type EstadoVerificacion = (typeof ESTADOS_VERIFICACION)[number];
 
 export const TIPOS_PARTICIPACION = [

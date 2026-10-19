@@ -281,13 +281,6 @@ export async function restablecerAccion(
 
 const metadatos = (f: File) => ({ nombre: f.name, mime: f.type, tamano: f.size });
 
-const BLOQUEADO: EstadoFormulario = {
-  mensaje: {
-    tipo: "error",
-    texto: "Mientras tu perfil está en corrección solo puedes reemplazar el documento señalado.",
-  },
-};
-
 /** Tras guardar vuelve a «Mi cuenta»; si el perfil quedó completo, con el aviso para participar. */
 async function trasGuardar(estabaCompleto: boolean): Promise<never> {
   const c = cuentaDeSesion(almacen(), await idSesion());
@@ -313,7 +306,7 @@ export async function guardarDatosNaturalAccion(
   const datos = leer(fd);
   const p = datosNaturalSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
-  if (guardarPerfil(almacen(), sesion, p.data) === "BLOQUEADO") return BLOQUEADO;
+  guardarPerfil(almacen(), sesion, p.data);
   return trasGuardar(completo);
 }
 
@@ -325,7 +318,7 @@ export async function guardarRepresentanteAccion(
   const datos = leer(fd);
   const p = representanteSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
-  if (guardarPerfil(almacen(), sesion, p.data) === "BLOQUEADO") return BLOQUEADO;
+  guardarPerfil(almacen(), sesion, p.data);
   return trasGuardar(completo);
 }
 
@@ -351,14 +344,10 @@ export async function guardarAcreditacionAccion(
         archivo: datos.archivo,
       });
       if (!d.success) return conErrores(d.error, datos);
-      if (
-        cargarDocumento(almacen(), sesion, "REPRESENTACION", metadatos(d.data.archivo)) ===
-        "BLOQUEADO"
-      )
-        return BLOQUEADO;
+      cargarDocumento(almacen(), sesion, "REPRESENTACION", metadatos(d.data.archivo));
     }
   }
-  if (guardarPerfil(almacen(), sesion, p.data) === "BLOQUEADO") return BLOQUEADO;
+  guardarPerfil(almacen(), sesion, p.data);
   return trasGuardar(completo);
 }
 
@@ -371,8 +360,7 @@ export async function cargarDocumentoAccion(
   const datos = leer(fd);
   const p = documentoPerfilSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
-  const r = cargarDocumento(almacen(), sesion, p.data.documento, metadatos(p.data.archivo));
-  if (r === "BLOQUEADO") return BLOQUEADO;
+  cargarDocumento(almacen(), sesion, p.data.documento, metadatos(p.data.archivo));
   return trasGuardar(completo);
 }
 
@@ -385,8 +373,7 @@ export async function guardarNombresAccion(
   const datos = leer(fd);
   const p = nombresSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
-  const r = actualizarNombres(almacen(), sesion, p.data.nombres, p.data.apellidos);
-  if (r === "BLOQUEADO") return BLOQUEADO;
+  actualizarNombres(almacen(), sesion, p.data.nombres, p.data.apellidos);
   return trasGuardar(completo);
 }
 

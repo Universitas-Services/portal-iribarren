@@ -82,14 +82,10 @@ const cuentas: Omit<Cuenta, "hash">[] = [
     apellidos: "Giménez",
     verificado: true,
     membresias: [ALCALDIA],
+    // Perfil a medias: guardó el teléfono, pero aún no sube el documento de identidad.
     perfil: { telefono: "04161234567", ocupacion: "Comerciante" },
-    documentos: { IDENTIDAD: { ...DOC_DEMO, mime: "image/jpeg", nombre: "cedula-rosa.jpg" } },
-    estadoVerificacion: "REQUIERE_CORRECCION",
-    correccion: {
-      documento: "IDENTIDAD",
-      motivo:
-        "La foto de la cédula está borrosa y no se leen el número ni la fecha de vencimiento. Sube una imagen nítida o un PDF escaneado.",
-    },
+    documentos: {},
+    estadoVerificacion: "PENDIENTE",
   },
   {
     id: "demo-cardones",

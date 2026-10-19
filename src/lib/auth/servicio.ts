@@ -31,10 +31,11 @@ export type Cuenta = {
   perfil: Perfil;
   /** Solo metadatos: el archivo va a Storage en plataforma-api. */
   documentos: Partial<Record<TipoDocumento, DocumentoCargado>>;
-  /** Revisión de identidad que hace el Revisor desde el admin. */
+  /**
+   * VERIFICADO en cuanto el perfil queda completo (decisión del cliente). El Revisor no verifica
+   * perfiles: coteja los documentos de identidad del autor al evaluar cada participación.
+   */
   estadoVerificacion: EstadoVerificacion;
-  /** Con REQUIERE_CORRECCION: qué documento debe reemplazarse y por qué. */
-  correccion?: { documento: TipoDocumento; motivo: string };
   /** Fecha ISO en que pidió la baja de la cuenta. */
   bajaSolicitada?: string;
   /** Persona natural. */
@@ -380,16 +381,18 @@ export const faltantesPerfil = (c: Cuenta) =>
     .filter((p) => !p.hecho)
     .map((p) => p.titulo);
 
-/** Con «Requiere corrección», solo se puede tocar el documento que señaló el Revisor. */
-export const soloCorreccion = (c: Cuenta) =>
-  c.estadoVerificacion === "REQUIERE_CORRECCION" && !!c.correccion;
-
-export type ResultadoPerfil = "OK" | "SIN_SESION" | "BLOQUEADO";
-
 /**
- * Guarda datos del perfil. Con «Requiere corrección» los datos ya revisados no se tocan
- * (v3, rol 1 paso 4): solo se acepta el documento señalado.
+ * La verificación es automática: un perfil completo queda VERIFICADO (y sigue así aunque se
+ * reemplace un documento). Solo un RECHAZADO puesto desde el admin se conserva.
  */
+function sincronizarVerificacion(c: Cuenta) {
+  if (c.estadoVerificacion === "RECHAZADO") return;
+  c.estadoVerificacion = perfilCompleto(c) ? "VERIFICADO" : "PENDIENTE";
+}
+
+export type ResultadoPerfil = "OK" | "SIN_SESION";
+
+/** Guarda datos del perfil; si con ellos queda completo, la cuenta pasa a VERIFICADO. */
 export function guardarPerfil(
   alm: Almacen,
   sesion: string | undefined,
@@ -397,15 +400,15 @@ export function guardarPerfil(
 ): ResultadoPerfil {
   const c = cuentaDeSesion(alm, sesion);
   if (!c) return "SIN_SESION";
-  if (soloCorreccion(c)) return "BLOQUEADO";
   c.perfil = { ...c.perfil, ...datos };
+  sincronizarVerificacion(c);
   return "OK";
 }
 
 /**
  * Corrige nombres y apellidos de una persona natural (PATCH /portal/me/profile). La cédula no
- * se edita. Si el perfil ya estaba verificado y el nombre cambia, vuelve a «En revisión» para
- * que el Revisor lo coteje con la cédula; los aportes enviados conservan el nombre de entonces.
+ * se edita y el estado de verificación no cambia: el Revisor coteja nombre y cédula al evaluar
+ * cada participación. Los aportes enviados conservan el nombre de entonces.
  */
 export function actualizarNombres(
   alm: Almacen,
@@ -415,15 +418,12 @@ export function actualizarNombres(
 ): ResultadoPerfil {
   const c = cuentaDeSesion(alm, sesion);
   if (!c || c.tipo !== "NATURAL") return "SIN_SESION";
-  if (soloCorreccion(c)) return "BLOQUEADO";
-  const cambio = c.nombres !== nombres || c.apellidos !== apellidos;
   c.nombres = nombres;
   c.apellidos = apellidos;
-  if (cambio && c.estadoVerificacion === "VERIFICADO") c.estadoVerificacion = "PENDIENTE";
   return "OK";
 }
 
-/** Sube un documento o lo reemplaza con una versión nueva. */
+/** Sube un documento o lo reemplaza con una versión nueva; si completa el perfil, lo verifica. */
 export function cargarDocumento(
   alm: Almacen,
   sesion: string | undefined,
@@ -433,16 +433,13 @@ export function cargarDocumento(
 ): ResultadoPerfil {
   const c = cuentaDeSesion(alm, sesion);
   if (!c) return "SIN_SESION";
-  if (soloCorreccion(c) && c.correccion?.documento !== tipo) return "BLOQUEADO";
   const anterior = c.documentos[tipo];
   c.documentos[tipo] = {
     ...archivo,
     version: (anterior?.version ?? 0) + 1,
     subidoEl: new Date(ahora).toISOString(),
   };
-  // Un documento nuevo vuelve a la bandeja del Revisor.
-  if (c.correccion?.documento === tipo) c.correccion = undefined;
-  if (c.estadoVerificacion !== "PENDIENTE") c.estadoVerificacion = "PENDIENTE";
+  sincronizarVerificacion(c);
   return "OK";
 }
 
@@ -495,7 +492,6 @@ export function vistaPerfil(c: Cuenta) {
     perfil: c.perfil,
     documentos: c.documentos,
     pasos: pasosPerfil(c),
-    correccion: c.correccion,
     bajaSolicitada: c.bajaSolicitada,
   };
 }

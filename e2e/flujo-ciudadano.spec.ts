@@ -58,7 +58,11 @@ test("de registrarse a ver el cambio de estado de su propuesta", async ({ page }
 
     await page.locator("#archivo-IDENTIDAD").setInputFiles(PNG);
     await page.getByRole("button", { name: "Subir documento" }).click();
-    await expect(page.getByText("Tu perfil está completo, ya puedes participar.")).toBeVisible();
+    await expect(
+      page.getByText("Tu perfil está completo y verificado, ya puedes participar."),
+    ).toBeVisible();
+    // La verificación es automática al completar el perfil: no espera al Revisor.
+    await expect(page.getByText("Estado de verificación: Verificado")).toBeVisible();
   });
 
   let folio = "";

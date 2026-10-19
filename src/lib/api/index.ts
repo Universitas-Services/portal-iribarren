@@ -1,6 +1,7 @@
 import "server-only";
 import { cacheLife } from "next/cache";
 import sanitizeHtml from "sanitize-html";
+import { bannersVigentes } from "@/lib/banners";
 import { consultarDocumentos } from "@/lib/documentos/consultas";
 import { banners, documentos, posts, processStatus } from "@/lib/mocks/data";
 import { paraPortada, relacionadas, consultarNoticias } from "@/lib/noticias/consultas";
@@ -53,9 +54,15 @@ export async function getProcess(): Promise<ProcessStatus> {
   return processStatus;
 }
 
+/**
+ * Solo los banners vigentes y en su orden. Se cachea por horas: la vigencia va por día, así que
+ * un banner aparece o vence a más tardar una hora después de su fecha.
+ */
 export async function getBanners(): Promise<Banner[]> {
+  "use cache";
+  cacheLife("hours");
   await simularRed(1);
-  return banners;
+  return bannersVigentes(banners, Date.now());
 }
 
 export async function getLatestPosts(limit = 3): Promise<PostSummary[]> {

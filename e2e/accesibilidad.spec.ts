@@ -87,6 +87,7 @@ const CON_SESION: { correo: string; rutas: string[] }[] = [
     ],
   },
   { correo: "jose@ejemplo.com", rutas: ["/mi-cuenta", "/participa"] },
+  // Perfil a medias: un paso hecho y plegado, el del documento abierto.
   { correo: "rosa@ejemplo.com", rutas: ["/mi-cuenta"] },
   { correo: "contacto@cardones.org", rutas: ["/mi-cuenta", "/mi-cuenta/seguridad"] },
   { correo: "carla@ejemplo.com", rutas: ["/unirme"] },

@@ -2,10 +2,8 @@ import {
   CircleAlert,
   CircleCheck,
   ClipboardList,
-  Clock,
   MessageSquareText,
   ShieldCheck,
-  TriangleAlert,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -20,7 +18,6 @@ import {
   FormRepresentante,
 } from "@/components/cuenta/perfil";
 import { Progreso } from "@/components/cuenta/piezas";
-import type { EstadoVerificacion } from "@/lib/api/types";
 import type { PasoPerfil, VistaPerfil } from "@/lib/auth/servicio";
 import { getPerfil } from "@/lib/auth/sesion";
 
@@ -43,36 +40,21 @@ export default function MiCuentaPage({ searchParams }: { searchParams: SearchPar
   );
 }
 
-const VERIFICACION: Record<
-  EstadoVerificacion,
-  { texto: string; clase: string; Icon: typeof ShieldCheck }
-> = {
-  PENDIENTE: { texto: "En revisión", clase: "bg-superficie text-noche ring-linea", Icon: Clock },
+/** Insignia del perfil completo: se verifica solo al completarse; «Rechazado» lo pone el admin. */
+const INSIGNIA = {
   VERIFICADO: {
     texto: "Verificado",
     clase: "bg-exito/10 text-exito-oscuro ring-exito/30",
     Icon: ShieldCheck,
   },
   RECHAZADO: { texto: "Rechazado", clase: "bg-rojo/8 text-rojo ring-rojo/30", Icon: CircleAlert },
-  REQUIERE_CORRECCION: {
-    texto: "Requiere corrección",
-    clase: "bg-amarillo/20 text-noche ring-amarillo/60",
-    Icon: TriangleAlert,
-  },
-};
-
-const NOMBRE_DOCUMENTO = {
-  IDENTIDAD: "documento de identidad",
-  REPRESENTACION: "documento que acredita la representación",
-  ENTIDAD: "documento de la organización",
 };
 
 async function Contenido({ searchParams }: { searchParams: SearchParams }) {
   const u = await getPerfil();
   if (!u) redirect("/ingresar?volver=/mi-cuenta");
   const { guardado } = await searchParams;
-  const verif = VERIFICACION[u.estadoVerificacion];
-  const enCorreccion = u.estadoVerificacion === "REQUIERE_CORRECCION" && !!u.correccion;
+  const verif = INSIGNIA[u.estadoVerificacion === "RECHAZADO" ? "RECHAZADO" : "VERIFICADO"];
 
   return (
     <div>
@@ -96,28 +78,6 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
 
       <Aviso guardado={guardado} />
 
-      {enCorreccion && u.correccion && (
-        <section
-          aria-labelledby="correccion"
-          className="mt-6 rounded-2xl bg-amarillo/15 p-5 ring-1 ring-amarillo/60 ring-inset"
-        >
-          <h3
-            id="correccion"
-            className="flex items-center gap-2 font-display font-extrabold text-noche"
-          >
-            <TriangleAlert size={20} aria-hidden="true" />
-            Hay que corregir tu {NOMBRE_DOCUMENTO[u.correccion.documento]}
-          </h3>
-          <p className="mt-2 text-sm text-tinta">Mensaje del equipo revisor:</p>
-          <blockquote className="mt-1 border-l-4 border-amarillo pl-3 leading-relaxed text-noche">
-            {u.correccion.motivo}
-          </blockquote>
-          <p className="mt-3 text-sm text-tinta">
-            Sube el archivo corregido más abajo. Tus demás datos ya revisados se mantienen.
-          </p>
-        </section>
-      )}
-
       {u.estadoVerificacion === "RECHAZADO" && (
         <p className="mt-6 flex items-start gap-3 rounded-2xl bg-rojo/8 p-4 text-sm text-noche ring-1 ring-rojo/30 ring-inset">
           <CircleAlert size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
@@ -130,21 +90,15 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
         <Progreso pasos={u.pasos} />
       </div>
 
-      <Datos u={u} bloqueado={enCorreccion} />
+      <Datos u={u} />
 
       <div className="mt-8 space-y-4">
         {u.tipo === "NATURAL" ? (
           <>
-            <Paso numero={1} paso={u.pasos[0]!} bloqueado={enCorreccion} resumen={telefono(u)}>
+            <Paso numero={1} paso={u.pasos[0]!} resumen={telefono(u)}>
               <FormDatosNatural perfil={u.perfil} />
             </Paso>
-            <Paso
-              numero={2}
-              paso={u.pasos[1]!}
-              bloqueado={enCorreccion && u.correccion?.documento !== "IDENTIDAD"}
-              abierto={u.correccion?.documento === "IDENTIDAD"}
-              resumen={u.documentos.IDENTIDAD?.nombre}
-            >
+            <Paso numero={2} paso={u.pasos[1]!} resumen={u.documentos.IDENTIDAD?.nombre}>
               <FormDocumento
                 documento="IDENTIDAD"
                 etiqueta="Foto o PDF de tu cédula"
@@ -158,7 +112,6 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
             <Paso
               numero={1}
               paso={u.pasos[0]!}
-              bloqueado={enCorreccion}
               resumen={
                 u.perfil.nombresRepresentante &&
                 `${u.perfil.nombresRepresentante} ${u.perfil.apellidosRepresentante ?? ""} · ${u.perfil.cedulaRepresentante ?? ""}`
@@ -169,21 +122,13 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
             <Paso
               numero={2}
               paso={u.pasos[1]!}
-              bloqueado={enCorreccion && u.correccion?.documento !== "REPRESENTACION"}
-              abierto={u.correccion?.documento === "REPRESENTACION"}
               resumen={
                 u.perfil.acreditacion && `Documento de acreditación: ${u.perfil.acreditacion}`
               }
             >
               <FormAcreditacion perfil={u.perfil} actual={u.documentos.REPRESENTACION} />
             </Paso>
-            <Paso
-              numero={3}
-              paso={u.pasos[2]!}
-              bloqueado={enCorreccion && u.correccion?.documento !== "ENTIDAD"}
-              abierto={u.correccion?.documento === "ENTIDAD"}
-              resumen={u.documentos.ENTIDAD?.nombre}
-            >
+            <Paso numero={3} paso={u.pasos[2]!} resumen={u.documentos.ENTIDAD?.nombre}>
               <FormDocumento
                 documento="ENTIDAD"
                 etiqueta="Acta constitutiva, registro del consejo comunal o carta aval"
@@ -246,9 +191,8 @@ function Aviso({ guardado }: { guardado: unknown }) {
           <CircleCheck size={22} aria-hidden="true" className="mt-0.5 shrink-0 text-exito-oscuro" />
           <span>
             <strong className="font-semibold">
-              Tu perfil está completo, ya puedes participar.
-            </strong>{" "}
-            El equipo revisor verificará tus documentos.
+              Tu perfil está completo y verificado, ya puedes participar.
+            </strong>
           </span>
         </p>
         <Link
@@ -278,7 +222,7 @@ function Aviso({ guardado }: { guardado: unknown }) {
  * Datos del registro. La persona natural puede corregir nombres y apellidos; la cédula, el RIF
  * y la razón social cambian con una solicitud a soporte.
  */
-function Datos({ u, bloqueado }: { u: VistaPerfil; bloqueado: boolean }) {
+function Datos({ u }: { u: VistaPerfil }) {
   const filas: [string, string | undefined][] =
     u.tipo === "NATURAL"
       ? [
@@ -301,7 +245,7 @@ function Datos({ u, bloqueado }: { u: VistaPerfil; bloqueado: boolean }) {
       ))}
     </dl>
   );
-  if (u.tipo !== "NATURAL" || bloqueado) return <div className="mt-6">{lista}</div>;
+  if (u.tipo !== "NATURAL") return <div className="mt-6">{lista}</div>;
 
   return (
     <details className="group mt-6 rounded-2xl border border-linea open:border-noche/20">
@@ -316,22 +260,15 @@ function Datos({ u, bloqueado }: { u: VistaPerfil; bloqueado: boolean }) {
   );
 }
 
-/**
- * Un paso del perfil. Pendiente: abierto. Hecho: plegado con su resumen y opción de editar.
- * En corrección, los pasos ya revisados quedan de solo lectura.
- */
+/** Un paso del perfil. Pendiente: abierto. Hecho: plegado con su resumen y opción de editar. */
 function Paso({
   numero,
   paso,
-  bloqueado,
-  abierto,
   resumen,
   children,
 }: {
   numero: number;
   paso: PasoPerfil;
-  bloqueado: boolean;
-  abierto?: boolean;
   resumen?: string;
   children: ReactNode;
 }) {
@@ -353,18 +290,9 @@ function Paso({
     </span>
   );
 
-  if (bloqueado) {
-    return (
-      <section className="flex items-center gap-3 rounded-2xl border border-linea p-4">
-        {cabecera}
-        <span className="text-sm text-tinta/70">Revisado</span>
-      </section>
-    );
-  }
-
   return (
     <details
-      open={abierto || !paso.hecho}
+      open={!paso.hecho}
       className="group rounded-2xl border border-linea open:border-noche/20"
     >
       <summary className="flex min-h-16 cursor-pointer list-none items-center gap-3 p-4 [&::-webkit-details-marker]:hidden">

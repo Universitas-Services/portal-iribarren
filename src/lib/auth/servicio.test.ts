@@ -169,60 +169,75 @@ describe("cuenta: contraseña y nombres", () => {
     expect(cambiarContrasena(alm, undefined, "a", "b")).toBe("SIN_SESION");
   });
 
-  it("corregir el nombre de un perfil verificado lo devuelve a revisión", () => {
+  it("corregir el nombre de un perfil verificado no lo saca de VERIFICADO", () => {
     const alm = almacenDemo();
     const s = sesionDe(alm, "ana@ejemplo.com");
     const ana = cuentaDeSesion(alm, s)!;
-    // Sin cambios, el estado se mantiene.
-    expect(actualizarNombres(alm, s, ana.nombres!, ana.apellidos!)).toBe("OK");
-    expect(ana.estadoVerificacion).toBe("VERIFICADO");
     expect(actualizarNombres(alm, s, "Ana Lucía", ana.apellidos!)).toBe("OK");
     expect(ana.nombres).toBe("Ana Lucía");
-    expect(ana.estadoVerificacion).toBe("PENDIENTE");
+    expect(ana.estadoVerificacion).toBe("VERIFICADO");
   });
 
-  it("no edita nombres de organizaciones ni de perfiles en corrección", () => {
+  it("no edita nombres de organizaciones", () => {
     const alm = almacenDemo();
     expect(actualizarNombres(alm, sesionDe(alm, "contacto@cardones.org"), "A", "B")).toBe(
       "SIN_SESION",
-    );
-    expect(actualizarNombres(alm, sesionDe(alm, "rosa@ejemplo.com"), "Rosa", "Pérez")).toBe(
-      "BLOQUEADO",
     );
   });
 });
 
 describe("perfil", () => {
-  it("se completa al guardar el teléfono y el documento de identidad", () => {
+  it("se completa al guardar el teléfono y el documento, y queda verificado solo", () => {
     const alm = almacenDemo();
     const s = sesionDe(alm, "jose@ejemplo.com");
     const c = () => cuentaDeSesion(alm, s)!;
     expect(perfilCompleto(c())).toBe(false);
     expect(guardarPerfil(alm, s, { telefono: "04141112233" })).toBe("OK");
     expect(perfilCompleto(c())).toBe(false);
+    expect(c().estadoVerificacion).toBe("PENDIENTE");
     expect(cargarDocumento(alm, s, "IDENTIDAD", pdf)).toBe("OK");
     expect(perfilCompleto(c())).toBe(true);
-    expect(c().estadoVerificacion).toBe("PENDIENTE");
+    expect(c().estadoVerificacion).toBe("VERIFICADO");
   });
 
-  it("reemplazar un documento sube la versión y lo devuelve a revisión", () => {
+  it("también se verifica si el último paso es el teléfono", () => {
+    const alm = almacenDemo();
+    const s = sesionDe(alm, "jose@ejemplo.com");
+    cargarDocumento(alm, s, "IDENTIDAD", pdf);
+    expect(cuentaDeSesion(alm, s)!.estadoVerificacion).toBe("PENDIENTE");
+    guardarPerfil(alm, s, { telefono: "04141112233" });
+    expect(cuentaDeSesion(alm, s)!.estadoVerificacion).toBe("VERIFICADO");
+  });
+
+  it("un perfil a medias sigue PENDIENTE y puede editar sus datos", () => {
+    const alm = almacenDemo();
+    const s = sesionDe(alm, "rosa@ejemplo.com");
+    const c = cuentaDeSesion(alm, s)!;
+    expect(perfilCompleto(c)).toBe(false);
+    expect(guardarPerfil(alm, s, { telefono: "04140000000" })).toBe("OK");
+    expect(c.estadoVerificacion).toBe("PENDIENTE");
+    expect(actualizarNombres(alm, s, "Rosa", "Pérez")).toBe("OK");
+    expect(cargarDocumento(alm, s, "IDENTIDAD", pdf)).toBe("OK");
+    expect(c.estadoVerificacion).toBe("VERIFICADO");
+  });
+
+  it("reemplazar un documento sube la versión y el perfil sigue verificado", () => {
     const alm = almacenDemo();
     const s = sesionDe(alm, "ana@ejemplo.com");
     cargarDocumento(alm, s, "IDENTIDAD", pdf);
     const c = cuentaDeSesion(alm, s)!;
     expect(c.documentos.IDENTIDAD?.version).toBe(2);
-    expect(c.estadoVerificacion).toBe("PENDIENTE");
+    expect(c.estadoVerificacion).toBe("VERIFICADO");
   });
 
-  it("con «Requiere corrección» solo acepta el documento señalado", () => {
+  it("un RECHAZADO del admin no se borra al editar el perfil", () => {
     const alm = almacenDemo();
-    const s = sesionDe(alm, "rosa@ejemplo.com");
-    expect(guardarPerfil(alm, s, { telefono: "04140000000" })).toBe("BLOQUEADO");
-    expect(cargarDocumento(alm, s, "IDENTIDAD", pdf)).toBe("OK");
+    const s = sesionDe(alm, "ana@ejemplo.com");
     const c = cuentaDeSesion(alm, s)!;
-    expect(c.correccion).toBeUndefined();
-    expect(c.estadoVerificacion).toBe("PENDIENTE");
-    expect(guardarPerfil(alm, s, { telefono: "04140000000" })).toBe("OK");
+    c.estadoVerificacion = "RECHAZADO";
+    cargarDocumento(alm, s, "IDENTIDAD", pdf);
+    guardarPerfil(alm, s, { telefono: "04140000000" });
+    expect(c.estadoVerificacion).toBe("RECHAZADO");
   });
 
   it("la organización necesita representante, acreditación y documento de la entidad", () => {
@@ -240,6 +255,7 @@ describe("perfil", () => {
     expect(perfilCompleto(cuentaDeSesion(alm, s)!)).toBe(false);
     cargarDocumento(alm, s, "REPRESENTACION", pdf);
     expect(perfilCompleto(cuentaDeSesion(alm, s)!)).toBe(true);
+    expect(cuentaDeSesion(alm, s)!.estadoVerificacion).toBe("VERIFICADO");
   });
 
   it("abandonar el portal quita la membresía y cierra la sesión", () => {
