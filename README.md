@@ -36,6 +36,15 @@ Al hacer commit, Husky ejecuta lint-staged: ESLint y Prettier sobre los archivos
 
 Ver [`.env.example`](.env.example). Los archivos `.env*` no se suben al repositorio, salvo `.env.example`.
 
+**Para el despliegue de demostración en Netlify** (mientras no exista plataforma-api):
+
+| Variable         | Valor                      | Para qué                                                                                                                             |
+| ---------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `SESION_SECRETO` | Una cadena larga aleatoria | Firma la cookie de sesión: cualquier instancia de la función la valida, así no hay parpadeos ni salidas de sesión al navegar.        |
+| `DEMO`           | `1`                        | El registro entra directo sin el paso del correo, los enlaces de recuperación se ven en pantalla y aparece la cinta de demostración. |
+
+Limitación conocida: los aportes que se envían en la demo siguen en la memoria de cada instancia y pueden reiniciarse. La sesión y el perfil viajan firmados en la cookie y no se pierden.
+
 ## Stack
 
 Next.js (App Router) · TypeScript · Tailwind CSS · Zod · ESLint · Prettier · Vitest. Código fuente en `src/`, con el alias `@/*`.

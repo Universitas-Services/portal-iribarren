@@ -3,6 +3,7 @@ import { Montserrat, Roboto } from "next/font/google";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { siteUrl } from "@/env";
+import { esDemo } from "@/lib/auth/sesion";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "PDUL YA · La ciudad que planificamos juntos",
     description:
-      "Plan de Desarrollo Urbano Local de Iribarren: infórmate y participa en la Barquisimeto del futuro.",
+      "Plan de Desarrollo Urbano Local de Iribarren: infórmate y participa en el Barquisimeto del futuro.",
     locale: "es_VE",
     type: "website",
     images: [{ url: "/brand/pdul-ya-horizontal.png", width: 960, height: 362, alt: "PDUL YA" }],
@@ -52,6 +53,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Saltar al contenido
         </a>
+        {esDemo && (
+          <aside
+            aria-label="Entorno de demostración"
+            className="bg-noche px-4 py-1.5 text-center text-xs font-medium text-papel print:hidden"
+          >
+            Entorno de demostración: los datos de ejemplo se reinician de vez en cuando.
+          </aside>
+        )}
         <SiteHeader />
         <main id="contenido" className="flex-1">
           {children}

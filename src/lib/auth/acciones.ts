@@ -34,14 +34,17 @@ import {
   registrar,
   restablecer,
   unirse,
+  verificarCorreo,
 } from "./servicio";
 import {
   abrirSesion,
   almacen,
   borrarSesion,
+  esDemo,
   esDesarrollo,
   guardarAviso,
   idSesion,
+  refrescarSesion,
   leerAviso,
 } from "./sesion";
 
@@ -111,7 +114,7 @@ function ir(ruta: string): never {
 }
 
 const enlace = (ruta: string, token?: string) =>
-  esDesarrollo && token ? `${ruta}?token=${token}` : undefined;
+  (esDesarrollo || esDemo) && token ? `${ruta}?token=${token}` : undefined;
 
 /* ---------- Registro ---------- */
 
@@ -119,6 +122,7 @@ async function finalizarRegistro(
   r: ReturnType<typeof registrar>,
   correo: string,
   datos: Record<string, unknown>,
+  contrasena: string,
 ): Promise<EstadoFormulario> {
   if (r.estado === "IDENTITY_CONFLICT") {
     const campo = r.campo === "cedula" ? "cédula" : "RIF";
@@ -129,6 +133,16 @@ async function finalizarRegistro(
         texto: `Esta ${campo} ya está registrada con otro correo. Si es tuya, escribe a soporte para recuperar el acceso.`,
       },
     };
+  }
+  // Demostración: sin correo real, la cuenta queda verificada y se entra directo a completar el
+  // perfil. Si el correo ya existía (respuesta neutra), se sigue como siempre.
+  if (esDemo && r.estado === "ENVIADO" && r.tokenDesarrollo) {
+    verificarCorreo(almacen(), r.tokenDesarrollo);
+    const ingreso = iniciarSesion(almacen(), correo, contrasena);
+    if (ingreso.estado === "OK") {
+      await abrirSesion(ingreso.sesion);
+      ir("/mi-cuenta");
+    }
   }
   await guardarAviso({ correo, enlaceDesarrollo: enlace("/verificar", r.tokenDesarrollo) });
   ir("/registro/revisa-tu-correo");
@@ -150,7 +164,7 @@ export async function registrarNaturalAccion(
     correo,
     contrasena,
   });
-  return finalizarRegistro(r, correo, datos);
+  return finalizarRegistro(r, correo, datos, contrasena);
 }
 
 export async function registrarOrganizacionAccion(
@@ -169,7 +183,7 @@ export async function registrarOrganizacionAccion(
     correo,
     contrasena,
   });
-  return finalizarRegistro(r, correo, datos);
+  return finalizarRegistro(r, correo, datos, contrasena);
 }
 
 /** Reenvía la verificación al correo del último registro (o al indicado al iniciar sesión). */
@@ -235,6 +249,7 @@ export async function cerrarSesionAccion() {
 
 export async function unirseAccion(fd: FormData) {
   if (!unirse(almacen(), await idSesion())) ir("/ingresar");
+  await refrescarSesion();
   ir(destinoSeguro(fd.get("volver"), "/mi-cuenta"));
 }
 
@@ -283,6 +298,8 @@ const metadatos = (f: File) => ({ nombre: f.name, mime: f.type, tamano: f.size }
 
 /** Tras guardar vuelve a «Mi cuenta»; si el perfil quedó completo, con el aviso para participar. */
 async function trasGuardar(estabaCompleto: boolean): Promise<never> {
+  // La cookie lleva la cuenta firmada: se actualiza para que otra instancia no la vea vieja.
+  await refrescarSesion();
   const c = cuentaDeSesion(almacen(), await idSesion());
   ir(
     !estabaCompleto && c && perfilCompleto(c)
@@ -394,6 +411,8 @@ export async function cambiarContrasenaAccion(
     return { errores: { contrasenaActual: "La contraseña actual no es correcta." } };
   if (r === "IGUAL_A_LA_ACTUAL")
     return { errores: { contrasena: "La contraseña nueva debe ser distinta de la actual." } };
+  // Los tokens anteriores quedaron revocados: la sesión actual se firma de nuevo.
+  await refrescarSesion(sesion);
   return ir("/mi-cuenta/seguridad?guardado=contrasena");
 }
 
@@ -405,6 +424,7 @@ export async function abandonarAccion() {
 
 export async function solicitarBajaAccion() {
   if (!solicitarBaja(almacen(), await idSesion())) ir("/ingresar");
+  await refrescarSesion();
   ir("/mi-cuenta/seguridad?guardado=baja");
 }
 

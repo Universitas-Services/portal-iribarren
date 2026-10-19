@@ -47,8 +47,8 @@ export function Hero({ foto }: { foto?: Foto }) {
             id="hero-titulo"
             className="font-display text-[clamp(2.1rem,5.2vw,4.25rem)] leading-[1.04] font-extrabold tracking-[-0.03em] text-papel"
           >
-            <span className="text-amarillo">PDUL YA:</span> Construyendo la Barquisimeto del futuro,
-            humana y sostenible
+            <span className="text-amarillo">PDUL YA:</span> Construyendo el Barquisimeto del futuro,
+            humano y sostenible
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-papel/85">
             Planificación urbana participativa para la ciudad humana. Infórmate, opina y propón: el

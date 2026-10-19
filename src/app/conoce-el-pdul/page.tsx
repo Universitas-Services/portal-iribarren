@@ -43,7 +43,7 @@ const SECCIONES: SeccionIndice[] = [
   { id: "marco-legal", label: "Marco legal" },
   { id: "procedimiento", label: "Procedimiento" },
   { id: "objetivos", label: "Objetivos" },
-  { id: "alcance", label: "Qué no gestiona" },
+  { id: "alcance", label: "¿Qué no gestiona?" },
 ];
 
 const ICONO_OBJETIVO: Record<(typeof OBJETIVOS)[number]["clave"], LucideIcon> = {
@@ -85,7 +85,7 @@ export default function ConocePage() {
       <EncabezadoPagina
         migas={[{ href: "/", label: "Inicio" }, { label: "Conoce el PDUL" }]}
         titulo="Conoce el PDUL"
-        bajada="La ley marco municipal del suelo que ordenará Barquisimeto hasta 2046: qué es, de dónde viene, cómo se elabora y qué busca."
+        bajada="El futuro urbano de Barquisimeto se planifica hoy. Conoce el Plan de Desarrollo Urbano Local (PDUL) de Iribarren para el período 2026–2046: qué es, cuáles son sus antecedentes, cómo se formula y qué propone para orientar el crecimiento de la ciudad, organizar los usos del suelo y mejorar la calidad de vida de sus habitantes."
       />
 
       <div className="relative z-10 mx-auto -mt-16 grid max-w-7xl grid-cols-[minmax(0,1fr)] gap-8 px-4 pb-24 sm:px-6 lg:-mt-20 lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start lg:px-8">
@@ -176,11 +176,12 @@ export default function ConocePage() {
             </div>
           </Seccion>
 
-          <Seccion
-            id="marco-legal"
-            titulo="Naturaleza jurídica y marco de obligatorio cumplimiento"
-          >
-            <p className="prosa">{MARCO_INTRO}</p>
+          <Seccion id="marco-legal" titulo="Naturaleza jurídica y marco legal del PDUL">
+            <div className="prosa">
+              {MARCO_INTRO.map((t) => (
+                <p key={t}>{t}</p>
+              ))}
+            </div>
             <ol className="mt-6">
               {MARCO.map(({ nombre, texto, enlace }, i) => (
                 <li key={nombre} className="relative pb-4 pl-14 last:pb-0">
@@ -300,7 +301,7 @@ export default function ConocePage() {
             </ol>
           </Seccion>
 
-          <Seccion id="alcance" titulo="Qué no gestiona este portal">
+          <Seccion id="alcance" titulo="¿Qué no gestiona este portal?">
             <p className="prosa">
               El portal PDUL YA es exclusivo del Plan de Desarrollo Urbano Local. Estos trámites
               siguen en la Dirección de Planificación y Control Urbano (DPCU) de la Alcaldía:
