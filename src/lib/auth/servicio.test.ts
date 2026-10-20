@@ -409,6 +409,9 @@ describe("seguimiento y galería", () => {
       expect(p.autor).toBeTruthy();
       expect(p).not.toHaveProperty("cuentaId");
     }
+    // La ubicación exacta nunca se publica.
+    alm.participaciones.get("IRI-2026-0001")!.ubicacion = { lat: 10.07, lng: -69.34 };
+    expect(propuestaPublica(alm, "IRI-2026-0001")).not.toHaveProperty("ubicacion");
     // Aprobada sin autorización de nombre: no se publica.
     expect(propuestaPublica(alm, "IRI-2026-0002")).toBeUndefined();
     expect(propuestaPublica(alm, "iri-2026-0001")?.folio).toBe("IRI-2026-0001");

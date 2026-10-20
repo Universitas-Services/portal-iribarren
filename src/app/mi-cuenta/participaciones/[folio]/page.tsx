@@ -8,6 +8,7 @@ import { FichaAporte, InsigniaEstado, LineaTiempoEstados } from "@/components/pa
 import { getParticipacion, getUsuario } from "@/lib/auth/sesion";
 import { formatearFechaHora } from "@/lib/formato";
 import { FOLIOS_PRERENDER } from "@/lib/folios";
+import { MapaPunto } from "@/components/cuenta/selector-ubicacion";
 
 export const metadata: Metadata = { title: "Detalle de mi aporte", robots: { index: false } };
 
@@ -78,6 +79,18 @@ async function Contenido({ params }: { params: Params }) {
         </h2>
         <LineaTiempoEstados historial={p.historial} />
       </section>
+
+      {p.ubicacion && (
+        <section aria-labelledby="ubicacion-aporte" className="mt-10">
+          <h2 id="ubicacion-aporte" className="mb-3 font-display text-xl font-extrabold text-noche">
+            Ubicación
+          </h2>
+          <MapaPunto punto={p.ubicacion} />
+          <p className="mt-1 text-xs text-tinta/70">
+            Solo la ven tú y el equipo de la alcaldía; no se publica.
+          </p>
+        </section>
+      )}
 
       <div className="mt-10">
         <FichaAporte

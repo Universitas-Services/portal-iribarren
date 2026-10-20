@@ -398,6 +398,7 @@ const ETIQUETAS: Record<string, string> = {
   soporte: "Documento de soporte",
   imagenes: "Fotos",
   video: "Enlace del video",
+  ubicacion: "Ubicación en el mapa",
 };
 
 const CON_NUMERO = ["cedula", "rif", "cedulaRepresentante"];

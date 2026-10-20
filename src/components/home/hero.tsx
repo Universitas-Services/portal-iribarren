@@ -72,17 +72,14 @@ export function Hero({ fotos = [] }: { fotos?: Foto[] }) {
         </div>
 
         {!foto && (
-          // El isotipo tiene manzanas azul noche: sobre el fondo oscuro va en una tarjeta clara.
-          <div className="flotar mx-auto hidden w-full max-w-[19rem] rounded-3xl bg-papel p-6 drop-shadow-[0_24px_40px_rgb(0_0_0/0.35)] lg:block">
-            <Image
-              src="/brand/pdul-ya-isotipo.png"
-              alt="Isotipo de PDUL YA"
-              width={800}
-              height={708}
-              loading="eager"
-              className="w-full"
-            />
-          </div>
+          <Image
+            src="/brand/pdul-ya-isotipo.png"
+            alt="Isotipo de PDUL YA"
+            width={800}
+            height={708}
+            loading="eager"
+            className="flotar mx-auto hidden w-full max-w-[19rem] drop-shadow-[0_24px_40px_rgb(0_0_0/0.35)] lg:block"
+          />
         )}
       </div>
     </section>

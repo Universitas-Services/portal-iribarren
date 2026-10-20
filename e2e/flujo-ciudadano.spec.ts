@@ -71,7 +71,11 @@ test("de registrarse a ver el cambio de estado de su propuesta", async ({ page }
     await expect(page).toHaveURL(/\/participa/);
     await page.getByRole("radio", { name: "Propuesta formal" }).check();
     await elegir(page, /^Parroquia/, "Catedral");
-    await page.getByLabel("Comunidad, barrio o sector").fill("Centro histórico");
+    await page.getByLabel(/Comunidad, barrio o sector/).fill("Centro histórico");
+    // La propuesta formal exige la ubicación: se pega un enlace de Google Maps con coordenadas.
+    await page.locator("#ubicacion-enlace").fill("https://www.google.com/maps?q=10.0678,-69.3467");
+    await page.getByRole("button", { name: "Usar enlace" }).click();
+    await expect(page.getByText(/Punto marcado: 10\.06780, -69\.34670/)).toBeVisible();
     await elegir(page, /área del plan/, "Vialidad y Transporte");
     await page
       .getByLabel("Tu propuesta")
