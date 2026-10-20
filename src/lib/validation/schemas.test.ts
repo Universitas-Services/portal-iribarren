@@ -87,14 +87,33 @@ describe("participacionSchema", () => {
     expect(participacionSchema.safeParse(base).success).toBe(true);
   });
 
-  it("exige adjunto en la propuesta formal y acepta PNG", () => {
+  it("exige adjunto y ubicación en la propuesta formal y acepta PNG", () => {
     const r = participacionSchema.safeParse({ ...base, tipo: "PROPUESTA_FORMAL" });
     expect(r.success).toBe(false);
-    expect(r.error?.issues[0]?.path).toEqual(["soporte"]);
+    expect(r.error?.issues.map((i) => i.path[0]).sort()).toEqual(["soporte", "ubicacion"]);
     const png = new File([new Uint8Array(10)], "plano.png", { type: "image/png" });
     expect(
-      participacionSchema.safeParse({ ...base, tipo: "PROPUESTA_FORMAL", soporte: png }).success,
+      participacionSchema.safeParse({
+        ...base,
+        tipo: "PROPUESTA_FORMAL",
+        soporte: png,
+        latitud: "10.0678",
+        longitud: "-69.3467",
+      }).success,
     ).toBe(true);
+  });
+
+  it("la ubicación es opcional en una opinión, pero debe estar en Iribarren", () => {
+    expect(participacionSchema.safeParse({ ...base, latitud: "", longitud: "" }).success).toBe(
+      true,
+    );
+    const fuera = participacionSchema.safeParse({
+      ...base,
+      latitud: "10.4806",
+      longitud: "-66.9036",
+    });
+    expect(fuera.success).toBe(false);
+    expect(fuera.error?.issues[0]?.path).toEqual(["ubicacion"]);
   });
 
   it("rechaza un adjunto de más de 2 MB", () => {
@@ -159,6 +178,8 @@ describe("participacionSchema", () => {
       tipo: "PROPUESTA_FORMAL",
       imagenes: [foto()],
       video: "https://youtu.be/dQw4w9WgXcQ",
+      latitud: "10.0678",
+      longitud: "-69.3467",
     });
     expect(r.error?.issues[0]?.path).toEqual(["soporte"]);
   });

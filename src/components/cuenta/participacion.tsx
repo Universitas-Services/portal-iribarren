@@ -29,6 +29,8 @@ import {
 } from "@/lib/validation/schemas";
 import { Campo, ResumenErrores } from "./campos";
 import { CampoArchivo, CampoImagenes, CampoSelect, Dialogo } from "./piezas";
+import { SelectorUbicacion } from "./selector-ubicacion";
+import { formatoCoordenadas } from "@/lib/ubicacion";
 
 const TIPOS: { valor: TipoParticipacion; titulo: string; texto: string; Icon: typeof FileText }[] =
   [
@@ -126,6 +128,9 @@ export function FormParticipacion({
         : {}),
       Parroquia: d.parroquia,
       Sector: d.sector,
+      ...(d.latitud !== undefined && d.longitud !== undefined
+        ? { Ubicación: formatoCoordenadas({ lat: d.latitud, lng: d.longitud }) }
+        : {}),
       "Categoría técnica": d.categoriaTecnica,
       ...(d.soporte ? { Soporte: d.soporte.name } : {}),
       ...(d.imagenes.length
@@ -219,13 +224,21 @@ export function FormParticipacion({
         />
         <Campo
           id="sector"
-          etiqueta="Comunidad, barrio o sector"
+          etiqueta="Comunidad, barrio o sector (referencia)"
           maxLength={150}
-          placeholder="Por ejemplo, urb. Patarata"
+          placeholder="Por ejemplo, urb. Patarata, frente a la plaza"
           defaultValue={v.sector}
           error={errores.sector}
         />
       </div>
+
+      <SelectorUbicacion
+        inicial={
+          v.latitud && v.longitud ? { lat: Number(v.latitud), lng: Number(v.longitud) } : undefined
+        }
+        obligatorio={tipo === "PROPUESTA_FORMAL"}
+        error={errores.ubicacion}
+      />
 
       <CampoSelect
         id="categoriaTecnica"

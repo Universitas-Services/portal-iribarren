@@ -25,6 +25,7 @@ import {
   rifSchema,
   telefonoSchema,
 } from "./common";
+import { dentroDeIribarren } from "@/lib/ubicacion";
 
 export const TIPOS_PERFIL = ["NATURAL", "ORGANIZACION"] as const;
 
@@ -181,6 +182,13 @@ export const videoSchema = z
     return e;
   });
 
+/** Coordenada opcional que llega como texto del formulario («» = sin punto). */
+const coordenada = (min: number, max: number) =>
+  z.preprocess(
+    (v) => (v === "" || v === undefined || v === null ? undefined : Number(v)),
+    z.number().min(min).max(max).optional(),
+  );
+
 /** CU-19 Enviar participación. La cuenta participa a su nombre (persona u organización). */
 export const participacionSchema = z
   .object({
@@ -193,6 +201,9 @@ export const participacionSchema = z
       .min(3, "Indica la comunidad, barrio, urbanización o sector.")
       .max(150, "El sector no puede superar 150 caracteres."),
     categoriaTecnica: opcion(CATEGORIAS_TECNICAS, "Selecciona la categoría técnica."),
+    /** Punto en el mapa (Leaflet + OSM o enlace de Google Maps): obligatorio en la propuesta formal. */
+    latitud: coordenada(-90, 90),
+    longitud: coordenada(-180, 180),
     descripcion: z
       .string()
       .trim()
@@ -212,6 +223,21 @@ export const participacionSchema = z
   .superRefine((d, ctx) => {
     if (d.tipo === "OPINION_NOTICIA" && !d.noticia) {
       ctx.addIssue({ code: "custom", path: ["noticia"], message: "Selecciona la noticia." });
+    }
+    const hayPunto = d.latitud !== undefined && d.longitud !== undefined;
+    if (hayPunto && !dentroDeIribarren({ lat: d.latitud!, lng: d.longitud! })) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["ubicacion"],
+        message: "El punto está fuera del Municipio Iribarren. Márcalo dentro del municipio.",
+      });
+    }
+    if (d.tipo === "PROPUESTA_FORMAL" && !hayPunto) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["ubicacion"],
+        message: "Marca en el mapa dónde aplica tu propuesta.",
+      });
     }
     if (d.tipo === "PROPUESTA_FORMAL" && !d.soporte) {
       ctx.addIssue({

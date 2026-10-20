@@ -50,16 +50,13 @@ export default function NotFound() {
             ))}
           </ul>
         </div>
-        {/* El isotipo tiene manzanas azul noche: sobre el fondo oscuro va en una tarjeta clara. */}
-        <div className="flotar mx-auto hidden w-full max-w-sm rounded-3xl bg-papel p-8 drop-shadow-2xl lg:block">
-          <Image
-            src="/brand/pdul-ya-isotipo.png"
-            alt="Isotipo de PDUL YA"
-            width={800}
-            height={708}
-            className="w-full"
-          />
-        </div>
+        <Image
+          src="/brand/pdul-ya-isotipo.png"
+          alt="Isotipo de PDUL YA"
+          width={800}
+          height={708}
+          className="flotar mx-auto hidden w-full max-w-sm drop-shadow-2xl lg:block"
+        />
       </div>
     </section>
   );

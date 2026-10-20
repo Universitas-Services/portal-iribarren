@@ -439,7 +439,9 @@ export async function enviarParticipacionAccion(
   const datos = leer(fd);
   const p = participacionSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
-  const { idempotencia, noticia: slug, imagenes, soporte, ...resto } = p.data;
+  const { idempotencia, noticia: slug, imagenes, soporte, latitud, longitud, ...resto } = p.data;
+  const ubicacion =
+    latitud !== undefined && longitud !== undefined ? { lat: latitud, lng: longitud } : undefined;
 
   let noticia: { slug: string; titulo: string } | undefined;
   if (resto.tipo === "OPINION_NOTICIA" && slug) {
@@ -455,6 +457,7 @@ export async function enviarParticipacionAccion(
   const r = enviarParticipacion(almacen(), sesion, idempotencia, {
     ...resto,
     noticia,
+    ubicacion,
     imagenes: imagenes.map(metadatos),
     soporte: soporte ? metadatos(soporte) : undefined,
   });

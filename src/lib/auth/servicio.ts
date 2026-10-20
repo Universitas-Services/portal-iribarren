@@ -83,6 +83,8 @@ export type Participacion = {
   noticia?: { slug: string; titulo: string };
   parroquia: Parroquia;
   sector: string;
+  /** Punto marcado en el mapa: no se publica, solo lo ven el autor y la alcaldía. */
+  ubicacion?: { lat: number; lng: number };
   categoriaTecnica: CategoriaTecnica;
   descripcion: string;
   /** Metadatos: los archivos van a Storage en plataforma-api. */
@@ -653,7 +655,8 @@ export function filtrarParticipaciones(lista: Participacion[], f: FiltroParticip
  * cuenta ni datos de contacto. El autor solo aparece si autorizó mostrar su nombre (v3, 5.1).
  */
 export function vistaPublica(p: Participacion) {
-  const { cuentaId: _cuenta, historial, mostrarNombre, autor, ...resto } = p;
+  // La ubicación exacta no se publica: puede ser la casa de la persona.
+  const { cuentaId: _cuenta, historial, mostrarNombre, autor, ubicacion: _ubicacion, ...resto } = p;
   return {
     ...resto,
     autor: mostrarNombre ? autor : undefined,
