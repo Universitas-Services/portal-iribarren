@@ -12,6 +12,7 @@ import { TransicionListado, ZonaResultados } from "@/components/listado/transici
 import { getDocumentos } from "@/lib/api";
 import { plural } from "@/lib/formato";
 import { parseFiltrosDocumentos } from "@/lib/validation/schemas";
+import { BannerCampana } from "@/components/campana/banner-campana";
 
 export const metadata: Metadata = {
   title: "Documentos",
@@ -85,6 +86,8 @@ async function Repositorio({ searchParams }: { searchParams: SearchParams }) {
               </Link>
             </div>
           )}
+
+          <BannerCampana className="mt-8" />
 
           <Paginacion
             pagina={pagina}

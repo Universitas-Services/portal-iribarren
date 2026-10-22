@@ -22,6 +22,7 @@ const ESTADO_HTTP = {
   TRANSICION_INVALIDA: 409,
   FALTA_MOTIVO: 422,
   SIN_NOMBRE_AUTORIZADO: 422,
+  SIN_SEGUIMIENTO: 409,
 } as const;
 
 export async function POST(request: Request, { params }: { params: Promise<{ folio: string }> }) {

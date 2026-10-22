@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Menu, X } from "lucide-react";
+import { esActual } from "./enlaces-nav";
 import { NAV_LINKS } from "./nav-links";
 
 /** Menú móvil. `cuenta` llega del servidor (sesión) envuelta en su propio Suspense. */
@@ -49,7 +50,7 @@ export function MobileNav({ cuenta }: { cuenta: ReactNode }) {
       <div
         id={panelId}
         hidden={!open}
-        className="absolute inset-x-0 top-full border-b border-linea bg-papel shadow-[0_18px_40px_-24px_rgb(35_42_54/0.45)]"
+        className="absolute inset-x-0 top-full border-b border-linea bg-papel shadow-[0_18px_40px_-24px_rgb(46_19_77/0.45)]"
       >
         <nav aria-label="Principal (móvil)" className="mx-auto max-w-7xl px-4 pt-2 pb-6 sm:px-6">
           <ul className="divide-y divide-linea">
@@ -57,8 +58,8 @@ export function MobileNav({ cuenta }: { cuenta: ReactNode }) {
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  aria-current={pathname === l.href ? "page" : undefined}
-                  className="flex min-h-12 items-center font-display text-lg font-semibold text-tinta aria-[current=page]:text-rojo"
+                  aria-current={esActual(l.href, pathname) ? "page" : undefined}
+                  className="-mx-3 my-1 flex min-h-12 items-center rounded-xl px-3 font-display text-lg font-semibold text-tinta aria-[current=page]:bg-morado-activo aria-[current=page]:text-papel"
                 >
                   {l.label}
                 </Link>

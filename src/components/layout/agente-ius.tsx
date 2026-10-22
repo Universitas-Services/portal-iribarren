@@ -7,7 +7,7 @@ import { useEffect, useId, useRef, useState } from "react";
 /*
  * Agente integrado, en todas las páginas del portal: un botón flotante abre un panel tipo chat donde la asistente de
  * Ius Urbano invita a registrarse en su sitio para consultar dudas de urbanismo. No conversa
- * aquí: solo presenta el servicio y lleva al sitio externo.
+ * aquí: solo presenta el servicio. El enlace al sitio externo es la última burbuja del chat.
  */
 
 const SITIO = "https://iusurbano.universitas.legal/";
@@ -101,25 +101,26 @@ export function AgenteIus() {
                     Si tienes dudas sobre el PDUL, los usos del suelo o cómo presentar tu propuesta,
                     regístrate en Ius Urbano y conversa conmigo allí.
                   </p>
+                  <a
+                    href={SITIO}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block rounded-2xl rounded-bl-md bg-noche px-4 py-3 text-sm text-papel shadow-tarjeta transition-colors hover:bg-morado-activo"
+                  >
+                    <span className="flex items-center gap-1.5 font-display font-bold">
+                      Ius Urbano
+                      <ArrowUpRight
+                        size={16}
+                        aria-hidden="true"
+                        className="transition-transform duration-200 ease-out-expo group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                      />
+                    </span>
+                    <span className="block text-papel/75">iusurbano.universitas.legal</span>
+                    <span className="sr-only"> (se abre en otra pestaña)</span>
+                  </a>
                 </div>
               )}
             </div>
-          </div>
-
-          <div className="border-t border-linea bg-papel p-4">
-            <a
-              href={SITIO}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-rojo px-5 font-display font-bold text-papel transition-colors hover:bg-rojo-oscuro"
-            >
-              Registrarme en Ius Urbano
-              <ArrowUpRight size={18} aria-hidden="true" />
-              <span className="sr-only"> (se abre en otra pestaña)</span>
-            </a>
-            <p className="mt-2 text-center text-xs text-tinta/70">
-              Servicio externo de Universitas. Se abre en otra pestaña.
-            </p>
           </div>
         </div>
       )}

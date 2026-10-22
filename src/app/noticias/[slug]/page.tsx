@@ -14,9 +14,11 @@ import { EncabezadoPagina } from "@/components/layout/encabezado-pagina";
 import { Galeria } from "@/components/noticias/galeria";
 import { ReproductorVideo } from "@/components/noticias/reproductor-video";
 import { EtiquetaEjemplo, NewsCard } from "@/components/noticias/news-card";
+import { ReaccionesNoticia } from "@/components/noticias/reacciones";
 import { RelacionadasSkeleton } from "@/components/noticias/skeletons";
 import { getPost, getPostSlugs, getRelatedPosts } from "@/lib/api";
 import { formatearFechaLarga } from "@/lib/formato";
+import { BannerCampana } from "@/components/campana/banner-campana";
 
 type Params = Promise<{ slug: string }>;
 
@@ -96,6 +98,8 @@ export default async function NoticiaPage({ params }: { params: Params }) {
 
         {post.formato === "DOCUMENTO" && post.adjunto && <VisorDocumento adjunto={post.adjunto} />}
 
+        <ReaccionesNoticia slug={post.slug} />
+
         <aside
           aria-labelledby="opinar-titulo"
           className="relative overflow-hidden rounded-tarjeta bg-rojo p-6 text-papel shadow-tarjeta sm:p-10"
@@ -112,8 +116,8 @@ export default async function NoticiaPage({ params }: { params: Params }) {
             ¿Qué opinas de esta noticia?
           </h2>
           <p className="relative mt-3 max-w-xl leading-relaxed text-papel/90">
-            Tu opinión llega al equipo del PDUL con un folio y recibe una respuesta. Solo necesitas
-            tu cuenta con el perfil completo.
+            Tu opinión llega al equipo del PDUL con un folio. Solo necesitas tu cuenta con el perfil
+            completo.
           </p>
           <Link
             href={`/participa?tipo=opinion-noticia&noticia=${post.slug}`}
@@ -127,6 +131,8 @@ export default async function NoticiaPage({ params }: { params: Params }) {
             />
           </Link>
         </aside>
+
+        <BannerCampana />
       </article>
 
       <section

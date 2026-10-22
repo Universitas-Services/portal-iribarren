@@ -327,11 +327,11 @@ describe("participación", () => {
 
 describe("cambio de estado (Revisor)", () => {
   const datos = {
-    tipo: "OPINION_GENERAL" as const,
+    tipo: "PROPUESTA_FORMAL" as const,
     parroquia: "Catedral" as const,
     sector: "Centro",
     categoriaTecnica: "Vialidad y Transporte" as const,
-    descripcion: "Una opinión de prueba con suficiente detalle para el plan de desarrollo.",
+    descripcion: "Una propuesta de prueba con suficiente detalle para el plan de desarrollo.",
     imagenes: [],
   };
 
@@ -374,6 +374,19 @@ describe("cambio de estado (Revisor)", () => {
     );
   });
 
+  it("las opiniones no tienen seguimiento: quedan Recibidas y no se publican", () => {
+    for (const tipo of ["OPINION_GENERAL", "OPINION_NOTICIA"] as const) {
+      const alm = almacenDemo();
+      const s = sesionDe(alm, "ana@ejemplo.com");
+      const r = enviarParticipacion(alm, s, `k-${tipo}`, { ...datos, tipo, mostrarNombre: true });
+      if (r.estado !== "OK") throw new Error("debía enviarse");
+      expect(cambiarEstadoParticipacion(alm, r.folio, "EN_REVISION").estado).toBe(
+        "SIN_SEGUIMIENTO",
+      );
+      expect(participacionPropia(alm, s, r.folio)?.estado).toBe("PENDIENTE");
+    }
+  });
+
   it("rechazar exige un motivo y publicar exige el nombre autorizado", () => {
     const { alm, folio } = nueva(false);
     cambiarEstadoParticipacion(alm, folio, "EN_REVISION");
@@ -390,10 +403,12 @@ describe("seguimiento y galería", () => {
     const alm = almacenDemo();
     const lista = participacionesDe(alm, sesionDe(alm, "ana@ejemplo.com"));
     expect(lista).toHaveLength(5);
-    expect(filtrarParticipaciones(lista, { estado: "RECHAZADA" }).map((p) => p.folio)).toEqual([
-      "IRI-2026-0003",
+    expect(filtrarParticipaciones(lista, { estado: "EN_REVISION" }).map((p) => p.folio)).toEqual([
+      "IRI-2026-0004",
     ]);
-    expect(filtrarParticipaciones(lista, { tipo: "PROPUESTA_FORMAL" })).toHaveLength(1);
+    // Las opiniones están en PENDIENTE («Recibida») pero no entran en el filtro de estado.
+    expect(filtrarParticipaciones(lista, { estado: "PENDIENTE" })).toHaveLength(0);
+    expect(filtrarParticipaciones(lista, { tipo: "PROPUESTA_FORMAL" })).toHaveLength(2);
     for (const folio of ["IRI-2026-0004", "2026-0004", "0004", "4"])
       expect(filtrarParticipaciones(lista, { folio }).map((p) => p.folio)).toEqual([
         "IRI-2026-0004",

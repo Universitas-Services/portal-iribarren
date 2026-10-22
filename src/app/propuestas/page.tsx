@@ -21,6 +21,7 @@ import {
   filtrosParticipacionesSchema,
   type FiltrosParticipaciones,
 } from "@/lib/validation/schemas";
+import { BannerCampana } from "@/components/campana/banner-campana";
 
 export const metadata: Metadata = {
   title: "Propuestas publicadas",
@@ -159,6 +160,8 @@ async function Galeria({ searchParams }: { searchParams: SearchParams }) {
             </p>
           </div>
         )}
+
+        <BannerCampana className="mt-8" />
 
         <Paginacion
           pagina={pagina}

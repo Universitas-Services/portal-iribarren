@@ -8,7 +8,8 @@ import { z } from "zod";
 const envSchema = z.object({
   API_URL: z.url("API_URL debe ser una URL válida."),
   PORTAL_CLIENT_ID: z.string().min(1, "Falta PORTAL_CLIENT_ID."),
-  PORTAL_CLIENT_SECRET: z.string().min(1, "Falta PORTAL_CLIENT_SECRET."),
+  /** Opcional: si se envía, la API lo verifica; nunca se envía desde el navegador. */
+  PORTAL_CLIENT_SECRET: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

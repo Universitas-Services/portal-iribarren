@@ -1,5 +1,7 @@
 import {
   ClipboardList,
+  Eye,
+  ThumbsUp,
   FileText,
   Gavel,
   Image as ImageIcon,
@@ -86,7 +88,14 @@ export function FormatoBadge({ post }: { post: PostSummary }) {
 }
 
 /** Tarjeta uniforme para carriles y «Más noticias»; el listado usa el mosaico por formato. */
-export function NewsCard({ post }: { post: PostSummary }) {
+export function NewsCard({
+  post,
+  metricas,
+}: {
+  post: PostSummary;
+  /** Vistas y «Me gusta», en el carril del inicio. */
+  metricas?: { vistas: number; likes: number };
+}) {
   const c = CATEGORIA[post.categoria];
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-tarjeta bg-papel shadow-tarjeta transition-[transform,box-shadow] duration-300 ease-out-expo hover:-translate-y-1 hover:shadow-elevada">
@@ -130,6 +139,20 @@ export function NewsCard({ post }: { post: PostSummary }) {
           </Link>
         </h3>
         <p className="mt-2 leading-relaxed text-tinta">{post.resumen}</p>
+        {metricas && (
+          <p className="mt-auto flex gap-4 pt-4 text-sm text-tinta/75">
+            <span className="inline-flex items-center gap-1.5">
+              <Eye size={16} aria-hidden="true" />
+              <span className="tabular-nums">{metricas.vistas}</span>
+              <span className="sr-only">vistas</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <ThumbsUp size={16} aria-hidden="true" />
+              <span className="tabular-nums">{metricas.likes}</span>
+              <span className="sr-only">me gusta</span>
+            </span>
+          </p>
+        )}
       </div>
     </article>
   );

@@ -1,5 +1,7 @@
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import type { EnlaceVideo } from "@/lib/noticias/video";
+import { tieneSeguimiento } from "@/lib/participacion";
+export { tieneSeguimiento };
 import type {
   CategoriaTecnica,
   EstadoParticipacion,
@@ -570,7 +572,9 @@ export type ResultadoTransicion =
   | { estado: "NO_EXISTE" }
   | { estado: "TRANSICION_INVALIDA" }
   | { estado: "FALTA_MOTIVO" }
-  | { estado: "SIN_NOMBRE_AUTORIZADO" };
+  | { estado: "SIN_NOMBRE_AUTORIZADO" }
+  /** Las opiniones no tienen seguimiento: siempre quedan «Recibidas». */
+  | { estado: "SIN_SEGUIMIENTO" };
 
 /**
  * Cambio de estado de una participación, como lo hará el Revisor en plataforma-admin. En el
@@ -585,6 +589,7 @@ export function cambiarEstadoParticipacion(
 ): ResultadoTransicion {
   const p = alm.participaciones.get(folio.toUpperCase());
   if (!p) return { estado: "NO_EXISTE" };
+  if (!tieneSeguimiento(p.tipo)) return { estado: "SIN_SEGUIMIENTO" };
   if (!TRANSICIONES[p.estado].includes(nuevo)) return { estado: "TRANSICION_INVALIDA" };
   const texto = comentario?.trim() || undefined;
   if (nuevo === "RECHAZADA" && !texto) return { estado: "FALTA_MOTIVO" };
@@ -641,7 +646,8 @@ export function filtrarParticipaciones(lista: Participacion[], f: FiltroParticip
   const q = f.q ? sinTildes(f.q.trim()) : "";
   return lista.filter(
     (p) =>
-      (!f.estado || p.estado === f.estado) &&
+      // El estado solo se filtra en las propuestas formales: las opiniones no tienen seguimiento.
+      (!f.estado || (tieneSeguimiento(p.tipo) && p.estado === f.estado)) &&
       (!f.tipo || p.tipo === f.tipo) &&
       (!f.parroquia || p.parroquia === f.parroquia) &&
       (!f.categoriaTecnica || p.categoriaTecnica === f.categoriaTecnica) &&
@@ -669,7 +675,7 @@ export type PropuestaPublica = ReturnType<typeof vistaPublica>;
 /** Galería pública: solo PUBLICADA y con nombre autorizado, de la más reciente a la más antigua. */
 export function propuestasPublicadas(alm: Almacen, f: FiltroParticipaciones = {}) {
   const publicadas = [...alm.participaciones.values()].filter(
-    (p) => p.estado === "PUBLICADA" && p.mostrarNombre,
+    (p) => tieneSeguimiento(p.tipo) && p.estado === "PUBLICADA" && p.mostrarNombre,
   );
   return filtrarParticipaciones(publicadas, { ...f, estado: undefined })
     .map(vistaPublica)
@@ -678,5 +684,7 @@ export function propuestasPublicadas(alm: Almacen, f: FiltroParticipaciones = {}
 
 export function propuestaPublica(alm: Almacen, folio: string) {
   const p = alm.participaciones.get(folio.toUpperCase());
-  return p && p.estado === "PUBLICADA" && p.mostrarNombre ? vistaPublica(p) : undefined;
+  return p && tieneSeguimiento(p.tipo) && p.estado === "PUBLICADA" && p.mostrarNombre
+    ? vistaPublica(p)
+    : undefined;
 }

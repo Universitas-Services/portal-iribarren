@@ -7,7 +7,7 @@ import {
 } from "@/lib/api/types";
 import type { EnlaceVideo } from "@/lib/noticias/video";
 import { formatearFechaHora, formatearPeso } from "@/lib/formato";
-import { ESTADO_PARTICIPACION } from "@/lib/participacion";
+import { ESTADO_PARTICIPACION, RECIBIDA, tieneSeguimiento } from "@/lib/participacion";
 
 /*
  * Piezas para mostrar un aporte: en el acuse, en «Mis participaciones» y en la galería pública.
@@ -28,8 +28,15 @@ export type AporteVisible = {
   soporte?: Archivo;
 };
 
-export function InsigniaEstado({ estado }: { estado: EstadoParticipacion }) {
-  const e = ESTADO_PARTICIPACION[estado];
+/** Estado de un aporte. Sin `tipo` (línea de tiempo) muestra el estado tal cual. */
+export function InsigniaEstado({
+  estado,
+  tipo,
+}: {
+  estado: EstadoParticipacion;
+  tipo?: TipoParticipacion;
+}) {
+  const e = tipo && !tieneSeguimiento(tipo) ? RECIBIDA : ESTADO_PARTICIPACION[estado];
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-display text-xs font-bold ring-1 ring-inset ${e.clase}`}
@@ -213,7 +220,7 @@ export function TarjetaAporte({
     <article className="group relative flex h-full flex-col rounded-tarjeta bg-papel p-5 shadow-tarjeta transition-shadow duration-200 hover:shadow-elevada sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="font-display text-sm font-extrabold text-noche tabular-nums">{folio}</span>
-        {estado && <InsigniaEstado estado={estado} />}
+        {estado && <InsigniaEstado estado={estado} tipo={tipo} />}
       </div>
       <h3 className="mt-3 font-display text-lg leading-snug font-extrabold text-noche">
         <Link

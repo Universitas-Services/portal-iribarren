@@ -2,6 +2,7 @@ import { SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { BannerCampana } from "@/components/campana/banner-campana";
 import { EncabezadoPagina } from "@/components/layout/encabezado-pagina";
 import { FiltrosNoticias } from "@/components/noticias/filtros-noticias";
 import { MosaicoNoticias } from "@/components/noticias/mosaico-noticias";
@@ -61,8 +62,9 @@ async function Listado({ searchParams }: { searchParams: SearchParams }) {
         </p>
 
         {items.length > 0 ? (
-          <div className="mt-6">
+          <div className="mt-6 space-y-8">
             <MosaicoNoticias items={items} />
+            <BannerCampana />
           </div>
         ) : (
           <div className="mt-6 flex flex-col items-center rounded-tarjeta bg-papel px-6 py-16 text-center shadow-tarjeta">

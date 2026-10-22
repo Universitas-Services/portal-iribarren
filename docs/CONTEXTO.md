@@ -241,6 +241,27 @@ Los dos repos traen en `.claude/skills/` las skills `flujo-git` (la regla de los
 - **Capa de alcaldía hecha en el admin** (misma rama): Equipo, Ciudadanos, Configuración (marca, catálogos y fases) y Bitácora. Los catálogos y las fases todavía no llegan al portal: se conectan con la API.
 - **E2E opcionales en CI (los dos repos):** corren solo con la etiqueta `e2e` en el PR o lanzándolas a mano (_Run workflow_); los PR normales pasan solo los checks rápidos.
 
+## 6.2 Conexión con plataforma-api (20-10-2026, rama `feat/api-auth`)
+
+Rama aparte para probar contra la API sin tocar el despliegue de Netlify (que sigue simulado). Se activa con `API_URL` en `.env.local`; sin ella todo funciona como antes.
+
+- **API de desarrollo:** `https://plataforma-pdul-api-693924722323.us-central1.run.app/api/v1` (Swagger en `/api/v1/docs`). `PORTAL_CLIENT_ID=portal-iribarren`; `PORTAL_CLIENT_SECRET` es opcional.
+- **BFF:** el navegador nunca llama a la API. Los tokens (access de 15 min y refresh de 30 días, rotativo) van cifrados con AES-256-GCM en la cookie httpOnly `pdul_api` (`src/lib/plataforma-api/sello.ts`, secreto `SESION_SECRETO`). `src/proxy.ts` renueva el access token antes de cada página si vence en menos de 1 min (durante el render no se pueden escribir cookies) y borra la cookie si el refresh fue revocado.
+- **Conectado:** ingreso (`POST /auth/login` con `x-client-id`), cierre (`/auth/logout`), cambio de contraseña (`PATCH /auth/password`), registro natural y de organización (luego inicia sesión, porque la API no devuelve tokens), perfil (`GET`/`PATCH /portal/me/profile`), documentos (`POST /portal/me/documents`) y el catálogo `organization-types` (el valor elegido se ajusta a mayúsculas del catálogo).
+- **Cómo encaja:** `src/lib/auth/sesion-api.ts` lee el perfil de la API y lo copia en el almacén del portal con el mismo id (`cuentaDePerfil` en `src/lib/plataforma-api/mapeo.ts`), así «Mi cuenta», los permisos y las participaciones (todavía simuladas) no cambian. Las Server Actions llaman a `src/lib/auth/acciones-api.ts` cuando `usaApi()`.
+- **Traducciones:** documentos IDENTIDAD→`CEDULA`, ENTIDAD→`ACREDITACION` (acta o registro), REPRESENTACION→`PRUEBA_REPRESENTACION`; condición y acreditación a sus enums; teléfono a `0414-1234567`; errores `{code, message, details}` a mensajes en `mensajeDeError`.
+- **Sin endpoint todavía** (muestran «todavía no está disponible»): verificar o reenviar correo, recuperar y restablecer la contraseña, unirse desde otro portal, abandonar el portal, solicitar la baja y corregir nombres de una persona natural (la API no lo permite). Participaciones, noticias, documentos públicos y propuestas siguen simulados.
+- **Probado contra Cloud Run** con cuentas de prueba `prueba.bff.*@correo-prueba.com` y `org.bff.*@correo-prueba.com` (quedan en la base de desarrollo).
+
+## 6.3 Campaña «Barquisimeto suena en ti», reacciones y seguimiento (22-10-2026, rama `feat/api-auth`)
+
+- **Logo Crepuscular** (bloques en degradado rojo rosado → naranja y ámbar): mismos nombres en `public/brand/`. Favicon, `icon.png` (192 × 192, múltiplo de 48 para Google) y `apple-icon.png` regenerados.
+- **Paleta de la campaña** (colores de barquisimetosuenaenti.com), cambiando los valores de los tokens en `src/app/globals.css` sin tocar componentes: `rojo` #E11D48 (CTA; blanco encima ≈ 4,7:1), `rojo-oscuro` #BE123C, `naranja` #F97316, `amarillo` #F59E0B, `noche` #2E134D (morado crepuscular: hero, pie, chat, encabezados), `tinta` #1E293B, `gris` #64748B, `superficie` #F8FAFC, `linea` #E2E8F0. Nuevos: `morado-activo` #44226E (pastilla de la página actual en el menú), `rosa` #E63956 (solo decorativo), `crema` #FDFBF7 y la utilidad `bg-marca` (degradado naranja → rosa). La barra de navegación sigue blanca porque las letras del logo son oscuras.
+- **Campaña:** piezas en `public/campana/` y datos en `src/lib/campana.ts`. Tarjeta a todo el ancho en el tablero del inicio (`CampanaTile`) y `BannerCampana` (rotulado «Campaña de la Alcaldía de Iribarren») en Noticias, el detalle de cada noticia, Documentos, Propuestas y Conoce el PDUL. Enlazan a https://www.barquisimetosuenaenti.com/ en otra pestaña.
+- **Ius Urbano:** sin botón; el enlace es la última burbuja del chat («Ius Urbano · iusurbano.universitas.legal»).
+- **Seguimiento solo para la propuesta formal:** las opiniones (general y sobre noticia) quedan en PENDIENTE y se muestran como «Recibida», sin línea de tiempo (`tieneSeguimiento` en `src/lib/participacion.ts`; `cambiarEstadoParticipacion` responde `SIN_SEGUIMIENTO`; la galería pública solo lista propuestas formales). El filtro de estado de «Mis participaciones» aplica solo a las propuestas. **El admin todavía no aplica esta regla.**
+- **Reacciones y vistas de noticias (simuladas en memoria, `src/lib/noticias/interacciones.ts`):** «Me gusta» / «No me gusta» con sesión (sin exigir perfil completo), una reacción por cuenta y noticia; repetir la quita y la contraria la reemplaza. Cada apertura de la noticia suma una vista (se cuenta desde el navegador porque la página es estática). Cifras de partida de ejemplo derivadas del slug. El inicio tiene pestañas Recientes · Más vistas · Más valoradas. **Para el backend:** `POST /portal/posts/:slug/views`, `PUT/DELETE /portal/posts/:slug/reaction` y los totales en el listado y el detalle.
+
 ## 7. Noticias reales (Propuesta v4), ya cargadas
 
 | Slug                                    | Fecha | Categoría               | Formato                                            |

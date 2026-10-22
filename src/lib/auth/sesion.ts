@@ -2,7 +2,9 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
+import { usaApi } from "@/lib/plataforma-api/cliente";
 import { almacenDemo } from "./fixtures";
+import { borrarTokens, idSesionApi } from "./sesion-api";
 import { DURACION_SESION_MS, firmarSesion, leerSesion } from "./token-sesion";
 import {
   cuentaDeSesion,
@@ -21,8 +23,8 @@ import {
 } from "./servicio";
 
 /*
- * Sesión del portal sobre la autenticación simulada. Con plataforma-api, estas funciones
- * llamarán al BFF y guardarán su token en la misma cookie httpOnly; las pantallas no cambian.
+ * Sesión del portal. Con API_URL definida, la cuenta y sus tokens vienen de plataforma-api
+ * (sesion-api.ts); sin ella, de la autenticación simulada. Las pantallas no cambian.
  */
 
 const COOKIE_SESION = "pdul_sesion";
@@ -113,6 +115,11 @@ export async function getPropuestaPublica(folio: string) {
  * y la sesión se registra aquí; el servicio la usa como siempre.
  */
 export async function idSesion() {
+  if (usaApi()) {
+    // Lee la cookie y compara su vencimiento con la hora actual: siempre al pedir la página.
+    await connection();
+    return idSesionApi(almacen());
+  }
   const token = (await cookies()).get(COOKIE_SESION)?.value;
   if (!token) return undefined;
   // El vencimiento se compara con la hora actual: se calcula siempre al pedir la página.
@@ -156,6 +163,8 @@ async function escribirToken(idAnterior: string) {
  * documento, unirse o cambiar la contraseña. Solo en Server Actions.
  */
 export async function refrescarSesion(actual?: string) {
+  // Con la API la cuenta se lee en cada petición: no hay instantánea que actualizar.
+  if (usaApi()) return;
   const id = actual ?? (await idSesion());
   if (id) await escribirToken(id);
 }
@@ -177,6 +186,7 @@ export async function abrirSesion(sesion: string) {
 
 export async function borrarSesion() {
   (await cookies()).delete(COOKIE_SESION);
+  await borrarTokens();
 }
 
 export type Aviso = { correo: string; enlaceDesarrollo?: string };

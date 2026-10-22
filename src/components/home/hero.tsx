@@ -32,7 +32,7 @@ export function Hero({ fotos = [] }: { fotos?: Foto[] }) {
         )}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-noche/80 lg:bg-transparent lg:bg-[linear-gradient(90deg,rgb(35_42_54)_0%,rgb(35_42_54)_36%,rgb(35_42_54/0.55)_52%,rgb(35_42_54/0.1)_100%)]"
+          className="absolute inset-0 bg-noche/80 lg:bg-transparent lg:bg-[linear-gradient(90deg,rgb(46_19_77)_0%,rgb(46_19_77)_36%,rgb(46_19_77/0.55)_52%,rgb(46_19_77/0.1)_100%)]"
         />
       </div>
 
@@ -40,10 +40,13 @@ export function Hero({ fotos = [] }: { fotos?: Foto[] }) {
         <div className="cascada">
           <h1
             id="hero-titulo"
-            className="font-display text-[clamp(2.1rem,5.2vw,4.25rem)] leading-[1.04] font-extrabold tracking-[-0.03em] text-papel"
+            // Tamaño calculado para que «Pensando en grande:» (unos 11 em) quepa en una línea.
+            className="font-display text-[clamp(1.55rem,8vw,3.5rem)] leading-[1.04] font-extrabold tracking-[-0.03em] text-papel lg:text-[clamp(2.5rem,4.7vw,4rem)]"
           >
-            <span className="text-amarillo italic">Pensando en grande:</span> Construyendo el
-            Barquisimeto del futuro, humano y sostenible
+            <span className="block whitespace-nowrap text-amarillo italic">
+              Pensando en grande:
+            </span>{" "}
+            Construyendo el Barquisimeto del futuro, humano y sostenible
           </h1>
           <p className="mt-5 max-w-xl text-lg leading-relaxed text-papel/85">
             Planificación urbana participativa para la ciudad humana. Infórmate, opina y propón: el
