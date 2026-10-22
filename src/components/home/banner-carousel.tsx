@@ -144,7 +144,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
                   {/* Velo para que el texto blanco cumpla el contraste sobre cualquier foto. */}
                   <div
                     aria-hidden="true"
-                    className="absolute inset-0 bg-[linear-gradient(0deg,rgb(35_42_54/0.95)_0%,rgb(35_42_54/0.75)_45%,rgb(35_42_54/0.25)_100%)]"
+                    className="absolute inset-0 bg-[linear-gradient(0deg,rgb(46_19_77/0.95)_0%,rgb(46_19_77/0.75)_45%,rgb(46_19_77/0.25)_100%)]"
                   />
                 </>
               ) : (

@@ -43,11 +43,11 @@ export async function ThermometerTile({ className = "" }: { className?: string }
           className="absolute top-2 bottom-2 left-[1.0625rem] w-1 rounded-full bg-linea md:top-[1.0625rem] md:right-[calc(100%/14)] md:bottom-auto md:left-[calc(100%/14)] md:h-1 md:w-auto"
         >
           <div
-            className="llenar hidden h-full origin-left rounded-full bg-rojo md:block"
+            className="llenar hidden h-full origin-left rounded-full bg-marca md:block"
             style={{ width: `${avance * 100}%` }}
           />
           <div
-            className="h-full w-full origin-top rounded-full bg-rojo md:hidden"
+            className="h-full w-full origin-top rounded-full bg-marca md:hidden"
             style={{ height: `${avance * 100}%` }}
           />
         </div>

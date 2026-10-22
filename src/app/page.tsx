@@ -8,7 +8,7 @@ import {
   NewsRailSkeleton,
   ThermometerSkeleton,
 } from "@/components/home/skeletons";
-import { AccessTile, MayorTile, OpinionTile } from "@/components/home/static-tiles";
+import { AccessTile, CampanaTile, MayorTile, OpinionTile } from "@/components/home/static-tiles";
 import { ThermometerTile } from "@/components/home/thermometer-tile";
 import { ValuesSection } from "@/components/home/values-section";
 
@@ -136,6 +136,7 @@ export default function HomePage() {
           </Suspense>
           <AccessTile className="md:col-span-3 lg:col-span-5" />
           <MayorTile className="md:col-span-6 lg:col-span-5" />
+          <CampanaTile className="md:col-span-6 lg:col-span-12" />
         </div>
       </div>
 

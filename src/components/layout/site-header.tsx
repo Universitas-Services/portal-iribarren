@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { MobileNav } from "./mobile-nav";
 import { AccesoEscritorio, AccesoMovil, CuentaEscritorio, CuentaMovil } from "./zona-cuenta";
-import { NAV_LINKS } from "./nav-links";
+import { EnlacesNav } from "./enlaces-nav";
 
 export function SiteHeader() {
   return (
@@ -14,7 +14,7 @@ export function SiteHeader() {
             src="/brand/pdul-ya-horizontal-divisor.png"
             alt="PDUL YA, ir al inicio"
             width={1200}
-            height={403}
+            height={402}
             loading="eager"
             fetchPriority="high"
             className="h-9 w-auto lg:h-11"
@@ -23,18 +23,7 @@ export function SiteHeader() {
 
         <nav aria-label="Principal" className="hidden lg:block">
           {/* Una sola línea por enlace: entre 1024 y 1280 px el menú se compacta. */}
-          <ul className="flex items-center xl:gap-1">
-            {NAV_LINKS.map((l) => (
-              <li key={l.href} className="shrink-0">
-                <Link
-                  href={l.href}
-                  className="px-2 py-2 font-display text-sm font-semibold whitespace-nowrap text-tinta transition-colors duration-150 hover:text-rojo xl:px-3 xl:text-[0.9375rem]"
-                >
-                  {l.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <EnlacesNav />
         </nav>
 
         <div className="hidden shrink-0 lg:block">

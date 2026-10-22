@@ -8,6 +8,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { EnlaceCampana, SelloCampana } from "@/components/campana/banner-campana";
 import { Tile } from "./tile";
 
 /** Llamado principal a participar, en el rojo institucional. */
@@ -27,7 +28,7 @@ export function OpinionTile({ className = "" }: { className?: string }) {
       </h2>
       <p className="mt-3 leading-relaxed text-papel/90">
         Opina sobre una noticia, envía una idea o presenta una propuesta formal. Cada aporte recibe
-        su folio y una respuesta.
+        su folio, y las propuestas formales, además, una respuesta.
       </p>
       <Link
         href="/participa"
@@ -135,6 +136,42 @@ export function MayorTile({ className = "" }: { className?: string }) {
           <span className="block font-display font-bold">Yanys Agüero</span>
           <span className="text-sm text-papel/75">Alcalde de Iribarren · texto provisional</span>
         </p>
+      </div>
+    </Tile>
+  );
+}
+
+/**
+ * Acceso a la campaña «Barquisimeto suena en ti» de la Alcaldía, en el morado de la campaña.
+ * Ocupa todo el ancho del tablero: texto a la izquierda y la ilustración a la derecha.
+ */
+export function CampanaTile({ className = "" }: { className?: string }) {
+  return (
+    <Tile
+      aria-labelledby="campana-titulo"
+      className={`relative isolate overflow-hidden bg-noche text-papel ${className}`}
+    >
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-[radial-gradient(70%_120%_at_100%_0%,rgb(249_115_22/0.35),transparent_60%),radial-gradient(60%_100%_at_80%_100%,rgb(230_57_86/0.3),transparent_65%)]"
+      />
+      <div className="grid items-center gap-6 p-6 sm:p-8 md:grid-cols-[1fr_1.15fr] md:gap-10 lg:px-10">
+        <div>
+          <p className="font-display text-xs font-bold tracking-[0.14em] text-amarillo uppercase">
+            Campaña de la Alcaldía de Iribarren
+          </p>
+          <h2
+            id="campana-titulo"
+            className="mt-2 font-display text-2xl leading-tight font-extrabold text-crema sm:text-3xl"
+          >
+            Barquisimeto suena en ti
+          </h2>
+          <p className="mt-3 max-w-md leading-relaxed text-papel/85">
+            Sus lugares, su música y su gente. Descubre la ciudad que suena en cada barquisimetano.
+          </p>
+          <EnlaceCampana className="mt-5" />
+        </div>
+        <SelloCampana className="mx-auto w-full max-w-md md:max-w-none" />
       </div>
     </Tile>
   );

@@ -32,7 +32,7 @@ export function Hero({ fotos = [] }: { fotos?: Foto[] }) {
         )}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-noche/80 lg:bg-transparent lg:bg-[linear-gradient(90deg,rgb(35_42_54)_0%,rgb(35_42_54)_36%,rgb(35_42_54/0.55)_52%,rgb(35_42_54/0.1)_100%)]"
+          className="absolute inset-0 bg-noche/80 lg:bg-transparent lg:bg-[linear-gradient(90deg,rgb(46_19_77)_0%,rgb(46_19_77)_36%,rgb(46_19_77/0.55)_52%,rgb(46_19_77/0.1)_100%)]"
         />
       </div>
 

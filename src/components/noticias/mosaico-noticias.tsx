@@ -83,7 +83,7 @@ function PiezaImagen({ post, prioridad }: { post: PostSummary; prioridad: boolea
       )}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[linear-gradient(0deg,rgb(35_42_54/0.95)_0%,rgb(35_42_54/0.55)_45%,rgb(35_42_54/0)_75%)]"
+        className="absolute inset-0 bg-[linear-gradient(0deg,rgb(46_19_77/0.95)_0%,rgb(46_19_77/0.55)_45%,rgb(46_19_77/0)_75%)]"
       />
       <div className="absolute inset-x-0 bottom-0 p-5">
         <Meta post={post} claro />
@@ -115,7 +115,7 @@ function PiezaVideo({ post, prioridad }: { post: PostSummary; prioridad: boolean
       )}
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[linear-gradient(0deg,rgb(35_42_54/0.95)_0%,rgb(35_42_54/0.35)_45%,rgb(35_42_54/0.15)_100%)]"
+        className="absolute inset-0 bg-[linear-gradient(0deg,rgb(46_19_77/0.95)_0%,rgb(46_19_77/0.35)_45%,rgb(46_19_77/0.15)_100%)]"
       />
       <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-noche/75 px-3 py-1 font-display text-xs font-bold text-papel backdrop-blur-sm">
         <Clapperboard size={14} aria-hidden="true" />
@@ -189,7 +189,7 @@ function PiezaGaleria({ post }: { post: PostSummary }) {
       </div>
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[linear-gradient(0deg,rgb(35_42_54/0.95)_0%,rgb(35_42_54/0.4)_40%,rgb(35_42_54/0)_65%)]"
+        className="absolute inset-0 bg-[linear-gradient(0deg,rgb(46_19_77/0.95)_0%,rgb(46_19_77/0.4)_40%,rgb(46_19_77/0)_65%)]"
       />
       <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-noche/75 px-3 py-1 font-display text-xs font-bold text-papel backdrop-blur-sm">
         <Images size={14} aria-hidden="true" />

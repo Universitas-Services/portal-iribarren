@@ -33,6 +33,7 @@ import {
   PROCEDIMIENTO_INTRO,
   QUE_ES,
 } from "@/lib/conoce/contenido";
+import { BannerCampana } from "@/components/campana/banner-campana";
 
 export const metadata: Metadata = {
   title: "Conoce el PDUL",
@@ -345,6 +346,8 @@ export default function ConocePage() {
               })}
             </ul>
           </Seccion>
+
+          <BannerCampana />
 
           <Seccion id="alcance" titulo="¿Qué no gestiona este portal?">
             <p className="prosa">

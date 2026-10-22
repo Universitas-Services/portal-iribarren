@@ -106,7 +106,8 @@ type Paso = { estado: Participacion["estado"]; fecha: string; comentario?: strin
 
 /**
  * Participaciones de ejemplo para «Mis participaciones» y «Propuestas publicadas». Son textos
- * inventados para mostrar cada estado; no representan aportes reales.
+ * inventados para mostrar cada estado; no representan aportes reales. Las opiniones quedan
+ * siempre en «Recibida»: solo las propuestas formales tienen seguimiento.
  */
 const participaciones: (Omit<Participacion, "folio" | "estado" | "creadaEl"> & {
   historial: Paso[];
@@ -150,20 +151,7 @@ const participaciones: (Omit<Participacion, "folio" | "estado" | "creadaEl"> & {
       "En la urbanización los cortes de agua son frecuentes los fines de semana. Sería importante que el diagnóstico revise la capacidad del acueducto antes de autorizar nuevos edificios en la zona. (Ejemplo)",
     imagenes: [],
     mostrarNombre: false,
-    historial: [
-      { estado: "PENDIENTE", fecha: "2026-09-28T19:45:00.000Z" },
-      {
-        estado: "EN_REVISION",
-        fecha: "2026-10-01T14:20:00.000Z",
-        comentario: "Se remite al equipo de redes de servicios.",
-      },
-      {
-        estado: "APROBADA",
-        fecha: "2026-10-09T16:00:00.000Z",
-        comentario:
-          "Se toma en cuenta para la evaluación de capacidad infraestructural de la Fase I. No se publica porque no autorizaste mostrar tu nombre.",
-      },
-    ],
+    historial: [{ estado: "PENDIENTE", fecha: "2026-09-28T19:45:00.000Z" }],
   },
   {
     cuentaId: "demo-ana",
@@ -180,20 +168,12 @@ const participaciones: (Omit<Participacion, "folio" | "estado" | "creadaEl"> & {
       "Me parece bien que el diagnóstico incluya el casco de Santa Rosa. Pido que se consulte a los cultores del sector antes de definir alturas, para no afectar la imagen del pueblo. (Ejemplo)",
     imagenes: [],
     mostrarNombre: true,
-    historial: [
-      { estado: "PENDIENTE", fecha: "2026-10-06T12:15:00.000Z" },
-      {
-        estado: "RECHAZADA",
-        fecha: "2026-10-12T15:00:00.000Z",
-        comentario:
-          "El aporte se refiere a la definición de alturas, que corresponde a la Fase III (construcción del plan). Te invitamos a enviarlo de nuevo cuando se abra esa fase.",
-      },
-    ],
+    historial: [{ estado: "PENDIENTE", fecha: "2026-10-06T12:15:00.000Z" }],
   },
   {
     cuentaId: "demo-ana",
     autor: "Ana María Pérez",
-    tipo: "OPINION_GENERAL",
+    tipo: "PROPUESTA_FORMAL",
     parroquia: "Juárez",
     sector: "Sector El Manzano",
     categoriaTecnica: "Medio Ambiente y Riesgos",

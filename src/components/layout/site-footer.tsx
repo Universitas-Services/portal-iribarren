@@ -1,7 +1,7 @@
 import { MapPin } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { Instagram } from "@/components/icons";
+import { CintaMarcas } from "./cinta-marcas";
 
 const MARCO_LEGAL = [
   // Enlaces oficiales pendientes de confirmar con el cliente.
@@ -13,41 +13,15 @@ const MARCO_LEGAL = [
 const enlace = "transition-colors duration-150 hover:text-rojo hover:underline";
 
 /**
- * Footer claro y compacto (el logo de la Alcaldía no se lee sobre fondos oscuros):
- * PDUL YA a la izquierda y Alcaldía con el alcalde a la derecha. La navegación vive solo en el
+ * Footer claro y compacto (los logos de la Alcaldía no se leen sobre fondos oscuros): una cinta
+ * con PDUL YA, el alcalde, los lemas de la gestión y la Alcaldía. La navegación vive solo en el
  * encabezado.
  */
 export function SiteFooter() {
   return (
     <footer className="mt-auto border-t border-linea bg-papel text-tinta print:hidden">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-5 sm:px-6 sm:py-8 lg:flex-nowrap lg:gap-10 lg:px-8">
-        <Image
-          src="/brand/pdul-ya-horizontal-divisor.png"
-          alt="PDUL YA"
-          width={1200}
-          height={403}
-          className="h-8 w-auto sm:h-10"
-        />
-
-        {/* Marcas de gestión: van en texto hasta recibir sus archivos oficiales. */}
-        <div className="flex items-center gap-4 lg:flex-row-reverse lg:text-right">
-          <Image
-            src="/brand/alcaldia-iribarren.png"
-            alt="Alcaldía Bolivariana de Iribarren"
-            width={720}
-            height={229}
-            className="h-9 w-auto sm:h-11"
-          />
-          <div className="hidden text-sm leading-snug sm:block">
-            <p className="font-display font-bold text-noche">Yanys Agüero · Alcalde</p>
-            <p className="text-tinta/75">Iribarren para la Vida · Gente que Resuelve</p>
-          </div>
-        </div>
-
-        <p className="w-full text-xs leading-snug text-tinta/75 sm:hidden">
-          <span className="font-display font-bold text-noche">Yanys Agüero · Alcalde</span> ·
-          Iribarren para la Vida · Gente que Resuelve
-        </p>
+      <div className="py-3 sm:py-4">
+        <CintaMarcas />
       </div>
 
       <div className="border-t border-linea">

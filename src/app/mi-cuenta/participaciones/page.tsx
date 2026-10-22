@@ -34,7 +34,7 @@ const CAMPOS: CampoFiltro[] = [
   {
     tipo: "selector",
     nombre: "estado",
-    etiqueta: "Estado",
+    etiqueta: "Estado de la propuesta",
     vacio: "Todos",
     opciones: ESTADOS_PARTICIPACION.map((e) => ({
       valor: aSlug(e),
@@ -65,7 +65,7 @@ export default function MisParticipacionesPage({ searchParams }: { searchParams:
           { label: "Mis participaciones" },
         ]}
         titulo="Mis participaciones"
-        bajada="Cada aporte que enviaste, con su folio y el estado de su revisión."
+        bajada="Cada aporte que enviaste, con su folio. Las propuestas formales muestran además el estado de su revisión."
       />
       <div className="relative z-10 mx-auto -mt-16 max-w-5xl px-4 pb-24 sm:px-6 lg:-mt-20 lg:px-8">
         <div className="mx-auto max-w-2xl">

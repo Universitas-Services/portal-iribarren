@@ -1,22 +1,28 @@
 @import "tailwindcss";
 
 /*
- * Identidad PDUL YA (Guía de Identidad Urbana). Paleta vinculante del cliente.
- * Contraste: el texto va en tinta (#333333) o rojo (#C32026) sobre blanco, y en blanco sobre
- * rojo, rojo oscuro o noche. Naranja y amarillo no llevan texto blanco: con ellos se usa noche.
+ * Paleta de la campaña «Barquisimeto suena en ti» (22-10-2026, colores de
+ * barquisimetosuenaenti.com) con el logo PDUL YA Crepuscular. Los nombres de los tokens se
+ * mantienen para no tocar los componentes.
+ * Contraste: el texto va en tinta (#1E293B) o rojo (#E11D48) sobre blanco, y en blanco sobre
+ * rojo, rojo oscuro, noche o morado activo. Naranja, amarillo y rosa no llevan texto blanco:
+ * con ellos se usa noche. El rosa (#E63956) es solo decorativo.
  */
 @theme {
-  --color-rojo: #c32026;
-  --color-rojo-oscuro: #a61c00;
-  --color-naranja: #f39200;
-  --color-amarillo: #eca52b;
-  --color-plata: #b3b5b8;
-  --color-gris: #939598;
-  --color-tinta: #333333;
-  --color-noche: #232a36;
+  --color-rojo: #e11d48;
+  --color-rojo-oscuro: #be123c;
+  --color-rosa: #e63956;
+  --color-naranja: #f97316;
+  --color-amarillo: #f59e0b;
+  --color-plata: #94a3b8;
+  --color-gris: #64748b;
+  --color-tinta: #1e293b;
+  --color-noche: #2e134d;
+  --color-morado-activo: #44226e;
+  --color-crema: #fdfbf7;
   --color-papel: #ffffff;
-  --color-superficie: #f7f7f8;
-  --color-linea: #e5e7eb;
+  --color-superficie: #f8fafc;
+  --color-linea: #e2e8f0;
   --color-exito: #28a745;
   --color-exito-oscuro: #1d6e33;
 
@@ -24,8 +30,8 @@
   --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
 
   --radius-tarjeta: 1.25rem;
-  --shadow-tarjeta: 0 12px 32px -16px rgb(35 42 54 / 0.28), 0 2px 6px -2px rgb(35 42 54 / 0.08);
-  --shadow-elevada: 0 22px 44px -18px rgb(35 42 54 / 0.35), 0 4px 10px -4px rgb(35 42 54 / 0.1);
+  --shadow-tarjeta: 0 12px 32px -16px rgb(15 23 42 / 0.28), 0 2px 6px -2px rgb(15 23 42 / 0.08);
+  --shadow-elevada: 0 22px 44px -18px rgb(15 23 42 / 0.35), 0 4px 10px -4px rgb(15 23 42 / 0.1);
 
   --ease-out-expo: cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -80,12 +86,17 @@ a {
   text-decoration-thickness: 1.5px;
 }
 
+/* Degradado de marca de la campaña: el sol larense pasando al cielo crepuscular. */
+@utility bg-marca {
+  background-image: linear-gradient(135deg, var(--color-naranja) 0%, var(--color-rosa) 100%);
+}
+
 /* Patrón urbano de la guía: manzanas y calles en líneas finas. Fondo provisional del hero. */
 .patron-urbano {
   background-color: var(--color-noche);
   background-image:
-    radial-gradient(60% 80% at 82% 18%, rgb(243 146 0 / 0.55), transparent 60%),
-    radial-gradient(55% 70% at 70% 100%, rgb(195 32 38 / 0.65), transparent 65%),
+    radial-gradient(60% 80% at 82% 18%, rgb(249 115 22 / 0.55), transparent 60%),
+    radial-gradient(55% 70% at 70% 100%, rgb(230 57 86 / 0.65), transparent 65%),
     repeating-linear-gradient(0deg, rgb(255 255 255 / 0.06) 0 1px, transparent 1px 56px),
     repeating-linear-gradient(90deg, rgb(255 255 255 / 0.06) 0 1px, transparent 1px 56px),
     repeating-linear-gradient(35deg, rgb(255 255 255 / 0.05) 0 2px, transparent 2px 180px);
@@ -199,13 +210,13 @@ a {
 
 @keyframes pulso {
   0% {
-    box-shadow: 0 0 0 0 rgb(195 32 38 / 0.45);
+    box-shadow: 0 0 0 0 rgb(225 29 72 / 0.45);
   }
   70% {
-    box-shadow: 0 0 0 12px rgb(195 32 38 / 0);
+    box-shadow: 0 0 0 12px rgb(225 29 72 / 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgb(195 32 38 / 0);
+    box-shadow: 0 0 0 0 rgb(225 29 72 / 0);
   }
 }
 
@@ -265,7 +276,7 @@ a {
 
 /* ---------- Skeleton ---------- */
 .skeleton {
-  background-color: #eceef1;
+  background-color: #e9edf2;
   background-image: linear-gradient(
     100deg,
     transparent 30%,
@@ -279,5 +290,41 @@ a {
 @media (prefers-reduced-motion: no-preference) {
   .skeleton {
     animation: brillo 1.4s ease-in-out infinite;
+  }
+}
+
+/* ---------- Cinta de logos del pie: dos copias que avanzan de derecha a izquierda ---------- */
+@keyframes cinta-marcas {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.cinta-marcas-marco {
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.cinta-marcas {
+  animation: cinta-marcas 40s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinta-marcas {
+    animation: none;
+    width: auto;
+  }
+  .cinta-marcas > ul {
+    flex-wrap: wrap;
+    min-width: 100%;
+    row-gap: 1rem;
+  }
+  .cinta-marcas > ul + ul {
+    display: none;
+  }
+  .cinta-marcas-marco {
+    mask-image: none;
   }
 }

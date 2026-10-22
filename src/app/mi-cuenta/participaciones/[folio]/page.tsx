@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
 import { FichaAporte, InsigniaEstado, LineaTiempoEstados } from "@/components/participacion/aporte";
+import { tieneSeguimiento } from "@/lib/participacion";
 import { getParticipacion, getUsuario } from "@/lib/auth/sesion";
 import { formatearFechaHora } from "@/lib/formato";
 import { FOLIOS_PRERENDER } from "@/lib/folios";
@@ -70,15 +71,22 @@ async function Contenido({ params }: { params: Params }) {
             {p.folio}
           </p>
         </div>
-        <InsigniaEstado estado={p.estado} />
+        <InsigniaEstado estado={p.estado} tipo={p.tipo} />
       </div>
 
-      <section aria-labelledby="seguimiento" className="mt-8">
-        <h2 id="seguimiento" className="mb-5 font-display text-xl font-extrabold text-noche">
-          Seguimiento
-        </h2>
-        <LineaTiempoEstados historial={p.historial} />
-      </section>
+      {tieneSeguimiento(p.tipo) ? (
+        <section aria-labelledby="seguimiento" className="mt-8">
+          <h2 id="seguimiento" className="mb-5 font-display text-xl font-extrabold text-noche">
+            Seguimiento
+          </h2>
+          <LineaTiempoEstados historial={p.historial} />
+        </section>
+      ) : (
+        <p className="mt-8 rounded-2xl bg-superficie p-5 leading-relaxed text-tinta">
+          Las opiniones se reciben y se toman en cuenta en el plan; no tienen seguimiento de estado.
+          Si quieres una respuesta del equipo técnico, presenta una propuesta formal.
+        </p>
+      )}
 
       {p.ubicacion && (
         <section aria-labelledby="ubicacion-aporte" className="mt-10">
