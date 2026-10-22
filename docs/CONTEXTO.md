@@ -241,6 +241,18 @@ Los dos repos traen en `.claude/skills/` las skills `flujo-git` (la regla de los
 - **Capa de alcaldía hecha en el admin** (misma rama): Equipo, Ciudadanos, Configuración (marca, catálogos y fases) y Bitácora. Los catálogos y las fases todavía no llegan al portal: se conectan con la API.
 - **E2E opcionales en CI (los dos repos):** corren solo con la etiqueta `e2e` en el PR o lanzándolas a mano (_Run workflow_); los PR normales pasan solo los checks rápidos.
 
+## 6.2 Conexión con plataforma-api (20-10-2026, rama `feat/api-auth`)
+
+Rama aparte para probar contra la API sin tocar el despliegue de Netlify (que sigue simulado). Se activa con `API_URL` en `.env.local`; sin ella todo funciona como antes.
+
+- **API de desarrollo:** `https://plataforma-pdul-api-693924722323.us-central1.run.app/api/v1` (Swagger en `/api/v1/docs`). `PORTAL_CLIENT_ID=portal-iribarren`; `PORTAL_CLIENT_SECRET` es opcional.
+- **BFF:** el navegador nunca llama a la API. Los tokens (access de 15 min y refresh de 30 días, rotativo) van cifrados con AES-256-GCM en la cookie httpOnly `pdul_api` (`src/lib/plataforma-api/sello.ts`, secreto `SESION_SECRETO`). `src/proxy.ts` renueva el access token antes de cada página si vence en menos de 1 min (durante el render no se pueden escribir cookies) y borra la cookie si el refresh fue revocado.
+- **Conectado:** ingreso (`POST /auth/login` con `x-client-id`), cierre (`/auth/logout`), cambio de contraseña (`PATCH /auth/password`), registro natural y de organización (luego inicia sesión, porque la API no devuelve tokens), perfil (`GET`/`PATCH /portal/me/profile`), documentos (`POST /portal/me/documents`) y el catálogo `organization-types` (el valor elegido se ajusta a mayúsculas del catálogo).
+- **Cómo encaja:** `src/lib/auth/sesion-api.ts` lee el perfil de la API y lo copia en el almacén del portal con el mismo id (`cuentaDePerfil` en `src/lib/plataforma-api/mapeo.ts`), así «Mi cuenta», los permisos y las participaciones (todavía simuladas) no cambian. Las Server Actions llaman a `src/lib/auth/acciones-api.ts` cuando `usaApi()`.
+- **Traducciones:** documentos IDENTIDAD→`CEDULA`, ENTIDAD→`ACREDITACION` (acta o registro), REPRESENTACION→`PRUEBA_REPRESENTACION`; condición y acreditación a sus enums; teléfono a `0414-1234567`; errores `{code, message, details}` a mensajes en `mensajeDeError`.
+- **Sin endpoint todavía** (muestran «todavía no está disponible»): verificar o reenviar correo, recuperar y restablecer la contraseña, unirse desde otro portal, abandonar el portal, solicitar la baja y corregir nombres de una persona natural (la API no lo permite). Participaciones, noticias, documentos públicos y propuestas siguen simulados.
+- **Probado contra Cloud Run** con cuentas de prueba `prueba.bff.*@correo-prueba.com` y `org.bff.*@correo-prueba.com` (quedan en la base de desarrollo).
+
 ## 7. Noticias reales (Propuesta v4), ya cargadas
 
 | Slug                                    | Fecha | Categoría               | Formato                                            |

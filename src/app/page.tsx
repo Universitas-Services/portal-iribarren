@@ -56,12 +56,14 @@ const FOTOS_HERO: Foto[] = [
     posicion: "50% 45%",
   },
   {
-    src: "/fotos/manto-divina-pastora.jpg",
+    // Recorte del lado izquierdo de la original, para que el monumento quede a la derecha,
+    // fuera del titular (la licencia pide indicar el cambio: «recorte»).
+    src: "/fotos/manto-divina-pastora-hero.jpg",
     alt: "Silueta del Monumento Mariano Manto de la Divina Pastora contra un atardecer naranja",
-    autor: "José Ocanto, Wikimedia Commons",
+    autor: "José Ocanto, Wikimedia Commons (recorte)",
     licencia: CC("4.0"),
     fuente: "https://commons.wikimedia.org/wiki/File:Monumento_Manto_1.jpg",
-    posicion: "50% 50%",
+    posicion: "50% 100%",
   },
   {
     src: "/fotos/flor-de-venezuela.jpg",
@@ -72,13 +74,14 @@ const FOTOS_HERO: Foto[] = [
     posicion: "50% 50%",
   },
   {
-    src: "/fotos/estadio-antonio-herrera.jpg",
-    alt: "Panorámica del Estadio Antonio Herrera Gutiérrez con el campo de béisbol y las gradas",
-    autor: "Rodolfo pimentel, Wikimedia Commons",
+    // Invertida en espejo para que las gradas queden a la derecha, fuera del titular (la licencia
+    // pide indicar el cambio: «invertida»).
+    src: "/fotos/estadio-gradas.jpg",
+    alt: "Gradas techadas del Estadio Antonio Herrera Gutiérrez con público, bajo un cielo azul con nubes",
+    autor: "Rodolfo pimentel, Wikimedia Commons (invertida)",
     licencia: CC("4.0"),
-    fuente:
-      "https://commons.wikimedia.org/wiki/File:Estadio_Don_Antonio_Herrera_Guti%C3%A9rrez1.jpg",
-    posicion: "50% 50%",
+    fuente: "https://commons.wikimedia.org/wiki/File:LAS_GRADAS.jpg",
+    posicion: "100% 45%",
   },
   {
     src: "/fotos/parque-cardenalito.jpg",

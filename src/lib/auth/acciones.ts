@@ -3,6 +3,7 @@
 import { RedirectType, redirect } from "next/navigation";
 import type { z } from "zod";
 import { getPost } from "@/lib/api";
+import { usaApi } from "@/lib/plataforma-api/cliente";
 import {
   acreditacionSchema,
   cambiarContrasenaSchema,
@@ -36,6 +37,14 @@ import {
   unirse,
   verificarCorreo,
 } from "./servicio";
+import {
+  cambiarContrasenaApi,
+  cerrarSesionApi,
+  guardarPerfilApi,
+  ingresarApi,
+  NO_DISPONIBLE,
+  registrarApi,
+} from "./acciones-api";
 import {
   abrirSesion,
   almacen,
@@ -156,6 +165,13 @@ export async function registrarNaturalAccion(
   const p = registroNaturalSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
   const { cedula, nombres, apellidos, correo, contrasena } = p.data;
+  if (usaApi())
+    return registrarApi(
+      { tipo: "NATURAL", cedula, nombres, apellidos },
+      correo,
+      contrasena,
+      valoresDe(datos),
+    );
   const r = registrar(almacen(), {
     tipo: "NATURAL",
     cedula,
@@ -175,6 +191,13 @@ export async function registrarOrganizacionAccion(
   const p = registroOrganizacionSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
   const { tipoEntidad, razonSocial, rif, correo, contrasena } = p.data;
+  if (usaApi())
+    return registrarApi(
+      { tipo: "ORGANIZACION", tipoEntidad, razonSocial, rif },
+      correo,
+      contrasena,
+      valoresDe(datos),
+    );
   const r = registrar(almacen(), {
     tipo: "ORGANIZACION",
     tipoEntidad,
@@ -191,6 +214,7 @@ export async function reenviarAccion(
   _prev: EstadoFormulario,
   fd: FormData,
 ): Promise<EstadoFormulario> {
+  if (usaApi()) return { mensaje: { tipo: "info", texto: NO_DISPONIBLE } };
   const correo = String(fd.get("correo") ?? "") || (await leerAviso())?.correo;
   if (!correo)
     return { mensaje: { tipo: "error", texto: "Vuelve a registrarte para recibir un enlace." } };
@@ -215,6 +239,12 @@ export async function ingresarAccion(
   const datos = leer(fd);
   const p = loginSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
+  if (usaApi())
+    return ingresarApi(
+      p.data.correo,
+      p.data.contrasena,
+      destinoSeguro(fd.get("volver"), "/mi-cuenta"),
+    );
   const r = iniciarSesion(almacen(), p.data.correo, p.data.contrasena);
   if (r.estado === "CREDENCIALES") {
     return {
@@ -240,7 +270,8 @@ export async function ingresarAccion(
 }
 
 export async function cerrarSesionAccion() {
-  cerrarSesion(almacen(), await idSesion());
+  if (usaApi()) await cerrarSesionApi();
+  else cerrarSesion(almacen(), await idSesion());
   await borrarSesion();
   ir("/");
 }
@@ -248,6 +279,8 @@ export async function cerrarSesionAccion() {
 /* ---------- Unirse a esta alcaldía ---------- */
 
 export async function unirseAccion(fd: FormData) {
+  // Con la API, la membresía se crea al registrarse; unirse desde otro portal aún no existe.
+  if (usaApi()) ir("/mi-cuenta");
   if (!unirse(almacen(), await idSesion())) ir("/ingresar");
   await refrescarSesion();
   ir(destinoSeguro(fd.get("volver"), "/mi-cuenta"));
@@ -262,6 +295,8 @@ export async function recuperarAccion(
   const datos = leer(fd);
   const p = recuperarSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
+  if (usaApi())
+    return { valores: { correo: p.data.correo }, mensaje: { tipo: "info", texto: NO_DISPONIBLE } };
   const { tokenDesarrollo } = recuperar(almacen(), p.data.correo);
   return {
     valores: { correo: p.data.correo },
@@ -281,6 +316,7 @@ export async function restablecerAccion(
   const datos = leer(fd);
   const p = restablecerSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
+  if (usaApi()) return { mensaje: { tipo: "error", texto: NO_DISPONIBLE } };
   const estado = restablecer(almacen(), p.data.token, p.data.contrasena);
   if (estado === "OK") ir("/ingresar?aviso=contrasena");
   const texto =
@@ -323,6 +359,12 @@ export async function guardarDatosNaturalAccion(
   const datos = leer(fd);
   const p = datosNaturalSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
+  if (usaApi())
+    return guardarPerfilApi(
+      completo,
+      { ...p.data, ocupacion: p.data.ocupacion ?? "" },
+      valoresDe(datos),
+    );
   guardarPerfil(almacen(), sesion, p.data);
   return trasGuardar(completo);
 }
@@ -335,6 +377,7 @@ export async function guardarRepresentanteAccion(
   const datos = leer(fd);
   const p = representanteSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
+  if (usaApi()) return guardarPerfilApi(completo, p.data, valoresDe(datos));
   guardarPerfil(almacen(), sesion, p.data);
   return trasGuardar(completo);
 }
@@ -361,9 +404,15 @@ export async function guardarAcreditacionAccion(
         archivo: datos.archivo,
       });
       if (!d.success) return conErrores(d.error, datos);
+      if (usaApi())
+        return guardarPerfilApi(completo, p.data, valoresDe(datos), {
+          tipo: "REPRESENTACION",
+          archivo: d.data.archivo,
+        });
       cargarDocumento(almacen(), sesion, "REPRESENTACION", metadatos(d.data.archivo));
     }
   }
+  if (usaApi()) return guardarPerfilApi(completo, p.data, valoresDe(datos));
   guardarPerfil(almacen(), sesion, p.data);
   return trasGuardar(completo);
 }
@@ -377,6 +426,11 @@ export async function cargarDocumentoAccion(
   const datos = leer(fd);
   const p = documentoPerfilSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
+  if (usaApi())
+    return guardarPerfilApi(completo, {}, valoresDe(datos), {
+      tipo: p.data.documento,
+      archivo: p.data.archivo,
+    });
   cargarDocumento(almacen(), sesion, p.data.documento, metadatos(p.data.archivo));
   return trasGuardar(completo);
 }
@@ -390,6 +444,9 @@ export async function guardarNombresAccion(
   const datos = leer(fd);
   const p = nombresSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
+  // La API no deja cambiar los nombres de una persona natural (van ligados a su cédula).
+  if (usaApi())
+    return { valores: valoresDe(datos), mensaje: { tipo: "error", texto: NO_DISPONIBLE } };
   actualizarNombres(almacen(), sesion, p.data.nombres, p.data.apellidos);
   return trasGuardar(completo);
 }
@@ -405,6 +462,7 @@ export async function cambiarContrasenaAccion(
   const datos = leer(fd);
   const p = cambiarContrasenaSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
+  if (usaApi()) return cambiarContrasenaApi(p.data.contrasenaActual, p.data.contrasena);
   const r = cambiarContrasena(almacen(), sesion, p.data.contrasenaActual, p.data.contrasena);
   if (r === "SIN_SESION") ir("/ingresar?volver=/mi-cuenta/seguridad");
   if (r === "ACTUAL_INCORRECTA")
@@ -417,12 +475,14 @@ export async function cambiarContrasenaAccion(
 }
 
 export async function abandonarAccion() {
+  if (usaApi()) ir("/mi-cuenta/seguridad");
   abandonarPortal(almacen(), await idSesion());
   await borrarSesion();
   ir("/ingresar?aviso=abandono");
 }
 
 export async function solicitarBajaAccion() {
+  if (usaApi()) ir("/mi-cuenta/seguridad");
   if (!solicitarBaja(almacen(), await idSesion())) ir("/ingresar");
   await refrescarSesion();
   ir("/mi-cuenta/seguridad?guardado=baja");
