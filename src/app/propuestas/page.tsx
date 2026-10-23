@@ -16,6 +16,7 @@ import {
 } from "@/lib/api/types";
 import { getPropuestasPublicadas } from "@/lib/auth/sesion";
 import { plural } from "@/lib/formato";
+import { metricasAporte } from "@/lib/interacciones/almacen";
 import {
   aSlug,
   filtrosParticipacionesSchema,
@@ -24,9 +25,9 @@ import {
 import { BannerCampana } from "@/components/campana/banner-campana";
 
 export const metadata: Metadata = {
-  title: "Propuestas publicadas",
+  title: "Propuestas y opiniones",
   description:
-    "Opiniones y propuestas ciudadanas aprobadas para el Plan de Desarrollo Urbano Local de Iribarren.",
+    "Propuestas y opiniones ciudadanas publicadas por la Alcaldía para el Plan de Desarrollo Urbano Local de Iribarren.",
 };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -78,8 +79,8 @@ export default function PropuestasPage({ searchParams }: { searchParams: SearchP
     <>
       <EncabezadoPagina
         migas={[{ href: "/", label: "Inicio" }, { label: "Propuestas" }]}
-        titulo="Propuestas publicadas"
-        bajada="Opiniones y propuestas de la ciudadanía que el equipo técnico aprobó y que sus autores autorizaron publicar."
+        titulo="Propuestas y opiniones"
+        bajada="Propuestas y opiniones de la ciudadanía que el equipo de la alcaldía publicó con autorización de sus autores."
       />
       <div className="relative z-10 mx-auto -mt-16 max-w-7xl px-4 pb-24 sm:px-6 lg:-mt-20 lg:px-8">
         <Suspense fallback={<GaleriaSkeleton />}>
@@ -116,13 +117,13 @@ async function Galeria({ searchParams }: { searchParams: SearchParams }) {
           parroquia: filtros.parroquia ?? "",
           categoriaTecnica: filtros.categoriaTecnica ?? "",
         }}
-        etiqueta="Filtrar propuestas publicadas"
+        etiqueta="Filtrar propuestas y opiniones"
       />
       <ZonaResultados>
         <p className="mt-6 text-sm text-tinta/75" aria-live="polite">
           {todas.length === 0
             ? "Sin resultados"
-            : `${plural(todas.length, "propuesta publicada", "propuestas publicadas")}${hayFiltros ? " con estos filtros" : ""}`}
+            : `${plural(todas.length, "aporte publicado", "aportes publicados")}${hayFiltros ? " con estos filtros" : ""}`}
           <span className="text-tinta/75"> · Aportes de ejemplo</span>
         </p>
 
@@ -138,6 +139,7 @@ async function Galeria({ searchParams }: { searchParams: SearchParams }) {
                   categoriaTecnica={p.categoriaTecnica}
                   descripcion={p.descripcion}
                   fecha={p.publicadaEl}
+                  metricas={metricasAporte(p.folio)}
                   autor={p.autor}
                 />
               </li>

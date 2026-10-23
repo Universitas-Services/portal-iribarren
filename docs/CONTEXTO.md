@@ -262,6 +262,14 @@ Rama aparte para probar contra la API sin tocar el despliegue de Netlify (que si
 - **Seguimiento solo para la propuesta formal:** las opiniones (general y sobre noticia) quedan en PENDIENTE y se muestran como «Recibida», sin línea de tiempo (`tieneSeguimiento` en `src/lib/participacion.ts`; `cambiarEstadoParticipacion` responde `SIN_SEGUIMIENTO`; la galería pública solo lista propuestas formales). El filtro de estado de «Mis participaciones» aplica solo a las propuestas. **El admin todavía no aplica esta regla.**
 - **Reacciones y vistas de noticias (simuladas en memoria, `src/lib/noticias/interacciones.ts`):** «Me gusta» / «No me gusta» con sesión (sin exigir perfil completo), una reacción por cuenta y noticia; repetir la quita y la contraria la reemplaza. Cada apertura de la noticia suma una vista (se cuenta desde el navegador porque la página es estática). Cifras de partida de ejemplo derivadas del slug. El inicio tiene pestañas Recientes · Más vistas · Más valoradas. **Para el backend:** `POST /portal/posts/:slug/views`, `PUT/DELETE /portal/posts/:slug/reaction` y los totales en el listado y el detalle.
 
+## 6.4 «La gente opina» y flujo de publicación corregido (23-10-2026, rama `feat/api-auth`)
+
+- **Flujo (corrige el del 22-10):** toda opinión y propuesta pasa al Revisor de la alcaldía, que decide si la publica en **Propuestas y opiniones** (`/propuestas`). Solo la propuesta formal tiene seguimiento con respuesta (en revisión, verificada, rechazada). La opinión queda «Recibida» (PENDIENTE) hasta que el Revisor la publica; también puede despublicarla (`TRANSICIONES_OPINION` en `src/lib/participacion.ts`). Publicar exige el nombre autorizado. **El admin todavía no aplica esta regla.**
+- **Vistas y reacciones de los aportes publicados**, con las mismas reglas que las noticias (sesión sin exigir perfil completo, una reacción por cuenta, vista por apertura). El autor no reacciona a su propio aporte. Módulo único `src/lib/interacciones/` con claves `noticia:<slug>` y `aporte:<folio>`; componente `Reacciones` en `src/components/participacion/reacciones.tsx`.
+- **Inicio:** apartado «La gente opina» (`src/components/home/la-gente-opina.tsx`) con pestañas Más vistas · Más reacciones. Datos y cifras de partida de ejemplo.
+- **Para el backend:** `POST /portal/participations/:folio/views`, `PUT/DELETE /portal/participations/:folio/reaction`, totales en el listado público y transición de opiniones PENDIENTE ↔ PUBLICADA en el Revisor.
+- **Logo IUS:** isotipo «Catastral Verde» (bloque verde) en `public/brand/` con los mismos nombres; favicon e íconos regenerados.
+
 ## 7. Noticias reales (Propuesta v4), ya cargadas
 
 | Slug                                    | Fecha | Categoría               | Formato                                            |

@@ -14,7 +14,7 @@ import { EncabezadoPagina } from "@/components/layout/encabezado-pagina";
 import { Galeria } from "@/components/noticias/galeria";
 import { ReproductorVideo } from "@/components/noticias/reproductor-video";
 import { EtiquetaEjemplo, NewsCard } from "@/components/noticias/news-card";
-import { ReaccionesNoticia } from "@/components/noticias/reacciones";
+import { Reacciones } from "@/components/participacion/reacciones";
 import { RelacionadasSkeleton } from "@/components/noticias/skeletons";
 import { getPost, getPostSlugs, getRelatedPosts } from "@/lib/api";
 import { formatearFechaLarga } from "@/lib/formato";
@@ -98,7 +98,11 @@ export default async function NoticiaPage({ params }: { params: Params }) {
 
         {post.formato === "DOCUMENTO" && post.adjunto && <VisorDocumento adjunto={post.adjunto} />}
 
-        <ReaccionesNoticia slug={post.slug} />
+        <Reacciones
+          objetivo={{ tipo: "noticia", slug: post.slug }}
+          volver={`/noticias/${post.slug}`}
+          etiqueta="Reacciones a esta noticia"
+        />
 
         <aside
           aria-labelledby="opinar-titulo"

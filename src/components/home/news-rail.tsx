@@ -4,11 +4,20 @@ import { connection } from "next/server";
 import { NewsCard } from "@/components/noticias/news-card";
 import { getLatestPosts } from "@/lib/api";
 import type { PostSummary } from "@/lib/api/types";
-import { almacenInteracciones } from "@/lib/noticias/almacen-interacciones";
-import { masValoradas, masVistas, resumenInteracciones } from "@/lib/noticias/interacciones";
+import { almacenInteracciones } from "@/lib/interacciones/almacen";
+import {
+  claveNoticia,
+  masValoradas,
+  masVistas,
+  resumenInteracciones,
+} from "@/lib/interacciones/interacciones";
 import { PestanasNoticias } from "./pestanas-noticias";
 
 const POR_PESTANA = 3;
+const LECTOR = {
+  clave: (p: PostSummary) => claveNoticia(p.slug),
+  fecha: (p: PostSummary) => p.publicadoEl,
+};
 
 /**
  * Noticias en carril horizontal, con pestañas: las recientes, las más vistas y las más valoradas
@@ -23,7 +32,7 @@ export async function NewsRail() {
   const tarjetas = (posts: PostSummary[]) => (
     <>
       {posts.map((post) => {
-        const r = resumenInteracciones(alm, post.slug);
+        const r = resumenInteracciones(alm, claveNoticia(post.slug));
         return (
           <li key={post.slug} className="w-[85%] shrink-0 snap-start sm:w-[46%] lg:w-[31%]">
             <NewsCard post={post} metricas={{ vistas: r.vistas, likes: r.likes }} />
@@ -54,9 +63,6 @@ export async function NewsRail() {
       >
         Noticias y novedades
       </h2>
-      <p className="mt-2 text-sm text-tinta/70">
-        Noticias de ejemplo; las vistas y reacciones de partida también son de ejemplo.
-      </p>
       <PestanasNoticias
         pestanas={[
           {
@@ -67,12 +73,12 @@ export async function NewsRail() {
           {
             id: "vistas",
             etiqueta: "Más vistas",
-            contenido: tarjetas(masVistas(alm, todas, POR_PESTANA)),
+            contenido: tarjetas(masVistas(alm, todas, LECTOR, POR_PESTANA)),
           },
           {
             id: "valoradas",
             etiqueta: "Más valoradas",
-            contenido: tarjetas(masValoradas(alm, todas, POR_PESTANA)),
+            contenido: tarjetas(masValoradas(alm, todas, LECTOR, POR_PESTANA)),
           },
         ]}
       />

@@ -107,7 +107,7 @@ type Paso = { estado: Participacion["estado"]; fecha: string; comentario?: strin
 /**
  * Participaciones de ejemplo para «Mis participaciones» y «Propuestas publicadas». Son textos
  * inventados para mostrar cada estado; no representan aportes reales. Las opiniones quedan
- * siempre en «Recibida»: solo las propuestas formales tienen seguimiento.
+ * «Recibidas» o publicadas: solo las propuestas formales tienen seguimiento con respuesta.
  */
 const participaciones: (Omit<Participacion, "folio" | "estado" | "creadaEl"> & {
   historial: Paso[];
@@ -168,7 +168,10 @@ const participaciones: (Omit<Participacion, "folio" | "estado" | "creadaEl"> & {
       "Me parece bien que el diagnóstico incluya el casco de Santa Rosa. Pido que se consulte a los cultores del sector antes de definir alturas, para no afectar la imagen del pueblo. (Ejemplo)",
     imagenes: [],
     mostrarNombre: true,
-    historial: [{ estado: "PENDIENTE", fecha: "2026-10-06T12:15:00.000Z" }],
+    historial: [
+      { estado: "PENDIENTE", fecha: "2026-10-06T12:15:00.000Z" },
+      { estado: "PUBLICADA", fecha: "2026-10-12T15:00:00.000Z" },
+    ],
   },
   {
     cuentaId: "demo-ana",
@@ -204,7 +207,10 @@ const participaciones: (Omit<Participacion, "folio" | "estado" | "creadaEl"> & {
       "Faltan bancos, sombra y bebederos en los alrededores de la plaza. Mucha gente mayor camina por el centro y no tiene dónde descansar. (Ejemplo)",
     imagenes: [],
     mostrarNombre: true,
-    historial: [{ estado: "PENDIENTE", fecha: "2026-10-16T17:30:00.000Z" }],
+    historial: [
+      { estado: "PENDIENTE", fecha: "2026-10-16T17:30:00.000Z" },
+      { estado: "PUBLICADA", fecha: "2026-10-18T13:00:00.000Z" },
+    ],
   },
   {
     cuentaId: "demo-carla",

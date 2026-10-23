@@ -1,4 +1,4 @@
-import { Check, FileText, ImageIcon, Video } from "lucide-react";
+import { Check, Eye, FileText, ImageIcon, ThumbsUp, Video } from "lucide-react";
 import Link from "next/link";
 import {
   NOMBRE_TIPO_PARTICIPACION,
@@ -36,7 +36,10 @@ export function InsigniaEstado({
   estado: EstadoParticipacion;
   tipo?: TipoParticipacion;
 }) {
-  const e = tipo && !tieneSeguimiento(tipo) ? RECIBIDA : ESTADO_PARTICIPACION[estado];
+  const e =
+    tipo && !tieneSeguimiento(tipo) && estado !== "PUBLICADA"
+      ? RECIBIDA
+      : ESTADO_PARTICIPACION[estado];
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-display text-xs font-bold ring-1 ring-inset ${e.clase}`}
@@ -205,6 +208,7 @@ export function TarjetaAporte({
   fecha,
   estado,
   autor,
+  metricas,
 }: {
   href: string;
   folio: string;
@@ -215,6 +219,8 @@ export function TarjetaAporte({
   fecha: string;
   estado?: EstadoParticipacion;
   autor?: string;
+  /** Vistas y «Me gusta», en la galería pública y en el inicio. */
+  metricas?: { vistas: number; likes: number };
 }) {
   return (
     <article className="group relative flex h-full flex-col rounded-tarjeta bg-papel p-5 shadow-tarjeta transition-shadow duration-200 hover:shadow-elevada sm:p-6">
@@ -235,6 +241,20 @@ export function TarjetaAporte({
       <p className="mt-auto flex flex-wrap gap-x-3 gap-y-1 pt-4 text-sm text-tinta/75">
         {autor && <span className="font-semibold text-noche">{autor}</span>}
         <time dateTime={fecha}>{formatearFechaHora(fecha)}</time>
+        {metricas && (
+          <>
+            <span className="inline-flex items-center gap-1">
+              <Eye size={15} aria-hidden="true" />
+              <span className="tabular-nums">{metricas.vistas}</span>
+              <span className="sr-only">vistas</span>
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <ThumbsUp size={15} aria-hidden="true" />
+              <span className="tabular-nums">{metricas.likes}</span>
+              <span className="sr-only">me gusta</span>
+            </span>
+          </>
+        )}
       </p>
     </article>
   );

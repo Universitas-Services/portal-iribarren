@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   cifrasDeEjemplo,
   crearAlmacenInteracciones,
+  masReacciones,
   masValoradas,
   masVistas,
   reaccionar,
@@ -60,14 +61,21 @@ describe("vistas y orden de la portada", () => {
     expect(resumenInteracciones(alm, "a").vistas).toBe(cifrasDeEjemplo("a").vistas + 2);
   });
 
-  it("ordena por vistas y por valoración", () => {
+  const l = {
+    clave: (p: { slug: string }) => p.slug,
+    fecha: (p: { publicadoEl: string }) => p.publicadoEl,
+  };
+
+  it("ordena por vistas, por valoración y por cantidad de reacciones", () => {
     const alm = crearAlmacenInteracciones();
     for (let i = 0; i < 1000; i++) registrarVista(alm, "a");
-    expect(masVistas(alm, posts, 1)[0]?.slug).toBe("a");
+    expect(masVistas(alm, posts, l, 1)[0]?.slug).toBe("a");
     for (let i = 0; i < 200; i++) reaccionar(alm, `c${i}`, "b", "LIKE");
-    expect(masValoradas(alm, posts, 3)[0]?.slug).toBe("b");
+    expect(masValoradas(alm, posts, l, 3)[0]?.slug).toBe("b");
     for (let i = 0; i < 400; i++) reaccionar(alm, `d${i}`, "b", "DISLIKE");
-    expect(masValoradas(alm, posts, 3).at(-1)?.slug).toBe("b");
+    // Muy mal valorada, pero la que más reacciones tiene.
+    expect(masValoradas(alm, posts, l, 3).at(-1)?.slug).toBe("b");
+    expect(masReacciones(alm, posts, l, 1)[0]?.slug).toBe("b");
   });
 
   it("las cifras de ejemplo son estables", () => {

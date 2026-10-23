@@ -1,11 +1,18 @@
 import type { EstadoParticipacion, TipoParticipacion } from "@/lib/api/types";
 
 /**
- * Solo la propuesta formal tiene seguimiento (pendiente, en revisión, verificada, rechazada,
- * publicada). Las opiniones, general o sobre una noticia, se reciben y quedan en PENDIENTE, que
- * el portal muestra como «Recibida» (decisión del cliente, 22-10-2026).
+ * Toda opinión y propuesta pasa por el Revisor de la alcaldía, que decide si la publica en
+ * Propuestas (decisión del cliente, 23-10-2026). Solo la propuesta formal tiene seguimiento con
+ * respuesta (en revisión, verificada, rechazada). La opinión, general o sobre una noticia, queda
+ * en PENDIENTE —el portal la muestra como «Recibida»— hasta que el Revisor la publica.
  */
 export const tieneSeguimiento = (tipo: TipoParticipacion) => tipo === "PROPUESTA_FORMAL";
+
+/** Cambios de estado que el Revisor puede hacer en una opinión: publicarla o despublicarla. */
+export const TRANSICIONES_OPINION: Partial<Record<EstadoParticipacion, EstadoParticipacion[]>> = {
+  PENDIENTE: ["PUBLICADA"],
+  PUBLICADA: ["PENDIENTE"],
+};
 
 /** Cómo se lee cada estado de una participación (v3, 5.1) y su color de insignia. */
 export const ESTADO_PARTICIPACION: Record<
@@ -39,9 +46,9 @@ export const ESTADO_PARTICIPACION: Record<
   },
 };
 
-/** Las opiniones no tienen seguimiento: se muestran siempre como «Recibida». */
+/** Opinión aún no publicada: no tiene más estados que mostrar. */
 export const RECIBIDA = {
   texto: "Recibida",
-  ayuda: "La opinión llegó al equipo del PDUL y se toma en cuenta en el plan.",
+  ayuda: "La opinión llegó al equipo de la alcaldía, que la revisa y puede publicarla.",
   clase: "bg-superficie text-noche ring-linea",
 };

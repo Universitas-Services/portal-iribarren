@@ -374,17 +374,36 @@ describe("cambio de estado (Revisor)", () => {
     );
   });
 
-  it("las opiniones no tienen seguimiento: quedan Recibidas y no se publican", () => {
+  it("las opiniones solo se publican o despublican: sin revisión ni rechazo", () => {
     for (const tipo of ["OPINION_GENERAL", "OPINION_NOTICIA"] as const) {
       const alm = almacenDemo();
       const s = sesionDe(alm, "ana@ejemplo.com");
       const r = enviarParticipacion(alm, s, `k-${tipo}`, { ...datos, tipo, mostrarNombre: true });
       if (r.estado !== "OK") throw new Error("debía enviarse");
-      expect(cambiarEstadoParticipacion(alm, r.folio, "EN_REVISION").estado).toBe(
-        "SIN_SEGUIMIENTO",
-      );
+      for (const nuevo of ["EN_REVISION", "APROBADA", "RECHAZADA"] as const)
+        expect(cambiarEstadoParticipacion(alm, r.folio, nuevo, "motivo").estado).toBe(
+          "SIN_SEGUIMIENTO",
+        );
       expect(participacionPropia(alm, s, r.folio)?.estado).toBe("PENDIENTE");
+      expect(cambiarEstadoParticipacion(alm, r.folio, "PUBLICADA").estado).toBe("OK");
+      expect(propuestaPublica(alm, r.folio)?.tipo).toBe(tipo);
+      expect(cambiarEstadoParticipacion(alm, r.folio, "PENDIENTE").estado).toBe("OK");
+      expect(propuestaPublica(alm, r.folio)).toBeUndefined();
     }
+  });
+
+  it("publicar una opinión también exige el nombre autorizado", () => {
+    const alm = almacenDemo();
+    const s = sesionDe(alm, "ana@ejemplo.com");
+    const r = enviarParticipacion(alm, s, "k-anon", {
+      ...datos,
+      tipo: "OPINION_GENERAL",
+      mostrarNombre: false,
+    });
+    if (r.estado !== "OK") throw new Error("debía enviarse");
+    expect(cambiarEstadoParticipacion(alm, r.folio, "PUBLICADA").estado).toBe(
+      "SIN_NOMBRE_AUTORIZADO",
+    );
   });
 
   it("rechazar exige un motivo y publicar exige el nombre autorizado", () => {
@@ -406,8 +425,12 @@ describe("seguimiento y galería", () => {
     expect(filtrarParticipaciones(lista, { estado: "EN_REVISION" }).map((p) => p.folio)).toEqual([
       "IRI-2026-0004",
     ]);
-    // Las opiniones están en PENDIENTE («Recibida») pero no entran en el filtro de estado.
-    expect(filtrarParticipaciones(lista, { estado: "PENDIENTE" })).toHaveLength(0);
+    // Las opiniones «Recibidas» están en PENDIENTE.
+    expect(
+      filtrarParticipaciones(lista, { estado: "PENDIENTE" }).every(
+        (p) => p.tipo !== "PROPUESTA_FORMAL",
+      ),
+    ).toBe(true);
     expect(filtrarParticipaciones(lista, { tipo: "PROPUESTA_FORMAL" })).toHaveLength(2);
     for (const folio of ["IRI-2026-0004", "2026-0004", "0004", "4"])
       expect(filtrarParticipaciones(lista, { folio }).map((p) => p.folio)).toEqual([

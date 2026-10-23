@@ -14,7 +14,7 @@ export function SiteHeader() {
             src="/brand/pdul-ya-horizontal-divisor.png"
             alt="PDUL YA, ir al inicio"
             width={1200}
-            height={402}
+            height={411}
             loading="eager"
             fetchPriority="high"
             className="h-9 w-auto lg:h-11"

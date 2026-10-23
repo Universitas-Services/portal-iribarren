@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { ActorsSection } from "@/components/home/actors-section";
 import { BannersTile } from "@/components/home/banners-tile";
 import { Hero, type Foto } from "@/components/home/hero";
+import { LaGenteOpina } from "@/components/home/la-gente-opina";
 import { NewsRail } from "@/components/home/news-rail";
 import {
   BannersSkeleton,
@@ -140,10 +141,16 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl space-y-20 px-4 pt-20 pb-24 sm:px-6 lg:space-y-28 lg:px-8 lg:pt-28">
-        <Suspense fallback={<NewsRailSkeleton />}>
-          <NewsRail />
-        </Suspense>
+      <div className="mx-auto max-w-7xl space-y-12 px-4 pt-12 pb-20 sm:px-6 lg:space-y-16 lg:px-8 lg:pt-16">
+        {/* Noticias y «La gente opina» van juntas: el carril ya deja aire bajo las tarjetas. */}
+        <div className="space-y-6 lg:space-y-8">
+          <Suspense fallback={<NewsRailSkeleton />}>
+            <NewsRail />
+          </Suspense>
+          <Suspense fallback={<NewsRailSkeleton />}>
+            <LaGenteOpina />
+          </Suspense>
+        </div>
         <ActorsSection />
         <ValuesSection />
       </div>
