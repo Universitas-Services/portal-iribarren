@@ -3,8 +3,8 @@
 import { Eye, ThumbsDown, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { reaccionarAccion, vistaAccion } from "@/lib/noticias/acciones";
-import type { Reaccion, ResumenInteracciones } from "@/lib/noticias/interacciones";
+import { reaccionarAccion, vistaAccion, type Objetivo } from "@/lib/interacciones/acciones";
+import type { Reaccion, ResumenInteracciones } from "@/lib/interacciones/interacciones";
 
 const numero = new Intl.NumberFormat("es-VE");
 
@@ -21,12 +21,24 @@ function aplicar(r: ResumenInteracciones, reaccion: Reaccion): ResumenInteraccio
 }
 
 /**
- * Vistas y «Me gusta» / «No me gusta» de una noticia. La página es estática, así que la vista
- * se cuenta desde aquí al abrirla. Para reaccionar hace falta la sesión (no el perfil completo).
+ * Vistas y «Me gusta» / «No me gusta» de una noticia o de un aporte ciudadano publicado. Las
+ * páginas de detalle son estáticas, así que la vista se cuenta desde aquí al abrirlas. Para
+ * reaccionar hace falta la sesión (no el perfil completo); nadie reacciona a su propio aporte.
  */
-export function ReaccionesNoticia({ slug }: { slug: string }) {
+export function Reacciones({
+  objetivo,
+  volver,
+  etiqueta,
+}: {
+  objetivo: Objetivo;
+  /** Ruta a la que vuelve «Inicia sesión». */
+  volver: string;
+  /** Nombre accesible del bloque, p. ej. «Reacciones a esta noticia». */
+  etiqueta: string;
+}) {
   const [resumen, setResumen] = useState<ResumenInteracciones | null>(null);
-  const [pedirSesion, setPedirSesion] = useState(false);
+  const [aviso, setAviso] = useState<"SIN_SESION" | "PROPIO" | null>(null);
+  const id = objetivo.tipo === "noticia" ? objetivo.slug : objetivo.folio;
   const [pendiente, iniciar] = useTransition();
   const contada = useRef(false);
 
@@ -34,19 +46,21 @@ export function ReaccionesNoticia({ slug }: { slug: string }) {
     // En desarrollo React monta dos veces: la vista se cuenta una sola.
     if (contada.current) return;
     contada.current = true;
-    vistaAccion(slug).then((r) => r && setResumen(r));
-  }, [slug]);
+    vistaAccion(objetivo).then((r) => r && setResumen(r));
+    // El objetivo se identifica por su slug o folio.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const pulsar = (reaccion: Reaccion) => {
     if (!resumen) return;
     const anterior = resumen;
     setResumen(aplicar(resumen, reaccion));
     iniciar(async () => {
-      const r = await reaccionarAccion(slug, reaccion);
+      const r = await reaccionarAccion(objetivo, reaccion);
       if (r.estado === "OK") setResumen(r.resumen);
       else {
         setResumen(anterior);
-        if (r.estado === "SIN_SESION") setPedirSesion(true);
+        if (r.estado === "SIN_SESION" || r.estado === "PROPIO") setAviso(r.estado);
       }
     });
   };
@@ -56,7 +70,7 @@ export function ReaccionesNoticia({ slug }: { slug: string }) {
 
   return (
     <section
-      aria-label="Reacciones a esta noticia"
+      aria-label={etiqueta}
       className="flex flex-wrap items-center justify-between gap-4 rounded-tarjeta bg-papel p-5 shadow-tarjeta sm:px-8"
     >
       <p className="flex items-center gap-2 text-sm text-tinta/75">
@@ -102,11 +116,16 @@ export function ReaccionesNoticia({ slug }: { slug: string }) {
         </button>
       </div>
 
-      {pedirSesion && (
+      {aviso === "PROPIO" && (
+        <p role="status" className="w-full rounded-2xl bg-superficie p-4 text-sm text-tinta">
+          No puedes reaccionar a tu propio aporte.
+        </p>
+      )}
+      {aviso === "SIN_SESION" && (
         <p role="status" className="w-full rounded-2xl bg-superficie p-4 text-sm text-tinta">
           Para reaccionar necesitas tu cuenta.{" "}
           <Link
-            href={`/ingresar?volver=${encodeURIComponent(`/noticias/${slug}`)}`}
+            href={`/ingresar?volver=${encodeURIComponent(volver)}`}
             className="font-bold text-rojo underline"
           >
             Inicia sesión

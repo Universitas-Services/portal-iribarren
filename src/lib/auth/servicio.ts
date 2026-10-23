@@ -1,6 +1,6 @@
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import type { EnlaceVideo } from "@/lib/noticias/video";
-import { tieneSeguimiento } from "@/lib/participacion";
+import { TRANSICIONES_OPINION, tieneSeguimiento } from "@/lib/participacion";
 export { tieneSeguimiento };
 import type {
   CategoriaTecnica,
@@ -573,7 +573,7 @@ export type ResultadoTransicion =
   | { estado: "TRANSICION_INVALIDA" }
   | { estado: "FALTA_MOTIVO" }
   | { estado: "SIN_NOMBRE_AUTORIZADO" }
-  /** Las opiniones no tienen seguimiento: siempre quedan «Recibidas». */
+  /** Las opiniones solo se publican o despublican: no pasan por revisión ni rechazo. */
   | { estado: "SIN_SEGUIMIENTO" };
 
 /**
@@ -589,8 +589,9 @@ export function cambiarEstadoParticipacion(
 ): ResultadoTransicion {
   const p = alm.participaciones.get(folio.toUpperCase());
   if (!p) return { estado: "NO_EXISTE" };
-  if (!tieneSeguimiento(p.tipo)) return { estado: "SIN_SEGUIMIENTO" };
-  if (!TRANSICIONES[p.estado].includes(nuevo)) return { estado: "TRANSICION_INVALIDA" };
+  if (!tieneSeguimiento(p.tipo)) {
+    if (!TRANSICIONES_OPINION[p.estado]?.includes(nuevo)) return { estado: "SIN_SEGUIMIENTO" };
+  } else if (!TRANSICIONES[p.estado].includes(nuevo)) return { estado: "TRANSICION_INVALIDA" };
   const texto = comentario?.trim() || undefined;
   if (nuevo === "RECHAZADA" && !texto) return { estado: "FALTA_MOTIVO" };
   if (nuevo === "PUBLICADA" && !p.mostrarNombre) return { estado: "SIN_NOMBRE_AUTORIZADO" };
@@ -646,8 +647,7 @@ export function filtrarParticipaciones(lista: Participacion[], f: FiltroParticip
   const q = f.q ? sinTildes(f.q.trim()) : "";
   return lista.filter(
     (p) =>
-      // El estado solo se filtra en las propuestas formales: las opiniones no tienen seguimiento.
-      (!f.estado || (tieneSeguimiento(p.tipo) && p.estado === f.estado)) &&
+      (!f.estado || p.estado === f.estado) &&
       (!f.tipo || p.tipo === f.tipo) &&
       (!f.parroquia || p.parroquia === f.parroquia) &&
       (!f.categoriaTecnica || p.categoriaTecnica === f.categoriaTecnica) &&
@@ -675,7 +675,7 @@ export type PropuestaPublica = ReturnType<typeof vistaPublica>;
 /** Galería pública: solo PUBLICADA y con nombre autorizado, de la más reciente a la más antigua. */
 export function propuestasPublicadas(alm: Almacen, f: FiltroParticipaciones = {}) {
   const publicadas = [...alm.participaciones.values()].filter(
-    (p) => tieneSeguimiento(p.tipo) && p.estado === "PUBLICADA" && p.mostrarNombre,
+    (p) => p.estado === "PUBLICADA" && p.mostrarNombre,
   );
   return filtrarParticipaciones(publicadas, { ...f, estado: undefined })
     .map(vistaPublica)
@@ -684,7 +684,5 @@ export function propuestasPublicadas(alm: Almacen, f: FiltroParticipaciones = {}
 
 export function propuestaPublica(alm: Almacen, folio: string) {
   const p = alm.participaciones.get(folio.toUpperCase());
-  return p && tieneSeguimiento(p.tipo) && p.estado === "PUBLICADA" && p.mostrarNombre
-    ? vistaPublica(p)
-    : undefined;
+  return p && p.estado === "PUBLICADA" && p.mostrarNombre ? vistaPublica(p) : undefined;
 }

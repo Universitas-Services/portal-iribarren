@@ -83,8 +83,17 @@ async function Contenido({ params }: { params: Params }) {
         </section>
       ) : (
         <p className="mt-8 rounded-2xl bg-superficie p-5 leading-relaxed text-tinta">
-          Las opiniones se reciben y se toman en cuenta en el plan; no tienen seguimiento de estado.
-          Si quieres una respuesta del equipo técnico, presenta una propuesta formal.
+          {p.estado === "PUBLICADA" ? (
+            <>
+              El equipo de la alcaldía publicó tu opinión.{" "}
+              <Link href={`/propuestas/${p.folio}`} className="font-bold text-rojo underline">
+                Verla en Propuestas y opiniones
+              </Link>
+              .
+            </>
+          ) : (
+            "El equipo de la alcaldía revisa las opiniones y puede publicarlas en Propuestas y opiniones. Las opiniones no tienen seguimiento con respuesta: si la necesitas, presenta una propuesta formal."
+          )}
         </p>
       )}
 

@@ -6,10 +6,17 @@ import { RailControls } from "./rail-controls";
 export type PestanaNoticias = { id: string; etiqueta: string; contenido: ReactNode };
 
 /**
- * Pestañas del carril de noticias del inicio (Recientes, Más vistas, Más valoradas), con el
+ * Pestañas de los carriles del inicio (noticias y «La gente opina»), con el
  * patrón de pestañas de WAI-ARIA: flechas para cambiar y una sola pestaña en el orden del Tab.
  */
-export function PestanasNoticias({ pestanas }: { pestanas: PestanaNoticias[] }) {
+export function PestanasNoticias({
+  pestanas,
+  etiqueta = "Ordenar noticias",
+}: {
+  pestanas: PestanaNoticias[];
+  /** Nombre accesible de la lista de pestañas. */
+  etiqueta?: string;
+}) {
   const [activa, setActiva] = useState(0);
   const base = useId();
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -36,7 +43,7 @@ export function PestanasNoticias({ pestanas }: { pestanas: PestanaNoticias[] }) 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
         <div
           role="tablist"
-          aria-label="Ordenar noticias"
+          aria-label={etiqueta}
           className="flex gap-1 rounded-full bg-papel p-1 shadow-tarjeta"
         >
           {pestanas.map((p, i) => (
