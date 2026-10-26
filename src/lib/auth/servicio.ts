@@ -27,8 +27,6 @@ export type Cuenta = {
   correo: string;
   hash: string;
   verificado: boolean;
-  /** Alcaldías en las que la cuenta tiene membresía (una cuenta, varios portales). */
-  membresias: string[];
   /** Datos de «Terminación del perfil» (v3). */
   perfil: Perfil;
   /** Solo metadatos: el archivo va a Storage en plataforma-api. */
@@ -189,8 +187,8 @@ export function registrar(alm: Almacen, d: DatosRegistro, ahora = Date.now()): R
   const correo = d.correo.toLowerCase();
   const existente = porCorreo(alm, correo);
   if (existente) {
-    // En producción se envía un correo «ya tienes cuenta» (con enlace para unirse si es de otra
-    // alcaldía). La pantalla es la misma que la de un registro nuevo.
+    // En producción se envía un correo «ya tienes cuenta». La pantalla es la misma que la de un
+    // registro nuevo.
     return { estado: "ENVIADO" };
   }
 
@@ -210,7 +208,6 @@ export function registrar(alm: Almacen, d: DatosRegistro, ahora = Date.now()): R
     correo,
     hash: cifrar(contrasena),
     verificado: false,
-    membresias: [ALCALDIA],
     perfil: {},
     documentos: {},
     estadoVerificacion: "PENDIENTE",
@@ -257,7 +254,7 @@ export function correoDeToken(alm: Almacen, token: string) {
 export type ResultadoIngreso =
   | { estado: "CREDENCIALES" }
   | { estado: "NO_VERIFICADO"; correo: string }
-  | { estado: "OK"; sesion: string; siguiente: "UNIRSE" | "PERFIL" | "LISTO" };
+  | { estado: "OK"; sesion: string; siguiente: "PERFIL" | "LISTO" };
 
 export function iniciarSesion(alm: Almacen, correo: string, contrasena: string): ResultadoIngreso {
   const c = porCorreo(alm, correo);
@@ -266,11 +263,7 @@ export function iniciarSesion(alm: Almacen, correo: string, contrasena: string):
   if (!c.verificado) return { estado: "NO_VERIFICADO", correo: c.correo };
   const sesion = nuevoId();
   alm.sesiones.set(sesion, c.id);
-  const siguiente = !c.membresias.includes(ALCALDIA)
-    ? "UNIRSE"
-    : !perfilCompleto(c)
-      ? "PERFIL"
-      : "LISTO";
+  const siguiente = perfilCompleto(c) ? "LISTO" : "PERFIL";
   return { estado: "OK", sesion, siguiente };
 }
 
@@ -279,14 +272,6 @@ export const cuentaDeSesion = (alm: Almacen, sesion?: string) =>
 
 export function cerrarSesion(alm: Almacen, sesion?: string) {
   if (sesion) alm.sesiones.delete(sesion);
-}
-
-/** Crea la membresía en esta alcaldía para una cuenta que ya existía en otro portal. */
-export function unirse(alm: Almacen, sesion?: string) {
-  const c = cuentaDeSesion(alm, sesion);
-  if (!c) return false;
-  if (!c.membresias.includes(ALCALDIA)) c.membresias.push(ALCALDIA);
-  return true;
 }
 
 /* ---------- Recuperación de contraseña ---------- */
@@ -454,15 +439,6 @@ export function cargarDocumento(
   return "OK";
 }
 
-/** Quita la membresía de esta alcaldía y cierra la sesión. La cuenta sigue en otros portales. */
-export function abandonarPortal(alm: Almacen, sesion?: string) {
-  const c = cuentaDeSesion(alm, sesion);
-  if (!c) return false;
-  c.membresias = c.membresias.filter((m) => m !== ALCALDIA);
-  cerrarSesion(alm, sesion);
-  return true;
-}
-
 /** Registra la solicitud de baja; la atiende la alcaldía (los aportes enviados se conservan). */
 export function solicitarBaja(alm: Almacen, sesion?: string, ahora = Date.now()) {
   const c = cuentaDeSesion(alm, sesion);
@@ -560,9 +536,11 @@ export function enviarParticipacion(
  * propuesta PUBLICADA a APROBADA.
  */
 export const TRANSICIONES: Record<EstadoParticipacion, EstadoParticipacion[]> = {
-  PENDIENTE: ["EN_REVISION"],
+  // Decisión del cliente (19-10-2026, D1 cerrada el 26-10): el Revisor puede verificar o
+  // rechazar directo desde Pendiente, y rechazar una verificada.
+  PENDIENTE: ["EN_REVISION", "APROBADA", "RECHAZADA"],
   EN_REVISION: ["APROBADA", "RECHAZADA"],
-  APROBADA: ["PUBLICADA"],
+  APROBADA: ["PUBLICADA", "RECHAZADA"],
   RECHAZADA: [],
   PUBLICADA: ["APROBADA"],
 };

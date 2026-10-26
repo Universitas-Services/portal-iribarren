@@ -1,6 +1,7 @@
 import "server-only";
 import { cacheLife } from "next/cache";
 import sanitizeHtml from "sanitize-html";
+import { MARCO } from "@/lib/conoce/contenido";
 import { bannersVigentes } from "@/lib/banners";
 import { consultarDocumentos } from "@/lib/documentos/consultas";
 import { banners, documentos, posts, processStatus } from "@/lib/mocks/data";
@@ -10,6 +11,8 @@ import type {
   Documento,
   FiltrosDocumentos,
   FiltrosNoticias,
+  InicioPortal,
+  ItemMarcoLegal,
   PaginaDocumentos,
   PaginaNoticias,
   Post,
@@ -55,6 +58,32 @@ export async function getProcess(): Promise<ProcessStatus> {
 }
 
 /**
+ * Marco legal de Conoce el PDUL (GET /portal/legal-framework). Simulado hasta que exista la API:
+ * los 7 ítems del texto del cliente (`MARCO` en `src/lib/conoce/contenido.ts`), que son también
+ * el seed de Iribarren en la API.
+ */
+export async function getMarcoLegal(): Promise<ItemMarcoLegal[]> {
+  "use cache";
+  cacheLife("hours");
+  return MARCO.slice(0, 10).map(({ nombre, texto, enlace }) => ({
+    titulo: nombre,
+    descripcion: texto,
+    boton: enlace && { texto: enlace.label, href: enlace.href },
+  }));
+}
+
+/**
+ * Inicio elegido por la alcaldía (GET /portal/home). Simulado hasta que exista la API: el
+ * mensaje del alcalde queda vacío y el Inicio muestra el texto provisional (decisión D10).
+ */
+export async function getHome(): Promise<InicioPortal> {
+  "use cache";
+  cacheLife("minutes");
+  await simularRed(1);
+  return { mensajeAlcalde: null };
+}
+
+/**
  * Solo los banners vigentes y en su orden. Se cachea por horas: la vigencia va por día, así que
  * un banner aparece o vence a más tardar una hora después de su fecha.
  */
@@ -62,7 +91,8 @@ export async function getBanners(): Promise<Banner[]> {
   "use cache";
   cacheLife("hours");
   await simularRed(1);
-  return bannersVigentes(banners, Date.now());
+  // La tarjeta muestra hasta 6 diapositivas a la vez.
+  return bannersVigentes(banners, Date.now()).slice(0, 6);
 }
 
 export async function getLatestPosts(limit = 3): Promise<PostSummary[]> {
@@ -128,4 +158,4 @@ export async function getDocumentoSlugs(): Promise<{ slug: string; fecha: string
   return documentos.map((d) => ({ slug: d.slug, fecha: d.actualizadoEl ?? d.publicadoEl }));
 }
 
-export type { Banner, Post, PostSummary, ProcessStatus } from "./types";
+export type { Banner, InicioPortal, Post, PostSummary, ProcessStatus } from "./types";

@@ -19,7 +19,6 @@ import {
   restablecerSchema,
 } from "@/lib/validation/schemas";
 import {
-  abandonarPortal,
   actualizarNombres,
   cambiarContrasena,
   cargarDocumento,
@@ -34,7 +33,6 @@ import {
   reenviarVerificacion,
   registrar,
   restablecer,
-  unirse,
   verificarCorreo,
 } from "./servicio";
 import {
@@ -264,7 +262,6 @@ export async function ingresarAccion(
   }
   await abrirSesion(r.sesion);
   const volver = destinoSeguro(fd.get("volver"), "/mi-cuenta");
-  if (r.siguiente === "UNIRSE") ir(`/unirme?volver=${encodeURIComponent(volver)}`);
   if (r.siguiente === "PERFIL") ir("/mi-cuenta");
   ir(volver);
 }
@@ -274,16 +271,6 @@ export async function cerrarSesionAccion() {
   else cerrarSesion(almacen(), await idSesion());
   await borrarSesion();
   ir("/");
-}
-
-/* ---------- Unirse a esta alcaldía ---------- */
-
-export async function unirseAccion(fd: FormData) {
-  // Con la API, la membresía se crea al registrarse; unirse desde otro portal aún no existe.
-  if (usaApi()) ir("/mi-cuenta");
-  if (!unirse(almacen(), await idSesion())) ir("/ingresar");
-  await refrescarSesion();
-  ir(destinoSeguro(fd.get("volver"), "/mi-cuenta"));
 }
 
 /* ---------- Recuperar y restablecer ---------- */
@@ -472,13 +459,6 @@ export async function cambiarContrasenaAccion(
   // Los tokens anteriores quedaron revocados: la sesión actual se firma de nuevo.
   await refrescarSesion(sesion);
   return ir("/mi-cuenta/seguridad?guardado=contrasena");
-}
-
-export async function abandonarAccion() {
-  if (usaApi()) ir("/mi-cuenta/seguridad");
-  abandonarPortal(almacen(), await idSesion());
-  await borrarSesion();
-  ir("/ingresar?aviso=abandono");
 }
 
 export async function solicitarBajaAccion() {

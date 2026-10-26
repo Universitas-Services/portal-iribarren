@@ -1,11 +1,4 @@
-import {
-  ALCALDIA,
-  cifrar,
-  crearAlmacen,
-  type Almacen,
-  type Cuenta,
-  type Participacion,
-} from "./servicio";
+import { cifrar, crearAlmacen, type Almacen, type Cuenta, type Participacion } from "./servicio";
 
 /**
  * Cuentas de demostración para probar cada caso del acceso simulado. Las contraseñas están
@@ -29,7 +22,6 @@ const cuentas: Omit<Cuenta, "hash">[] = [
     nombres: "Ana María",
     apellidos: "Pérez",
     verificado: true,
-    membresias: [ALCALDIA],
     perfil: { telefono: "04141234567", ocupacion: "Profesional Independiente" },
     documentos: { IDENTIDAD: { ...DOC_DEMO, nombre: "cedula-ana.pdf" } },
     estadoVerificacion: "VERIFICADO",
@@ -42,7 +34,6 @@ const cuentas: Omit<Cuenta, "hash">[] = [
     nombres: "Luis",
     apellidos: "Mendoza",
     verificado: false,
-    membresias: [ALCALDIA],
     perfil: {},
     documentos: {},
     estadoVerificacion: "PENDIENTE",
@@ -55,7 +46,6 @@ const cuentas: Omit<Cuenta, "hash">[] = [
     nombres: "Carla",
     apellidos: "Rodríguez",
     verificado: true,
-    membresias: ["palavecino"],
     perfil: { telefono: "04241234567" },
     documentos: { IDENTIDAD: { ...DOC_DEMO, nombre: "cedula-carla.pdf" } },
     estadoVerificacion: "VERIFICADO",
@@ -68,7 +58,6 @@ const cuentas: Omit<Cuenta, "hash">[] = [
     nombres: "José Gregorio",
     apellidos: "Álvarez",
     verificado: true,
-    membresias: [ALCALDIA],
     perfil: {},
     documentos: {},
     estadoVerificacion: "PENDIENTE",
@@ -81,7 +70,6 @@ const cuentas: Omit<Cuenta, "hash">[] = [
     nombres: "Rosa",
     apellidos: "Giménez",
     verificado: true,
-    membresias: [ALCALDIA],
     // Perfil a medias: guardó el teléfono, pero aún no sube el documento de identidad.
     perfil: { telefono: "04161234567", ocupacion: "Comerciante" },
     documentos: {},
@@ -95,7 +83,6 @@ const cuentas: Omit<Cuenta, "hash">[] = [
     rif: "C-29876543-7",
     tipoEntidad: "Consejos comunales / Comunas",
     verificado: true,
-    membresias: [ALCALDIA],
     perfil: {},
     documentos: {},
     estadoVerificacion: "PENDIENTE",

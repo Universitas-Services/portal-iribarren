@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CONTRASENA_DEMO, almacenDemo } from "./fixtures";
 import {
-  abandonarPortal,
   actualizarNombres,
   cambiarContrasena,
   cambiarEstadoParticipacion,
@@ -22,7 +21,6 @@ import {
   reenviarVerificacion,
   registrar,
   restablecer,
-  unirse,
   verificarCorreo,
 } from "./servicio";
 
@@ -36,7 +34,7 @@ const natural = {
 };
 
 describe("registro", () => {
-  it("crea la cuenta sin verificar con membresía en Iribarren y emite el enlace", () => {
+  it("crea la cuenta sin verificar y emite el enlace", () => {
     const alm = almacenDemo();
     const r = registrar(alm, natural);
     expect(r).toMatchObject({ estado: "ENVIADO" });
@@ -104,7 +102,7 @@ describe("inicio de sesión", () => {
     expect(iniciarSesion(alm, "ana@ejemplo.com", "mala").estado).toBe("CREDENCIALES");
   });
 
-  it("indica el siguiente paso según membresía y perfil", () => {
+  it("indica el siguiente paso según el perfil", () => {
     const alm = almacenDemo();
     expect(iniciarSesion(alm, "ana@ejemplo.com", CONTRASENA_DEMO)).toMatchObject({
       estado: "OK",
@@ -113,12 +111,6 @@ describe("inicio de sesión", () => {
     expect(iniciarSesion(alm, "contacto@cardones.org", CONTRASENA_DEMO)).toMatchObject({
       siguiente: "PERFIL",
     });
-    const carla = iniciarSesion(alm, "carla@ejemplo.com", CONTRASENA_DEMO);
-    expect(carla).toMatchObject({ siguiente: "UNIRSE" });
-    if (carla.estado === "OK") {
-      expect(unirse(alm, carla.sesion)).toBe(true);
-      expect(cuentaDeSesion(alm, carla.sesion)?.membresias).toContain("iribarren");
-    }
   });
 });
 
@@ -257,16 +249,6 @@ describe("perfil", () => {
     expect(perfilCompleto(cuentaDeSesion(alm, s)!)).toBe(true);
     expect(cuentaDeSesion(alm, s)!.estadoVerificacion).toBe("VERIFICADO");
   });
-
-  it("abandonar el portal quita la membresía y cierra la sesión", () => {
-    const alm = almacenDemo();
-    const s = sesionDe(alm, "ana@ejemplo.com");
-    expect(abandonarPortal(alm, s)).toBe(true);
-    expect(cuentaDeSesion(alm, s)).toBeUndefined();
-    expect(iniciarSesion(alm, "ana@ejemplo.com", CONTRASENA_DEMO)).toMatchObject({
-      siguiente: "UNIRSE",
-    });
-  });
 });
 
 describe("participación", () => {
@@ -361,11 +343,13 @@ describe("cambio de estado (Revisor)", () => {
     expect(propuestaPublica(alm, folio)?.folio).toBe(folio);
   });
 
-  it("rechaza saltos de estado y estados finales", () => {
+  it("el Revisor decide directo desde Pendiente (D1) y rechazada es final", () => {
     const { alm, folio } = nueva(true);
-    expect(cambiarEstadoParticipacion(alm, folio, "APROBADA").estado).toBe("TRANSICION_INVALIDA");
-    cambiarEstadoParticipacion(alm, folio, "EN_REVISION");
-    cambiarEstadoParticipacion(alm, folio, "RECHAZADA", "Identidad no acreditada");
+    expect(cambiarEstadoParticipacion(alm, folio, "PUBLICADA").estado).toBe("TRANSICION_INVALIDA");
+    expect(cambiarEstadoParticipacion(alm, folio, "APROBADA").estado).toBe("OK");
+    expect(cambiarEstadoParticipacion(alm, folio, "RECHAZADA", "Fuera de alcance").estado).toBe(
+      "OK",
+    );
     expect(cambiarEstadoParticipacion(alm, folio, "EN_REVISION").estado).toBe(
       "TRANSICION_INVALIDA",
     );

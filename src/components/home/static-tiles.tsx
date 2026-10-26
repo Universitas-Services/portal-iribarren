@@ -8,6 +8,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { getHome } from "@/lib/api";
 import { EnlaceCampana, SelloCampana } from "@/components/campana/banner-campana";
 import { Tile } from "./tile";
 
@@ -108,8 +109,17 @@ export function AccessTile({ className = "" }: { className?: string }) {
   );
 }
 
-/** Mensaje de bienvenida del alcalde. Texto provisional hasta recibir el oficial. */
-export function MayorTile({ className = "" }: { className?: string }) {
+/**
+ * Mensaje del alcalde. Con API, es la noticia de texto que la alcaldía elige en el admin
+ * (GET /portal/home); mientras no haya una elegida, muestra el texto provisional.
+ */
+export function MayorTile({
+  className = "",
+  mensaje,
+}: {
+  className?: string;
+  mensaje?: { slug: string; titulo: string; resumen: string } | null;
+}) {
   return (
     <Tile
       as="article"
@@ -120,11 +130,27 @@ export function MayorTile({ className = "" }: { className?: string }) {
       <h2 id="alcalde-titulo" className="sr-only">
         Mensaje del alcalde
       </h2>
-      <p className="mt-4 font-display text-xl leading-snug font-bold sm:text-[1.4rem]">
-        Dejamos atrás la ultractividad del plan de 2003. Con el Decreto 48-2026 abrimos una
-        planificación moderna, participativa y con rigor científico, que saldrá de las oficinas para
-        construirse en la calle, contigo.
-      </p>
+      {mensaje ? (
+        <>
+          <p className="mt-4 font-display text-xl leading-snug font-bold sm:text-[1.4rem]">
+            {mensaje.titulo}
+          </p>
+          <p className="mt-3 line-clamp-4 leading-relaxed text-papel/85">{mensaje.resumen}</p>
+          <Link
+            href={`/noticias/${mensaje.slug}`}
+            className="mt-4 inline-flex min-h-11 items-center gap-2 self-start font-display font-bold text-amarillo hover:underline"
+          >
+            Leer el mensaje
+            <ArrowRight size={18} aria-hidden="true" />
+          </Link>
+        </>
+      ) : (
+        <p className="mt-4 font-display text-xl leading-snug font-bold sm:text-[1.4rem]">
+          Dejamos atrás la ultractividad del plan de 2003. Con el Decreto 48-2026 abrimos una
+          planificación moderna, participativa y con rigor científico, que saldrá de las oficinas
+          para construirse en la calle, contigo.
+        </p>
+      )}
       <div className="mt-auto flex items-center gap-3 pt-6">
         <span
           aria-hidden="true"
@@ -134,7 +160,9 @@ export function MayorTile({ className = "" }: { className?: string }) {
         </span>
         <p className="leading-tight">
           <span className="block font-display font-bold">Yanys Agüero</span>
-          <span className="text-sm text-papel/75">Alcalde de Iribarren · texto provisional</span>
+          <span className="text-sm text-papel/75">
+            Alcalde de Iribarren{mensaje ? "" : " · texto provisional"}
+          </span>
         </p>
       </div>
     </Tile>
@@ -175,4 +203,10 @@ export function CampanaTile({ className = "" }: { className?: string }) {
       </div>
     </Tile>
   );
+}
+
+/** El mensaje del alcalde leído del Inicio elegido por la alcaldía. */
+export async function MensajeAlcaldeTile({ className = "" }: { className?: string }) {
+  const { mensajeAlcalde } = await getHome();
+  return <MayorTile className={className} mensaje={mensajeAlcalde} />;
 }

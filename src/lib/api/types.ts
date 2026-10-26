@@ -69,19 +69,23 @@ export type PostFormat = (typeof FORMATOS)[number];
 
 export type BannerTone = "rojo" | "tinta" | "calido";
 
+/**
+ * Una diapositiva de la tarjeta con transiciones del Inicio, bajo el termómetro. La administra
+ * el Operador en el admin («Tarjeta de transiciones»); el portal muestra las 6 primeras vigentes.
+ */
 export type Banner = {
   id: string;
   titulo: string;
   texto: string;
   enlace: { href: string; etiqueta: string };
   tono: BannerTone;
-  /** Con imagen, el banner la muestra de fondo con un velo para el contraste. */
+  /** Con imagen, la diapositiva la muestra de fondo con un velo para el contraste. */
   imagen?: Imagen;
-  /** Posición en el carrusel, de menor a mayor (el Operador la cambia arrastrando). */
+  /** Posición en la tarjeta, de menor a mayor (el Operador la cambia arrastrando). */
   orden: number;
   /**
    * Fechas entre las que se muestra, ambas incluidas. «AAAA-MM-DD» (día completo en hora de
-   * Venezuela) o fecha y hora ISO. Sin una de ellas, el banner no tiene ese límite.
+   * Venezuela) o fecha y hora ISO. Sin una de ellas, la diapositiva no tiene ese límite.
    */
   vigencia?: { desde?: string; hasta?: string };
 };
@@ -292,4 +296,23 @@ export type FiltrosDocumentos = {
 export type PaginaDocumentos = Pagina<Documento> & {
   porCategoria: Record<DocCategory, number> & { TODAS: number };
   porEstado: Record<DocEstado, number> & { TODOS: number };
+};
+
+/**
+ * Lo que el Inicio muestra elegido por la alcaldía (GET /portal/home): la noticia de texto del
+ * mensaje del alcalde. La tarjeta con transiciones tiene sus diapositivas (GET /portal/banners).
+ */
+export type InicioPortal = {
+  mensajeAlcalde: { slug: string; titulo: string; resumen: string; cuerpo: string } | null;
+};
+
+/**
+ * Un ítem del Marco legal de Conoce el PDUL (GET /portal/legal-framework). Lo administra el
+ * Operador en el admin: solo llegan los activos (10 como máximo), en su orden, y el botón solo
+ * si su noticia o documento sigue publicado.
+ */
+export type ItemMarcoLegal = {
+  titulo: string;
+  descripcion: string;
+  boton?: { texto: string; href: string };
 };
