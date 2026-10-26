@@ -1,4 +1,4 @@
-import { ArrowLeft, History, TriangleAlert } from "lucide-react";
+import { ArrowLeft, TriangleAlert } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -66,48 +66,11 @@ export default async function DocumentoPage({ params }: { params: Params }) {
 
         <VisorDocumento adjunto={doc.archivo} />
 
-        <section
-          aria-labelledby="historial"
-          className="rounded-tarjeta bg-papel p-6 shadow-tarjeta sm:p-8"
-        >
-          <h2
-            id="historial"
-            className="flex items-center gap-2 font-display text-xl font-extrabold text-noche"
-          >
-            <History size={20} aria-hidden="true" className="text-rojo" />
-            Historial de versiones
-          </h2>
-          <ol className="mt-6 space-y-6 border-l-2 border-linea pl-6">
-            {doc.versiones.map((v, i) => (
-              <li key={v.version} className="relative">
-                <span
-                  aria-hidden="true"
-                  className={`absolute top-1 -left-[2.1rem] size-4 rounded-full ring-4 ring-papel ${
-                    i === 0 ? "bg-rojo" : "bg-linea"
-                  }`}
-                />
-                <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <span className="font-display font-extrabold text-noche">
-                    Versión {v.version}
-                  </span>
-                  {i === 0 && (
-                    <span className="rounded-full bg-rojo/10 px-2 py-0.5 font-display text-xs font-bold text-rojo">
-                      Vigente
-                    </span>
-                  )}
-                  <time dateTime={v.fecha} className="text-sm text-tinta/75">
-                    {formatearFechaLarga(v.fecha)}
-                  </time>
-                </p>
-                <p className="mt-1 text-tinta">{v.nota}</p>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-6 text-sm text-tinta/75">
-            Publicado el {formatearFechaLarga(doc.publicadoEl)} · Documento de ejemplo, sin validez
-            oficial.
-          </p>
-        </section>
+        {/* Solo la versión vigente: el historial de versiones queda para el equipo en el admin. */}
+        <p className="text-sm text-tinta/75">
+          Publicado el {formatearFechaLarga(doc.publicadoEl)} · Documento de ejemplo, sin validez
+          oficial.
+        </p>
 
         <Link
           href="/documentos"

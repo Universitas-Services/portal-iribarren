@@ -70,6 +70,10 @@ export const MARCO_INTRO = [
   "Su formulación y aprobación deben respetar las competencias municipales, la legislación urbanística y el procedimiento legal establecido.",
 ];
 
+/**
+ * Ítems del Marco legal, en su orden. Desde el 26-10-2026 se administran en el admin; esto queda
+ * como seed (los mismos 7 que carga la API) y como datos simulados de `getMarcoLegal()`.
+ */
 export const MARCO: {
   nombre: string;
   texto: string;

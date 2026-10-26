@@ -26,7 +26,7 @@ import {
 
 /** Mismo nombre que en src/lib/auth/sesion.ts (sesión simulada). */
 const COOKIE_SESION = "pdul_sesion";
-const PRIVADAS = ["/mi-cuenta", "/participa", "/unirme"];
+const PRIVADAS = ["/mi-cuenta", "/participa"];
 const MARGEN_MS = 60_000;
 
 const opciones = {

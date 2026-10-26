@@ -1,9 +1,4 @@
-import {
-  ALCALDIA,
-  type Cuenta,
-  type DocumentoCargado,
-  type TipoDocumento,
-} from "@/lib/auth/servicio";
+import { type Cuenta, type DocumentoCargado, type TipoDocumento } from "@/lib/auth/servicio";
 import type { ACREDITACION_REPRESENTANTE, CONDICIONES_REPRESENTANTE } from "@/lib/api/types";
 import { ErrorApi, type PerfilApi } from "./cliente";
 
@@ -93,7 +88,6 @@ export function cuentaDePerfil(p: PerfilApi): Cuenta {
     correo: p.email,
     hash: "",
     verificado: true,
-    membresias: [ALCALDIA],
     documentos,
     estadoVerificacion:
       p.perfilEstado === "COMPLETO" ? ("VERIFICADO" as const) : ("PENDIENTE" as const),

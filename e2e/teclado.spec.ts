@@ -56,10 +56,10 @@ test("el carrusel del Inicio se puede pausar y manejar con teclado", async ({ pa
 test("el diálogo de confirmación se cierra con Escape y devuelve el foco", async ({ page }) => {
   await ingresar(page, "ana@ejemplo.com");
   await page.goto("/mi-cuenta/seguridad");
-  const abrir = page.getByRole("button", { name: "Abandonar este portal" });
+  const abrir = page.getByRole("button", { name: "Solicitar la baja de la cuenta" });
   await abrir.focus();
   await page.keyboard.press("Enter");
-  const dialogo = page.getByRole("dialog", { name: "¿Abandonar el portal de Iribarren?" });
+  const dialogo = page.getByRole("dialog", { name: "¿Solicitar la baja de tu cuenta?" });
   await expect(dialogo).toBeVisible();
   await expect(dialogo.getByRole("button", { name: "Cancelar" })).toBeFocused();
   await page.keyboard.press("Escape");

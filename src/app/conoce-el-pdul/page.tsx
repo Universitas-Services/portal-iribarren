@@ -27,13 +27,14 @@ import {
   INSTANCIAS,
   LINEA_TIEMPO,
   LLAMADO,
-  MARCO,
   MARCO_INTRO,
   OBJETIVOS,
   PROCEDIMIENTO_INTRO,
   QUE_ES,
 } from "@/lib/conoce/contenido";
 import { BannerCampana } from "@/components/campana/banner-campana";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getMarcoLegal } from "@/lib/api";
 
 export const metadata: Metadata = {
   title: "Conoce el PDUL",
@@ -194,37 +195,9 @@ export default function ConocePage() {
                 <p key={t}>{t}</p>
               ))}
             </div>
-            <ol className="mt-6">
-              {MARCO.map(({ nombre, texto, enlace }, i) => (
-                <li key={nombre} className="relative pb-4 pl-14 last:pb-0">
-                  {i < MARCO.length - 1 && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute top-12 bottom-0 left-[1.2rem] w-0.5 bg-gradient-to-b from-rojo to-rojo/20"
-                    />
-                  )}
-                  <span
-                    aria-hidden="true"
-                    className="absolute top-0 left-0 grid size-10 place-items-center rounded-full bg-rojo font-display font-extrabold text-papel"
-                  >
-                    {i + 1}
-                  </span>
-                  <div className="rounded-2xl border border-linea p-5">
-                    <h3 className="font-display text-lg font-extrabold text-noche">{nombre}</h3>
-                    <p className="mt-1.5 leading-relaxed text-tinta">{texto}</p>
-                    {enlace && (
-                      <Link
-                        href={enlace.href}
-                        className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-rojo/10 px-4 font-display text-sm font-bold text-rojo transition-colors hover:bg-rojo/15"
-                      >
-                        {enlace.label}
-                        <ArrowRight size={16} aria-hidden="true" />
-                      </Link>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ol>
+            <Suspense fallback={<Skeleton className="mt-6 h-64 rounded-2xl" />}>
+              <ListaMarcoLegal />
+            </Suspense>
           </Seccion>
 
           <Seccion id="procedimiento" titulo="Procedimiento de elaboración">
@@ -409,5 +382,43 @@ async function LlamadoSegunSesion() {
     <BotonLlamado href="/participa" texto="Participa en el PDUL" />
   ) : (
     <BotonLlamado href="/registro" texto="Regístrate y participa" />
+  );
+}
+
+/** Ítems del Marco legal que la alcaldía tiene activos en el admin, en su orden. */
+async function ListaMarcoLegal() {
+  const items = await getMarcoLegal();
+  return (
+    <ol className="mt-6">
+      {items.map(({ titulo, descripcion, boton }, i) => (
+        <li key={`${i}-${titulo}`} className="relative pb-4 pl-14 last:pb-0">
+          {i < items.length - 1 && (
+            <span
+              aria-hidden="true"
+              className="absolute top-12 bottom-0 left-[1.2rem] w-0.5 bg-gradient-to-b from-rojo to-rojo/20"
+            />
+          )}
+          <span
+            aria-hidden="true"
+            className="absolute top-0 left-0 grid size-10 place-items-center rounded-full bg-rojo font-display font-extrabold text-papel"
+          >
+            {i + 1}
+          </span>
+          <div className="rounded-2xl border border-linea p-5">
+            <h3 className="font-display text-lg font-extrabold text-noche">{titulo}</h3>
+            <p className="mt-1.5 leading-relaxed whitespace-pre-line text-tinta">{descripcion}</p>
+            {boton && (
+              <Link
+                href={boton.href}
+                className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-rojo/10 px-4 font-display text-sm font-bold text-rojo transition-colors hover:bg-rojo/15"
+              >
+                {boton.texto}
+                <ArrowRight size={16} aria-hidden="true" />
+              </Link>
+            )}
+          </div>
+        </li>
+      ))}
+    </ol>
   );
 }

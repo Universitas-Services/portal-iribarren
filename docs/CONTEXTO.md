@@ -223,6 +223,135 @@ Los dos repos traen en `.claude/skills/` las skills `flujo-git` (la regla de los
 - **Diseño:** reutilizar los tokens del portal (`globals.css`) y adaptar el `Selector`, `Dialogo` y `CampoArchivo` del portal en lugar de crearlos de cero. El backlog pide shadcn/ui: si se usa, que tome estos tokens.
 - **Sin API:** simularla igual que en el portal, con un servicio puro en memoria y sus pruebas más fixtures, para construir las pantallas sin bloquearse.
 
+## 6.0 Admin de Iribarren (rama `feat/admin-iribarren`, 25-10-2026)
+
+Refactorización según `Backlog_Refactorizacion_API_Admin.docx`: **una base de datos y una API por alcaldía**, y un admin por alcaldía entregado ya personalizado. Lo que sigue de la sección 6 sobre multi-alcaldía, onboarding, marca configurable, Representantes, `/plataforma` y banners **quedó como historia**. Los datos siguen simulados en `src/lib/plataforma/`, con la forma del backlog nuevo.
+
+- **Identidad:** la del portal PDUL YA. Colores, Montserrat (títulos) y Roboto (texto) en `src/app/globals.css`; logos de PDUL YA y de la Alcaldía en `public/brand/`, copiados del portal. Lo propio del despliegue (nombre, sigla, código del folio, límites del municipio para el mapa, logos) vive en **`src/config/alcaldia.ts`**: otra alcaldía es otro despliegue con otro archivo como ese. Se conserva la estructura «Línea y estación».
+- **Roles** (`src/lib/plataforma/permisos.ts`), sin membresías ni Representantes:
+  - **Super Admin:** todos los permisos, con la franja «Sesión de Super Admin» en el marco. También existirá en el proyecto central de registro (otro repositorio, sin empezar y sin prioridad).
+  - **Admin:** todo lo de la alcaldía (equipo, catálogos de lectura, bitácora, contenido, participaciones, ciudadanos, indicadores).
+  - **Operador:** noticias, documentos, Inicio del portal y proceso; indicadores de contenido.
+  - **Revisor:** participaciones y ciudadanos; indicadores de participación y ciudadanía.
+- **Catálogos fijos por despliegue:** `/configuracion` es solo lectura. Las fases del proceso se editan en Contenido → Proceso.
+- **Contenido** (`/contenido/*`, pestañas Noticias · Documentos · Inicio del portal · Proceso):
+  - noticias con los 5 formatos, con vistas, me gusta y no me gusta en la lista;
+  - documentos con versiones y descargas;
+  - **Inicio del portal** (`/contenido/inicio`, `src/lib/plataforma/inicio.ts`): la tarjeta del mensaje del alcalde (una noticia de formato Texto publicada) y la tarjeta de anuncios (hasta 6 noticias publicadas, ordenables con flechas o arrastre). Si una elegida se despublica, sale de la selección y el panel avisa. El resto del Inicio es fijo o sale de los rankings;
+  - **Proceso** (`/contenido/proceso`): fases y fase actual del termómetro.
+  - Los banners se eliminaron.
+- **Revisor, con las dos máquinas del portal** (`src/lib/plataforma/participaciones.ts`):
+  - **Propuesta formal:** Pendiente o En revisión → Verificada o Rechazada (motivo y texto de 20+); Verificada → Publicada o Rechazada; Publicada → Verificada al despublicar. Se mantiene la decisión directa del 19-10-2026; el portal solo permite Pendiente → En revisión: **alinear las dos reglas con backend**.
+  - **Opinión** (general o sobre noticia): sin seguimiento. Pendiente («Recibida» en el portal) ↔ Publicada.
+  - Publicar exige `mostrarNombre` en los dos casos.
+  - **Ubicación** de la propuesta (`ubicacion {lat, lng}`) en un mapa de solo lectura con Leaflet 1.9.4 y OpenStreetMap, con enlace a Google Maps (`src/components/revisor/mapa-ubicacion.tsx`, `src/lib/ubicacion.ts`).
+  - Vistas y reacciones de los aportes publicados en el detalle. Se quitó el campo `identidad`.
+- **Indicadores en `/tablero`** (`src/lib/plataforma/metricas.ts`, con pruebas): rango (7, 30, 90 días o el año, en hora de Venezuela) y exportación a CSV (`/tablero/exportar?rango=`). Cada rol ve sus secciones:
+  - participación: recibidos por día o semana, por tipo, parroquia y categoría, por atender y su antigüedad, mediana de días de respuesta, tasa de verificación, opiniones publicadas, aportes con más reacciones;
+  - contenido: noticias publicadas, vistas, reacciones, más vistas y más valoradas, publicadas por formato, descargas y documentos más descargados;
+  - ciudadanía: registros nuevos y totales, perfiles completos, tipo de cuenta y suspendidas;
+  - equipo: decisiones por persona.
+  - Gráficos en SVG propio (sin librería), con tooltip por puntero y teclado, y su tabla. **Las vistas, reacciones y descargas son de demostración** (`interaccionesDemo` en `fixtures-contenido.ts`) hasta conectar la API.
+- **Cuentas de demostración** (contraseña `Plataforma#2026`):
+
+| Correo                         | Rol                                           |
+| ------------------------------ | --------------------------------------------- |
+| `superadmin@plataforma.test`   | Super Admin                                   |
+| `admin@iribarren.test`         | Admin                                         |
+| `operador@iribarren.test`      | Operador                                      |
+| `revisor@iribarren.test`       | Revisor                                       |
+| `equipo@iribarren.test`        | Operador y Revisor                            |
+| `bloqueo@iribarren.test`       | Solo para la prueba del bloqueo               |
+| `desactivado@iribarren.test`   | Cuenta desactivada                            |
+| `nuevo.revisor@iribarren.test` | Invitado: `/invitacion?token=demo-invitacion` |
+
+- **Pruebas:** Vitest (181) y Playwright: `acceso`, `accesibilidad`, `responsive`, `documentos`, `contenido`, `inicio-proceso`, `revisor` y `tablero`.
+- **Pendiente:** conectar la API real (BFF con renovación del token); el proyecto central de registro; alinear con backend la regla de transiciones de la propuesta formal y el catálogo de motivos de rechazo; que el portal lea el Inicio, el proceso y los catálogos desde la API.
+
+### Historia: el admin multi-alcaldía (hasta el 24-10-2026)
+
+**Estado actual (ramas `feat/fundaciones-admin` → `feat/onboarding-admin`):**
+
+- Bloques 2.1 a 2.5 hechos sobre una API simulada: acceso, roles, protección de rutas, marco del panel y tema por alcaldía.
+- **Diseño «Línea y estación»**, elegido con Impeccable entre 5 direcciones:
+  - Señalética del Metro de Caracas. El sidebar es una línea con una estación por sección.
+  - Recorrido de estados en las tablas: lleno = completado; discontinuo = en espera, con su longitud según la antigüedad; ámbar con más de 4 días.
+  - Contrato en `.impeccable/surfaces/` (no versionado), producto en `PRODUCT.md`.
+- **Marca:** la neutra es la de la Plataforma de Participación Ciudadana (azul #1F3864, turquesa #17A398, Archivo; logos en `public/marca/`).
+  - Dentro de una alcaldía con onboarding completo, el marco toma su color.
+  - `src/lib/marca.ts` deriva `--marca`, `--sobre-marca` (blanco o tinta según el contraste), `--marca-texto` (AA sobre blanco) y `--marca-suave`.
+- **API simulada:** `src/lib/plataforma/`.
+  - `servicio.ts`: sesiones, bloqueo tras 5 intentos durante 15 minutos, invitaciones de 72 h (vencida, usada o reemplazada), recuperar y restablecer, cambiar la contraseña y cerrar todas, alcaldía en uso y bitácora encadenada por hash.
+  - `permisos.ts`: permisos por rol, menú y permiso de cada ruta.
+  - `fixtures.ts`: cuentas y alcaldías de demostración.
+  - `sesion.ts`: cookie `pp_sesion` y las comprobaciones `exigirSesion`, `exigirAlcaldia`, `exigirEnAlcaldia`, `exigirPermiso` (→ `forbidden()`) y `soloInvitados`.
+  - `acciones.ts`: Server Actions con `ir()`, que redirige con replace; `refresh()` al cambiar de alcaldía, porque el marco vive en el layout.
+- **Protección:** `src/proxy.ts` hace una verificación optimista de la cookie. Cada página comprueba la sesión real y el permiso. `experimental.authInterrupts` da las páginas 403.
+- **Cuentas de demostración** (contraseña `Plataforma#2026`):
+  - `superadmin@plataforma.test`;
+  - `avipri@plataforma.test` y `universitas@plataforma.test` (Representantes);
+  - `admin@iribarren.test`, `operador@iribarren.test`, `revisor@iribarren.test` y `equipo@iribarren.test` (Operador y Revisor);
+  - `multi@lara.test` (dos alcaldías);
+  - `admin@palavecino.test` (onboarding pendiente);
+  - `desactivado@iribarren.test`;
+  - `admin@crespo.test`, `admin@moran.test` y `admin@urdaneta.test`: alcaldías pendientes para probar el asistente (una por tamaño en las pruebas E2E). `DELETE /api/desarrollo/onboarding/{id}` (solo desarrollo) las devuelve a «pendiente».
+  - Invitaciones: `/invitacion?token=demo-invitacion` y `demo-invitacion-vencida`.
+- **Pantallas:**
+  - `/ingresar`, `/recuperar`, `/restablecer` e `/invitacion`;
+  - `/plataforma` (alcaldías y actividad);
+  - `/alcaldia` (selector);
+  - `/tablero` (chips de estado, las pendientes que más esperan con su recorrido, accesos por rol);
+  - `/participaciones` (bandeja de lectura con recorrido, chips de estado, búsqueda y filtros por tipo, parroquia y categoría; en el teléfono los filtros se pliegan tras «Filtros»);
+  - `/onboarding` (**2.6, hecho**): asistente `?paso=logo|colores|lema|resumen` con la línea de pasos, borrador guardado en `Alcaldia.borradorMarca`, logo PNG/JPG con recorte (`react-easy-crop`, PNG de 512 px) o SVG sin recorte servido por `/logos/[id]` con CSP, colores elegidos en un espectro con barra de tono (`react-colorful`, etiquetas traducidas) o escribiendo el código, evaluados con `evaluarMarca()` (texto 4.5:1 y línea 3:1 contra blanco, con tono sugerido), lema de hasta 120 y vista previa en vivo. Las pruebas E2E devuelven cada alcaldía a «pendiente» al terminar, porque comparten el `pnpm dev` local. Al confirmar, la alcaldía queda ACTIVA, se anota en la bitácora y el marco toma color y logo.
+  - 404 propia «Esta estación no existe»: dentro del panel (`(panel)/[...resto]` y `(panel)/not-found.tsx`) conserva el marco y sugiere las estaciones del usuario; fuera, con la marca neutra. 403 y 500 usan el mismo dibujo de línea cortada.
+  - Esqueletos de carga con la forma de cada pantalla (`src/components/ui/esqueletos.tsx`) y `loading.tsx` en `(panel)` y `(acceso)`.
+  - `/contenido/noticias` (**2.9, primera parte: noticias**): listado con chips por estado (borrador, programada, publicada, despublicada), búsqueda por título y filtros por tipo, formato, categoría, fechas y orden; tabla en escritorio y lista en el teléfono. `/contenido/noticias/[id]`: editor con los 5 formatos del portal (texto, imagen, galería, documento y video por archivo o por enlace de YouTube/Instagram, validado con las mismas reglas que `portal-iribarren/src/lib/noticias/video.ts`), portada con recorte 16:9 (1600 px), texto alternativo obligatorio, crédito y «foto ilustrativa», cuerpo en Tiptap (encabezados, negrita, cursiva, listas, cita, enlaces e imágenes) saneado en el servidor con lista blanca (`src/lib/contenido/sanear.ts`), puntos de análisis, botón opcional y «destacada en portada». Un borrador se guarda solo cada 30 s y al salir de un campo; una publicada o programada se guarda a mano y tiene que quedar completa. Publicar, programar (hora de Venezuela), volver a borrador, despublicar y eliminar el borrador (borrado lógico) piden confirmación y avisan con un toast. Las programadas vencidas se publican al leer (el «job» simulado). Los archivos suben por `POST /api/medios` con barra de progreso (firma real del archivo; imagen 5 MB, PDF 20 MB, **video 50 MB y subtítulos 200 KB: límites propios del admin, pendientes de definir con plataforma-api**) y se sirven por `/medios/[id]` solo a su alcaldía, con `Range` para el video. Las noticias de ejemplo usan fotos CC BY-SA copiadas del portal (`public/ejemplos/CREDITOS.md`). Tras cada cambio se purga la caché del navegador de las rutas de Contenido (`revalidatePath`).
+  - `/contenido/banners` (**2.9, segunda parte**): carrusel del Inicio en orden, con chips por vigencia (vigente, programado, vencido; días completos en hora de Venezuela, misma regla que `portal-iribarren/src/lib/banners.ts`). Se reordena arrastrando o con «Subir»/«Bajar» y se guarda al momento (`PATCH /admin/banners/order` simulado: la lista completa o nada). `/contenido/banners/[id]` (y `/nuevo`): título, texto, botón (texto y enlace), tono del portal («rojo» = color de la alcaldía, «tinta», «cálido»), foto de fondo opcional con recorte 16:7 y crédito, y vigencia desde/hasta, con vista previa aproximada. **Decisión a confirmar:** el backlog dice que el enlace del banner es opcional, pero el tipo `Banner` del portal lo exige; el admin lo pide obligatorio.
+  - `/contenido/documentos`: repositorio con chips (borrador de trabajo, oficial), búsqueda y filtros por categoría, visibilidad y fechas. `/contenido/documentos/nuevo`: PDF con progreso y ficha (título, descripción, categoría, estado, visible en el portal). `/contenido/documentos/[id]`: ficha editable (oficializar queda en la bitácora como `DOCUMENTO_OFICIALIZADO`), «Nueva versión» con PDF, nota y salto menor (1.1 → 1.2) o mayor (1.2 → 2.0), e historial como una línea donde la vigente es la estación llena; cada versión guarda su PDF (el portal solo muestra el vigente).
+  - **Capa de alcaldía (2.8, 2.11, 2.12 y 2.13, rama `feat/alcaldia-revisor`):** servicio en `src/lib/plataforma/alcaldia.ts` (con pruebas), acciones en `acciones-alcaldia.ts`, datos de ejemplo en `fixtures-alcaldia.ts` y pantallas en `src/components/alcaldia/`. Cada cambio queda en la bitácora.
+    - `/equipo`: miembros con estado (activo, invitación pendiente, desactivado), filtros por rol y estado, búsqueda; «Invitar» con correo y roles Operador y/o Revisor (a una cuenta existente solo se le agrega la membresía); «Gestionar» cambia roles, activa o desactiva y reenvía la invitación. Nadie se edita a sí mismo ni a un administrador. En la demo el enlace de la invitación se muestra en el diálogo.
+    - `/ciudadanos`: tabla con cédula o RIF enmascarados, filtros por tipo, perfil y membresía, búsqueda por nombre, correo o 4+ dígitos de la cédula, CSV (`/ciudadanos/exportar`, también enmascarado). `/ciudadanos/[id]`: perfil completo, documentos, sus aportes y suspender o reactivar la membresía con motivo de 10+ caracteres (el Revisor ve, pero no suspende).
+    - `/configuracion?pestana=marca|catalogos|fases`: marca (colores con chequeo AA, lema, logo PNG/JPG/SVG de 1 MB, vista previa); seis catálogos (agregar, renombrar sin repetir ignorando tildes, activar o desactivar); fases del proceso (agregar, editar con fechas, reordenar, marcar la actual) con vista previa del termómetro. **El portal todavía no lee estos catálogos ni fases:** se conectan con la API real.
+    - `/bitacora`: eventos de la alcaldía con filtros por actor, acción, entidad y fechas, detalle `?evento=` con las diferencias antes y después, «Verificar integridad» de la cadena de hashes y CSV (`/bitacora/exportar`).
+  - **Alcaldías (2.7, versión demo):** `/plataforma/alcaldias` con tabla, filtros, «Crear alcaldía» (nombre, sigla, correo del administrador; queda en onboarding con catálogos y fases de partida e invita al administrador) y ficha en `?ver=<id>` (sin ruta dinámica, por el 500 de Netlify) con conteos, administradores, suspender o reactivar y botones para entrar a operar directo en su tablero, noticias, participaciones o ciudadanos (`elegirAlcaldiaAccion` acepta `destino`). Servicio en `src/lib/plataforma/plataforma.ts`. **Flujo de demo con un solo usuario:** `superadmin@plataforma.test`.
+  - Siguen anunciando su bloque: representantes y bitácora global de la plataforma.
+- **Pruebas:**
+  - Vitest: permisos, bloqueo, invitaciones, contraseñas, alcaldía en uso, cadena de la bitácora y contraste de marca.
+  - Playwright (`pnpm test:e2e`, puerto 3001) en escritorio, tablet y 375 px: destinos por rol, 403 por rol, historial, bloqueo, invitación, cambio de marca, asistente completo, axe WCAG 2.1 AA (incluidos los pasos del asistente y la 404) y responsive sin desborde de 320 a 1920 px.
+
+**Patrón de cada pantalla (backlog 2):**
+
+- estados de carga, vacío y error;
+- toasts;
+- confirmación modal antes de acciones irreversibles;
+- validación con zod antes de enviar;
+- errores de la API traducidos por código a mensajes en español.
+
+**Orden sugerido, una rama por bloque:**
+
+| Rama                                      | Backlog    | Contenido                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feat/fundaciones-admin` ✔                | 2.1–2.5    | Hecho con API simulada (ver arriba). Quedan para cuando exista la API: BFF con renovación del token, cliente orval y TanStack Query. Por ahora los avisos van en línea (`role="status"`/`alert`); toasts y DataTable completos llegan con las pantallas que los necesitan                                                                                                                                  |
+| ~~`feat/fundaciones-bff`~~                | 2.1, 2.2   | BFF (route handlers proxy, cookie httpOnly, renovación del token), cliente tipado (orval) más TanStack Query, componentes base (DataTable con filtros en la URL y búsqueda con 300 ms de espera, FormField, FileUpload, ConfirmDialog, StatusBadge, EmptyState, PageHeader), toasts (sonner), middleware de rutas (sesión, onboarding, 403), tema dinámico por alcaldía                                    |
+| ~~`feat/acceso-admin`~~ (incluido arriba) | 2.3, 2.4   | Login con bloqueo temporal o cuenta desactivada; aceptar invitación (token, cédula V/E, contraseña); olvidé y restablecer                                                                                                                                                                                                                                                                                  |
+| ~~`feat/layout-admin`~~ (incluido arriba) | 2.5        | Sidebar según permisos, selector de alcaldía con «Operando en: X», menú de usuario, 403/404/500                                                                                                                                                                                                                                                                                                            |
+| `feat/onboarding`                         | 2.6        | Asistente: logo con recorte → colores con chequeo de contraste → lema → resumen                                                                                                                                                                                                                                                                                                                            |
+| `feat/contenido-operador`                 | 2.9        | Noticias (Tiptap, portada con recorte, autoguardado a los 30 s, programar, publicar, despublicar), banners (orden por arrastre, vigencia), repositorio documental (subir PDF con progreso, versiones). **Los 5 formatos de noticia del portal** (texto, imagen, galería, documento, video de archivo, YouTube o Instagram) y los campos de la v4: puntos de análisis, botón opcional, destacada en portada |
+| `feat/participaciones-revisor`            | 2.10       | Bandeja (conteos por estado como filtros, filtros, búsqueda por folio, autor o cédula), detalle en dos columnas (aporte con fotos, video y soporte, y la identidad del autor con sus documentos), control de identidad, transiciones válidas, rechazo con motivo de catálogo y texto de al menos 20 caracteres, publicar o despublicar (solo con nombre autorizado), notas internas, CSV                   |
+| `feat/ciudadanos`                         | 2.11       | Tabla (cédula enmascarada), detalle con documentos por URL firmada, suspender o reactivar la membresía, CSV                                                                                                                                                                                                                                                                                                |
+| `feat/configuracion`                      | 2.12       | Branding, catálogos (parroquias, categorías técnicas, de noticias y de documentos, ocupaciones, tipos de organización), editor de fases y fase actual con vista previa del termómetro                                                                                                                                                                                                                      |
+| `feat/plataforma`                         | 2.7, 2.8   | Alcaldías (crear, suspender, portales con `client_secret` mostrado una vez, rotar), representantes, entidades, usuarios internos (invitar con roles Operador o Revisor)                                                                                                                                                                                                                                    |
+| `feat/bitacora-tablero`                   | 2.13, 2.14 | Bitácora con diferencias antes y después, verificar integridad, CSV; tablero de indicadores                                                                                                                                                                                                                                                                                                                |
+| `chore/calidad-admin`                     | 2.15       | Responsive para tablet, accesibilidad, E2E con Playwright                                                                                                                                                                                                                                                                                                                                                  |
+
+**Reglas compartidas con el portal** (el admin debe respetarlas exactamente):
+
+- **Estados de participación:** PENDIENTE → EN_REVISION → APROBADA o RECHAZADA; APROBADA → PUBLICADA solo si `mostrarNombre` es true. Rechazar exige un motivo.
+- **Verificación de perfil (decisión del 18-10-2026):** automática al completar el perfil. El Revisor **no** verifica perfiles: evalúa cada opinión o propuesta y, al hacerlo, ve los documentos de identidad del autor para cotejarlos («Identidad confirmada / No se puede confirmar»); si no lo identifican, rechaza con IDENTIDAD_NO_ACREDITADA. El portal todavía muestra los estados antiguos (pendiente de ajustar en `feat/verificacion-automatica`).
+- **Catálogos y estructuras:** los catálogos están en `portal-iribarren/src/lib/api/types.ts` (CATEGORIAS de noticias v4, PARROQUIAS, CATEGORIAS_TECNICAS, OCUPACIONES, CONDICIONES_REPRESENTANTE, TIPOS_ENTIDAD, ESTADOS_*). La forma de `Participacion`, `Cuenta` y `Perfil` está en `portal-iribarren/src/lib/auth/servicio.ts`.
+- **Diseño:** reutilizar los tokens del portal (`globals.css`) y adaptar el `Selector`, `Dialogo` y `CampoArchivo` del portal en lugar de crearlos de cero. El backlog pide shadcn/ui: si se usa, que tome estos tokens.
+- **Sin API:** simularla igual que en el portal, con un servicio puro en memoria y sus pruebas más fixtures, para construir las pantallas sin bloquearse.
+
 ## 6.1 Demo en Netlify: sesión firmada y modo demo (19-10-2026)
 
 - **Problema:** en Netlify cada petición puede caer en otra instancia de la función, y la sesión guardada en memoria se perdía (parpadeos y vuelta al inicio de sesión).
@@ -269,6 +398,37 @@ Rama aparte para probar contra la API sin tocar el despliegue de Netlify (que si
 - **Inicio:** apartado «La gente opina» (`src/components/home/la-gente-opina.tsx`) con pestañas Más vistas · Más reacciones. Datos y cifras de partida de ejemplo.
 - **Para el backend:** `POST /portal/participations/:folio/views`, `PUT/DELETE /portal/participations/:folio/reaction`, totales en el listado público y transición de opiniones PENDIENTE ↔ PUBLICADA en el Revisor.
 - **Logo IUS:** isotipo «Catastral Verde» (bloque verde) en `public/brand/` con los mismos nombres; favicon e íconos regenerados.
+
+## 6.5 Fase 7: Marco legal administrable y alineación entre portal y admin (26-10-2026)
+
+Detalle para backend en `Pdull/FASE-7-ANEXO-marco-legal-y-alineacion.md`, que complementa `FASE-7-API-y-alineacion.md` y el backlog de refactorización.
+
+- **D1 cerrada.** El Revisor puede verificar o rechazar una propuesta formal directo desde Pendiente, y rechazar una verificada. Los dos frontends usan la misma tabla de transiciones.
+- **Marco legal de Conoce el PDUL, administrable** (D11, nuevo):
+  - En el admin, en Contenido → Marco legal (`/contenido/marco-legal`, permiso `contenido.editar`), se pueden guardar todos los ítems que se quiera.
+  - Solo los activos (10 como máximo) se ven en el portal, en el orden manual que fija el Operador.
+  - Cada ítem tiene título, descripción y un botón opcional a una noticia publicada o a un documento público. El texto del botón es editable, con valor por defecto: «Leer la noticia» o «Ver el documento».
+  - Si el destino se despublica, el portal oculta el botón y el admin muestra un aviso.
+  - El portal lo lee con `getMarcoLegal()`, con la forma de `GET /portal/legal-framework`.
+- **Vista previa antes de publicar en el admin:**
+  - noticias: ya existía;
+  - proceso: el termómetro, ya existía;
+  - **Inicio y Tarjeta de transiciones**: el mensaje del alcalde y la tarjeta con sus diapositivas, que se puede recorrer como en el portal;
+  - **documentos**: la fila del repositorio, en vivo, al subir o editar la ficha;
+  - **Marco legal**: el ítem, en vivo, mientras se edita, y la sección completa en un diálogo.
+- **«Recibida»:** el admin muestra así las opiniones pendientes, como el portal.
+- **Portal sin membresías:**
+  - se quitaron `/unirme`, «Abandonar este portal», el aviso de abandono en el ingreso y el campo `membresias` de la cuenta simulada;
+  - la solicitud de baja se mantiene;
+  - la traducción de `MEMBERSHIP_*` en `src/lib/plataforma-api/mapeo.ts` sigue mientras la API no los retire.
+- **Inicio (D12): solo dos tarjetas editables.**
+  - El mensaje del alcalde: una noticia de texto, que el portal lee con `getHome()` (forma de `GET /portal/home`). Mientras no haya una elegida, muestra el texto provisional (D10 sigue abierta).
+  - La tarjeta con transiciones bajo el termómetro: **tiene sus propias diapositivas** (título, texto, botón, tono o foto, orden y vigencia), no noticias elegidas.
+    - En el admin se editan en Contenido → Tarjeta de transiciones (`/contenido/banners`), con la vista previa idéntica a la del portal.
+    - El portal muestra las 6 primeras vigentes (`getBanners()`, forma de `GET /portal/banners`).
+  - Se descartó la idea de «anuncios con noticias».
+- **Ramas:** `portal-iribarren` en `feat/alineacion-fase-7` (sale de `main`); `plataforma-admin` en `feat/marco-legal-y-alineacion` (sale de `feat/admin-iribarren`, que aún no está en `main`).
+- **Todavía sin API:** cada repo tiene sus datos simulados, así que lo que se guarda en el admin no se ve en el portal hasta conectar los dos a la API.
 
 ## 7. Noticias reales (Propuesta v4), ya cargadas
 

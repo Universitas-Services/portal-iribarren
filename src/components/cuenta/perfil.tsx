@@ -1,6 +1,6 @@
 "use client";
 
-import { DoorOpen, UserX } from "lucide-react";
+import { UserX } from "lucide-react";
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
@@ -9,7 +9,6 @@ import {
   OCUPACIONES,
 } from "@/lib/api/types";
 import {
-  abandonarAccion,
   cargarDocumentoAccion,
   guardarAcreditacionAccion,
   guardarDatosNaturalAccion,
@@ -307,18 +306,14 @@ function BotonConfirmar({ children }: { children: string }) {
 const claseSecundario =
   "min-h-12 flex-1 rounded-xl border-2 border-linea px-5 font-display font-bold text-noche hover:border-noche/40";
 
-/** Abandonar este portal o pedir la baja de la cuenta, con confirmación. */
+/** Pedir la baja de la cuenta, con confirmación. */
 export function ZonaCuenta({ bajaSolicitada }: { bajaSolicitada?: string }) {
-  const [dialogo, setDialogo] = useState<"abandonar" | "baja" | null>(null);
+  const [dialogo, setDialogo] = useState<"baja" | null>(null);
   const cerrar = () => setDialogo(null);
   const claseOpcion =
     "flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left font-semibold text-noche hover:bg-superficie";
   return (
     <div className="space-y-1">
-      <button type="button" onClick={() => setDialogo("abandonar")} className={claseOpcion}>
-        <DoorOpen size={18} aria-hidden="true" className="shrink-0 text-rojo" />
-        Abandonar este portal
-      </button>
       {bajaSolicitada ? (
         <p className="flex min-h-12 items-center gap-3 px-3 text-sm text-tinta/80">
           <UserX size={18} aria-hidden="true" className="shrink-0" />
@@ -332,31 +327,13 @@ export function ZonaCuenta({ bajaSolicitada }: { bajaSolicitada?: string }) {
       )}
 
       <Dialogo
-        abierto={dialogo === "abandonar"}
-        onCerrar={cerrar}
-        titulo="¿Abandonar el portal de Iribarren?"
-      >
-        <p className="mt-3 leading-relaxed">
-          Dejarás de participar en el PDUL de Iribarren y se cerrará tu sesión. Tu cuenta sigue
-          activa en los portales de otras alcaldías y los aportes que enviaste se conservan con su
-          folio. Puedes volver a unirte cuando inicies sesión.
-        </p>
-        <form action={abandonarAccion} className="mt-6 flex flex-col gap-3 sm:flex-row-reverse">
-          <BotonConfirmar>Sí, abandonar</BotonConfirmar>
-          <button type="button" onClick={cerrar} className={claseSecundario} autoFocus>
-            Cancelar
-          </button>
-        </form>
-      </Dialogo>
-
-      <Dialogo
         abierto={dialogo === "baja"}
         onCerrar={cerrar}
         titulo="¿Solicitar la baja de tu cuenta?"
       >
         <p className="mt-3 leading-relaxed">
           La alcaldía revisará la solicitud y te escribirá al correo de la cuenta. Al darse de baja
-          ya no podrás iniciar sesión en ningún portal. Los aportes que enviaste se conservan con su
+          ya no podrás iniciar sesión en el portal. Los aportes que enviaste se conservan con su
           folio.
         </p>
         <form action={solicitarBajaAccion} className="mt-6 flex flex-col gap-3 sm:flex-row-reverse">
