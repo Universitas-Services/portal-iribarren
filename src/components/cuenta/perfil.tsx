@@ -1,6 +1,6 @@
 "use client";
 
-import { UserX } from "lucide-react";
+import { MonitorSmartphone, UserX } from "lucide-react";
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
@@ -10,6 +10,7 @@ import {
 } from "@/lib/api/types";
 import {
   cargarDocumentoAccion,
+  cerrarTodasLasSesionesAccion,
   guardarAcreditacionAccion,
   guardarDatosNaturalAccion,
   guardarNombresAccion,
@@ -306,14 +307,18 @@ function BotonConfirmar({ children }: { children: string }) {
 const claseSecundario =
   "min-h-12 flex-1 rounded-xl border-2 border-linea px-5 font-display font-bold text-noche hover:border-noche/40";
 
-/** Pedir la baja de la cuenta, con confirmación. */
+/** Cerrar sesión en todos los dispositivos y pedir la baja de la cuenta, con confirmación. */
 export function ZonaCuenta({ bajaSolicitada }: { bajaSolicitada?: string }) {
-  const [dialogo, setDialogo] = useState<"baja" | null>(null);
+  const [dialogo, setDialogo] = useState<"sesiones" | "baja" | null>(null);
   const cerrar = () => setDialogo(null);
   const claseOpcion =
     "flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left font-semibold text-noche hover:bg-superficie";
   return (
     <div className="space-y-1">
+      <button type="button" onClick={() => setDialogo("sesiones")} className={claseOpcion}>
+        <MonitorSmartphone size={18} aria-hidden="true" className="shrink-0 text-rojo" />
+        Cerrar sesión en todos los dispositivos
+      </button>
       {bajaSolicitada ? (
         <p className="flex min-h-12 items-center gap-3 px-3 text-sm text-tinta/80">
           <UserX size={18} aria-hidden="true" className="shrink-0" />
@@ -325,6 +330,27 @@ export function ZonaCuenta({ bajaSolicitada }: { bajaSolicitada?: string }) {
           Solicitar la baja de la cuenta
         </button>
       )}
+
+      <Dialogo
+        abierto={dialogo === "sesiones"}
+        onCerrar={cerrar}
+        titulo="¿Cerrar sesión en todos los dispositivos?"
+      >
+        <p className="mt-3 leading-relaxed">
+          Se cerrará tu sesión en este y en todos tus dispositivos. Úsalo si entraste desde un
+          equipo ajeno o crees que alguien más usa tu cuenta. Después tendrás que volver a iniciar
+          sesión.
+        </p>
+        <form
+          action={cerrarTodasLasSesionesAccion}
+          className="mt-6 flex flex-col gap-3 sm:flex-row-reverse"
+        >
+          <BotonConfirmar>Sí, cerrar todas</BotonConfirmar>
+          <button type="button" onClick={cerrar} className={claseSecundario} autoFocus>
+            Cancelar
+          </button>
+        </form>
+      </Dialogo>
 
       <Dialogo
         abierto={dialogo === "baja"}

@@ -3,7 +3,9 @@ import { RedirectType, redirect } from "next/navigation";
 import {
   ErrorApi,
   pedirApi,
+  type EnlaceNeutroApi,
   type ItemCatalogo,
+  type RegistroApi,
   type SesionApi,
 } from "@/lib/plataforma-api/cliente";
 import {
@@ -17,7 +19,7 @@ import {
 } from "@/lib/plataforma-api/mapeo";
 import type { EstadoFormulario } from "./acciones";
 import { perfilCompleto, type TipoDocumento } from "./servicio";
-import { almacen } from "./sesion";
+import { almacen, guardarAviso } from "./sesion";
 import {
   borrarTokens,
   guardarTokens,
@@ -38,10 +40,6 @@ const error = (texto: string, valores?: Record<string, string>): EstadoFormulari
   valores,
   mensaje: { tipo: "error", texto },
 });
-
-/** Lo que la API aún no ofrece (verificación de correo, recuperación, baja, etc.). */
-export const NO_DISPONIBLE =
-  "Esta opción todavía no está disponible. Si la necesitas, escribe a soporte.";
 
 /* ---------- Ingreso ---------- */
 
@@ -86,6 +84,20 @@ export async function cerrarSesionApi() {
   await borrarTokens();
 }
 
+/**
+ * «Cerrar sesión en todos los dispositivos»: la API revoca todos los refresh tokens de la cuenta,
+ * también el de esta sesión. El access token sigue valiendo hasta que vence, así que la cookie se
+ * borra siempre, aunque la llamada falle.
+ */
+export async function cerrarTodasLasSesionesApi() {
+  const token = await tokenOIngresar("/mi-cuenta/seguridad");
+  try {
+    await pedirApi("/auth/sessions/revoke-all", { metodo: "POST", token });
+  } finally {
+    await borrarTokens();
+  }
+}
+
 /* ---------- Registro ---------- */
 
 /** Valores activos de un catálogo de la alcaldía (organization-types, occupations…). */
@@ -95,7 +107,6 @@ async function catalogo(tipo: string) {
 }
 
 const CAMPO_CONFLICTO: Record<string, string> = {
-  email: "Ese correo ya tiene una cuenta. Inicia sesión con él.",
   cedula: "Esta cédula ya está registrada con otro correo. Si es tuya, escribe a soporte.",
   rif: "Este RIF ya está registrado con otro correo. Si es de tu organización, escribe a soporte.",
 };
@@ -108,23 +119,27 @@ export async function registrarApi(
   contrasena: string,
   valores: Record<string, string>,
 ): Promise<EstadoFormulario> {
+  let r: RegistroApi;
   try {
     const { tipo, ...datos } = d;
     const extra =
       tipo === "ORGANIZACION"
         ? { tipoEntidad: valorDeCatalogo(await catalogo("organization-types"), d.tipoEntidad) }
         : {};
-    await pedirApi(`/portal/auth/register/${tipo === "NATURAL" ? "natural" : "organizacion"}`, {
-      cuerpo: {
-        ...datos,
-        ...extra,
-        email: correo,
-        password: contrasena,
-        aceptaTerminos: true,
-        aceptaPoliticaDatos: true,
+    r = await pedirApi<RegistroApi>(
+      `/portal/auth/register/${tipo === "NATURAL" ? "natural" : "organizacion"}`,
+      {
+        cuerpo: {
+          ...datos,
+          ...extra,
+          email: correo,
+          password: contrasena,
+          aceptaTerminos: true,
+          aceptaPoliticaDatos: true,
+        },
+        portal: true,
       },
-      portal: true,
-    });
+    );
   } catch (e) {
     if (e instanceof ErrorApi && e.code === "IDENTITY_CONFLICT") {
       const campo = campoEnConflicto(e) ?? "";
@@ -132,15 +147,91 @@ export async function registrarApi(
     }
     return error(mensajeDeError(e), valores);
   }
-  // La API no devuelve tokens al registrar: se inicia sesión con lo recién creado. Si exige
-  // verificar el correo, se muestra el aviso de siempre.
+  // La API responde igual aunque el correo ya exista (al dueño le llega «ya tienes una cuenta»).
+  // Con la verificación exigida, «Revisa tu correo» y «Reenviar» leen el correo del aviso.
+  if (r.verificacionPendiente) {
+    await guardarAviso({ correo, enlaceDesarrollo: r.enlaceDesarrollo });
+    return ir("/registro/revisa-tu-correo");
+  }
+  // Sin verificación exigida (algún entorno de pruebas): se entra directo.
   try {
     await login(correo, contrasena);
-  } catch (e) {
-    if (e instanceof ErrorApi && e.code === "EMAIL_NOT_VERIFIED") ir("/registro/revisa-tu-correo");
+  } catch {
     return ir("/ingresar");
   }
   return ir("/mi-cuenta");
+}
+
+/** Reenvía el enlace de verificación. Neutro: no dice si la cuenta existe. */
+export async function reenviarApi(correo: string): Promise<EstadoFormulario> {
+  let r: EnlaceNeutroApi;
+  try {
+    r = await pedirApi<EnlaceNeutroApi>("/portal/auth/resend", {
+      cuerpo: { email: correo },
+      portal: true,
+    });
+  } catch (e) {
+    return error(mensajeDeError(e));
+  }
+  await guardarAviso({ correo, enlaceDesarrollo: r?.enlaceDesarrollo });
+  return {
+    mensaje: {
+      tipo: "info",
+      texto: "Si la cuenta existe y aún no está verificada, te enviamos un enlace nuevo.",
+    },
+    enlaceDesarrollo: r?.enlaceDesarrollo,
+  };
+}
+
+/* ---------- Recuperar y restablecer ---------- */
+
+/** «Olvidé mi contraseña». Neutro: no dice si la cuenta existe. */
+export async function recuperarApi(correo: string): Promise<EstadoFormulario> {
+  let r: EnlaceNeutroApi;
+  try {
+    r = await pedirApi<EnlaceNeutroApi>("/portal/auth/forgot", {
+      cuerpo: { email: correo },
+      portal: true,
+    });
+  } catch (e) {
+    return error(mensajeDeError(e), { correo });
+  }
+  return {
+    valores: { correo },
+    mensaje: {
+      tipo: "exito",
+      texto:
+        "Si hay una cuenta con ese correo, te enviamos un enlace para crear una contraseña nueva. Vence en 1 hora.",
+    },
+    enlaceDesarrollo: r?.enlaceDesarrollo,
+  };
+}
+
+/** Contraseña nueva con el enlace del correo. La API cierra todas las sesiones de la cuenta. */
+export async function restablecerApi(token: string, contrasena: string): Promise<EstadoFormulario> {
+  try {
+    await pedirApi("/portal/auth/reset", {
+      cuerpo: { token, password: contrasena },
+      portal: true,
+    });
+  } catch (e) {
+    if (e instanceof ErrorApi && e.code === "INVALID_TOKEN") {
+      const estado = (e.details as { estado?: string } | undefined)?.estado;
+      const texto =
+        estado === "VENCIDO"
+          ? "El enlace venció. Pide uno nuevo desde «Olvidé mi contraseña»."
+          : estado === "USADO"
+            ? "Este enlace ya se usó. Si necesitas cambiar la contraseña otra vez, pide uno nuevo."
+            : "El enlace no es válido.";
+      return { mensaje: { tipo: "error", texto } };
+    }
+    if (e instanceof ErrorApi && e.code === "VALIDATION_ERROR" && Array.isArray(e.details))
+      return { errores: { contrasena: e.details.join(" ") } };
+    return error(mensajeDeError(e));
+  }
+  // También queda cerrada la sesión de este navegador, si había.
+  await borrarTokens();
+  return ir("/ingresar?aviso=contrasena");
 }
 
 /* ---------- Contraseña ---------- */
@@ -160,10 +251,12 @@ export async function cambiarContrasenaApi(
       }),
     );
   } catch (e) {
-    if (e instanceof ErrorApi && e.code === "INVALID_CREDENTIALS")
+    if (e instanceof ErrorApi && e.code === "INVALID_PASSWORD")
       return { errores: { contrasenaActual: "La contraseña actual no es correcta." } };
     if (e instanceof ErrorApi && e.code === "WEAK_PASSWORD")
       return { errores: { contrasena: e.message } };
+    if (e instanceof ErrorApi && e.code === "VALIDATION_ERROR" && Array.isArray(e.details))
+      return { errores: { contrasena: e.details.join(" ") } };
     return error(mensajeDeError(e));
   }
   return ir("/mi-cuenta/seguridad?guardado=contrasena");
@@ -182,6 +275,9 @@ async function trasGuardarApi(estabaCompleto: boolean): Promise<never> {
 }
 
 type DatosPerfil = {
+  /** Nombres y apellidos de la persona natural (los del representante van aparte). */
+  nombres?: string;
+  apellidos?: string;
   telefono?: string;
   ocupacion?: string;
   condicion?: Parameters<typeof condicionApi>[0];
@@ -195,6 +291,8 @@ type DatosPerfil = {
 /** PATCH /portal/me/profile con los nombres de campo de la API. */
 function cuerpoPerfil(d: DatosPerfil) {
   const cuerpo: Record<string, string> = {};
+  if (d.nombres) cuerpo.nombres = d.nombres;
+  if (d.apellidos) cuerpo.apellidos = d.apellidos;
   if (d.telefono) cuerpo.telefono = telefonoApi(d.telefono);
   if (d.ocupacion !== undefined) cuerpo.ocupacion = d.ocupacion;
   if (d.condicion) cuerpo.condicion = condicionApi(d.condicion);
@@ -233,4 +331,14 @@ export async function guardarPerfilApi(
     return error(mensajeDeError(e), valores);
   }
   return trasGuardarApi(estabaCompleto);
+}
+
+/* ---------- Baja ---------- */
+
+/** Solicitud de baja (idempotente). La persona puede seguir entrando hasta que la atiendan. */
+export async function solicitarBajaApi(): Promise<never> {
+  const token = await tokenOIngresar("/mi-cuenta/seguridad");
+  await pedirApi("/portal/me/deletion-request", { metodo: "POST", token, portal: true });
+  await sincronizarCuentaApi(almacen());
+  return ir("/mi-cuenta/seguridad?guardado=baja");
 }

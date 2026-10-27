@@ -49,6 +49,15 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
           Tu contraseña se cambió. Inicia sesión con la nueva.
         </p>
       )}
+      {sp.aviso === "sesiones" && (
+        <p
+          role="status"
+          className="mb-6 flex items-start gap-3 rounded-2xl bg-exito/10 p-4 text-sm text-noche ring-1 ring-exito/30 ring-inset"
+        >
+          <CircleCheck size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-exito-oscuro" />
+          Cerramos tu sesión en todos tus dispositivos. Vuelve a ingresar.
+        </p>
+      )}
       <FormIngreso volver={volver} />
       <p className="mt-8 border-t border-linea pt-6 text-center text-sm text-tinta">
         ¿No tienes cuenta?{" "}

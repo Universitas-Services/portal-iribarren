@@ -7,6 +7,7 @@ import { FormRestablecer } from "@/components/cuenta/formularios";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
 import { estadoRestablecer } from "@/lib/auth/servicio";
 import { almacen, soloInvitados } from "@/lib/auth/sesion";
+import { pedirApi, usaApi, type EstadoEnlace } from "@/lib/plataforma-api/cliente";
 
 export const metadata: Metadata = { title: "Nueva contraseña", robots: { index: false } };
 
@@ -25,6 +26,17 @@ export default function RestablecerPage({ searchParams }: { searchParams: Search
   );
 }
 
+/** Estado del enlace sin gastarlo: el formulario solo se muestra si sirve. */
+async function estadoDelEnlace(t: string): Promise<EstadoEnlace> {
+  if (!t) return "INVALIDO";
+  if (!usaApi()) return estadoRestablecer(almacen(), t);
+  const r = await pedirApi<{ estado: EstadoEnlace }>("/portal/auth/reset/estado", {
+    cuerpo: { token: t },
+    portal: true,
+  }).catch(() => ({ estado: "INVALIDO" as const }));
+  return r.estado;
+}
+
 async function Contenido({ searchParams }: { searchParams: SearchParams }) {
   // El estado del enlace depende de la hora actual: se calcula siempre al pedir la página.
   await connection();
@@ -32,7 +44,7 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
   await soloInvitados("/mi-cuenta/seguridad");
   const token = (await searchParams).token;
   const t = typeof token === "string" ? token : "";
-  const estado = t ? estadoRestablecer(almacen(), t) : "INVALIDO";
+  const estado = await estadoDelEnlace(t);
 
   if (estado === "OK") return <FormRestablecer token={t} />;
 

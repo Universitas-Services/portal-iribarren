@@ -5,6 +5,8 @@
  * No importa `server-only` porque Proxy también lo carga.
  */
 
+import { headers as cabecerasEntrantes } from "next/headers";
+
 /** URL base de la API (…/api/v1), sin la barra final, o undefined si no está configurada. */
 export const urlApi = () => process.env.API_URL?.replace(/\/+$/, "") || undefined;
 
@@ -26,7 +28,7 @@ export class ErrorApi extends Error {
 }
 
 type Opciones = {
-  metodo?: "GET" | "POST" | "PATCH";
+  metodo?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
   /** Objeto que va como JSON, o FormData para subir archivos. */
   cuerpo?: unknown;
   /** Access token de la sesión. */
@@ -44,8 +46,13 @@ export async function pedirApi<T>(ruta: string, o: Opciones = {}): Promise<T> {
   if (o.portal) {
     headers.set("x-client-id", process.env.PORTAL_CLIENT_ID || "portal-iribarren");
     // Solo un BFF puede enviar el secreto del portal; si no está definido, se omite.
-    if (process.env.PORTAL_CLIENT_SECRET)
+    if (process.env.PORTAL_CLIENT_SECRET) {
       headers.set("x-client-secret", process.env.PORTAL_CLIENT_SECRET);
+      // La API limita por IP del ciudadano y solo acepta x-client-ip junto con el secreto; sin
+      // ella vería la IP del servidor (Netlify), compartida por todos.
+      const ip = await ipDelCiudadano();
+      if (ip) headers.set("x-client-ip", ip);
+    }
   }
   let body: BodyInit | undefined;
   if (o.cuerpo instanceof FormData) body = o.cuerpo;
@@ -92,7 +99,36 @@ export async function pedirApi<T>(ruta: string, o: Opciones = {}): Promise<T> {
   return datos as T;
 }
 
+/** IP de quien hizo la petición al portal; undefined fuera de una petición (build). */
+async function ipDelCiudadano(): Promise<string | undefined> {
+  try {
+    const h = await cabecerasEntrantes();
+    // Netlify pone la IP real en x-nf-client-connection-ip; x-forwarded-for como respaldo.
+    return (
+      h.get("x-nf-client-connection-ip")?.trim() ||
+      h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      undefined
+    );
+  } catch {
+    return undefined;
+  }
+}
+
 /* ---------- Respuestas que usa el portal ---------- */
+
+export type EstadoEnlace = "OK" | "VENCIDO" | "USADO" | "INVALIDO";
+
+/** Respuesta del registro: la misma exista o no el correo. */
+export type RegistroApi = {
+  email: string;
+  verificacionPendiente: boolean;
+  message: string;
+  /** Solo con EXPONER_ENLACES_DESARROLLO en la API; nunca en producción. */
+  enlaceDesarrollo?: string;
+};
+
+/** Respuesta de resend y forgot: 204 sin cuerpo, o el enlace en desarrollo. */
+export type EnlaceNeutroApi = { enlaceDesarrollo?: string } | undefined;
 
 export type ResumenUsuarioApi = {
   id: string;
@@ -102,7 +138,13 @@ export type ResumenUsuarioApi = {
   tipoPerfil: "NATURAL" | "ORGANIZACION" | null;
   perfilEstado: "INCOMPLETO" | "COMPLETO";
   missing: string[];
-  membership: { tenantId: string; tenantNombre: string; status: string } | null;
+  /** «portal» si el login llevó x-client-id; «admin» si no. */
+  context: "portal" | "admin";
+  /** Vacíos para la ciudadanía. */
+  roles: ("SUPER_ADMIN" | "ADMIN" | "OPERADOR" | "REVISOR")[];
+  permisos: string[];
+  cuenta: { estado: "ACTIVA" | "SUSPENDIDA"; desde: string | null; motivo: string | null };
+  alcaldia: { codigo: string; nombre: string };
 };
 
 export type SesionApi = {
@@ -131,6 +173,11 @@ export type PerfilApi = {
   ocupacion: string | null;
   perfilEstado: "INCOMPLETO" | "COMPLETO";
   missing: string[];
+  /** Decisión del Revisor sobre la identidad; null mientras no la hay. */
+  verificacion: "VERIFICADO" | "RECHAZADO" | null;
+  verificacionMotivo: string | null;
+  /** Fecha ISO de la solicitud de baja, o null. */
+  bajaSolicitada: string | null;
   identityDocuments: DocumentoApi[];
   organization: {
     id: string;

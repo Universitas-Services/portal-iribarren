@@ -379,7 +379,7 @@ Rama aparte para probar contra la API sin tocar el despliegue de Netlify (que si
 - **Conectado:** ingreso (`POST /auth/login` con `x-client-id`), cierre (`/auth/logout`), cambio de contraseña (`PATCH /auth/password`), registro natural y de organización (luego inicia sesión, porque la API no devuelve tokens), perfil (`GET`/`PATCH /portal/me/profile`), documentos (`POST /portal/me/documents`) y el catálogo `organization-types` (el valor elegido se ajusta a mayúsculas del catálogo).
 - **Cómo encaja:** `src/lib/auth/sesion-api.ts` lee el perfil de la API y lo copia en el almacén del portal con el mismo id (`cuentaDePerfil` en `src/lib/plataforma-api/mapeo.ts`), así «Mi cuenta», los permisos y las participaciones (todavía simuladas) no cambian. Las Server Actions llaman a `src/lib/auth/acciones-api.ts` cuando `usaApi()`.
 - **Traducciones:** documentos IDENTIDAD→`CEDULA`, ENTIDAD→`ACREDITACION` (acta o registro), REPRESENTACION→`PRUEBA_REPRESENTACION`; condición y acreditación a sus enums; teléfono a `0414-1234567`; errores `{code, message, details}` a mensajes en `mensajeDeError`.
-- **Sin endpoint todavía** (muestran «todavía no está disponible»): verificar o reenviar correo, recuperar y restablecer la contraseña, unirse desde otro portal, abandonar el portal, solicitar la baja y corregir nombres de una persona natural (la API no lo permite). Participaciones, noticias, documentos públicos y propuestas siguen simulados.
+- **Sin endpoint todavía:** participaciones, noticias, documentos públicos y propuestas siguen simulados. Verificar y reenviar el correo, recuperar y restablecer la contraseña, la baja y los nombres de la persona natural ya están conectados (sección 6.6, R4).
 - **Probado contra Cloud Run** con cuentas de prueba `prueba.bff.*@correo-prueba.com` y `org.bff.*@correo-prueba.com` (quedan en la base de desarrollo).
 
 ## 6.3 Campaña «Barquisimeto suena en ti», reacciones y seguimiento (22-10-2026, rama `feat/api-auth`)
@@ -429,6 +429,29 @@ Detalle para backend en `Pdull/FASE-7-ANEXO-marco-legal-y-alineacion.md`, que co
   - Se descartó la idea de «anuncios con noticias».
 - **Ramas:** `portal-iribarren` en `feat/alineacion-fase-7` (sale de `main`); `plataforma-admin` en `feat/marco-legal-y-alineacion` (sale de `feat/admin-iribarren`, que aún no está en `main`).
 - **Todavía sin API:** cada repo tiene sus datos simulados, así que lo que se guarda en el admin no se ve en el portal hasta conectar los dos a la API.
+
+## 6.6 R2, R4 y R5a de plataforma-api: autenticación, cuentas con correo real e IP del ciudadano (26 y 27-10-2026, rama `feat/api-r2-autenticacion`)
+
+Con la API en la rama `dev` (R2, guía `FRONTEND_R2_AUTENTICACION.md` del backend):
+
+- **Contraseña actual incorrecta** en `PATCH /auth/password`: ahora `401 INVALID_PASSWORD` (antes `INVALID_CREDENTIALS`, que queda solo para el login). `cambiarContrasenaApi` lo pone bajo el campo «Contraseña actual»; `VALIDATION_ERROR` va bajo «Contraseña nueva».
+- **Errores retirados por la API:** `MEMBERSHIP_REQUIRED`, `MEMBERSHIP_SUSPENDED` y `TENANT_SUSPENDED` salen de `mensajeDeError`. Una cuenta suspendida llega como `403 ACCOUNT_DISABLED`.
+- **`user` del login, del refresh y de `GET /auth/me`:** sin `membership`; trae `context`, `roles`, `permisos`, `cuenta {estado, desde, motivo}` y `alcaldia {codigo, nombre}` (`ResumenUsuarioApi` en `cliente.ts`). El portal solo usa `perfilEstado`.
+- **Cerrar sesión en todos los dispositivos** (Mi cuenta → Seguridad): `POST /auth/sessions/revoke-all` → `204`. La API revoca todos los refresh tokens, también el de esta sesión; el portal borra su cookie siempre y lleva a `/ingresar?aviso=sesiones`. En modo simulado, `cerrarTodasLasSesiones` hace lo mismo con el almacén.
+- `POST /auth/logout` responde `204` sin cuerpo; `pedirApi` ya lo admitía. `pedirApi` acepta además `PUT` y `DELETE` para los módulos siguientes (orden del Marco legal, borrados).
+- **R4, cuentas con correo real (urgente en producción):** la API envía los correos (Resend, «PDUL YA Iribarren») y exige verificar el correo para entrar. Conectados:
+  - `/verificar` → `POST /portal/auth/verify` (`{estado, email?}`; el correo solo con `VENCIDO`, para «pedir otro enlace»);
+  - el registro → `{verificacionPendiente}`: guarda el aviso y va a «Revisa tu correo». Responde igual aunque el correo exista, así que `IDENTITY_CONFLICT` ya solo llega por cédula o RIF;
+  - reenviar (`/resend`) y olvidé (`/forgot`), neutros con `204`;
+  - `/restablecer` consulta `POST /portal/auth/reset/estado` sin gastar el enlace, y `POST /portal/auth/reset` cierra todas las sesiones (`INVALID_TOKEN` con `details.estado`);
+  - baja → `POST /portal/me/deletion-request` (idempotente; se sigue entrando);
+  - nombres de la persona natural en `PATCH /portal/me/profile`;
+  - el perfil trae `verificacion` (`RECHAZADO` enciende el aviso rojo de «Mi cuenta»), `verificacionMotivo` y `bajaSolicitada`.
+  - En local, con `EXPONER_ENLACES_DESARROLLO=true` y `PORTAL_URL` en la API, las respuestas traen `enlaceDesarrollo` y `AvisoDesarrollo` lo muestra.
+- **R5a, IP del ciudadano:** la API limita login, registro, verificar, reenviar, olvidé y restablecer (`429 TOO_MANY_REQUESTS`, ya traducido). `pedirApi` reenvía `x-client-ip` (de `x-nf-client-connection-ip` o `x-forwarded-for`) **solo junto con `x-client-secret`**, que es la única forma en que la API la acepta.
+- **Netlify (pdulya.com):** `API_URL`, `PORTAL_CLIENT_ID=portal-iribarren` y `PORTAL_CLIENT_SECRET` = el secreto `pdul-iri-portal-secret` de GCP (pedirlo por canal privado). Sin el secreto, todos los ciudadanos comparten la IP de Netlify; uno equivocado hace que la API rechace todo `/portal/*` con `401 INVALID_PORTAL_CREDENTIALS`.
+- **Términos y política de datos:** la API guarda la versión aceptada (`2026-10-17`). Si cambia el texto de `/terminos` o `/politica-de-datos`, hay que avisar a backend para subir la versión.
+- **El admin no cambia todavía:** no se conecta a la API. Cuando lo haga, entra sin `x-client-id` (contexto `admin`) y `user.permisos` manda sobre `permisosDe`.
 
 ## 7. Noticias reales (Propuesta v4), ya cargadas
 

@@ -74,7 +74,8 @@ function documento(d: PerfilApi["identityDocuments"][number]): DocumentoCargado 
 
 /**
  * Cuenta del portal armada desde GET /portal/me/profile. La contraseña no viaja (hash vacío): la
- * valida la API. El estado sale de la API: COMPLETO equivale a VERIFICADO en el portal.
+ * valida la API. El estado sale de la API: RECHAZADO si el Revisor lo rechazó; si no, COMPLETO
+ * equivale a VERIFICADO en el portal. La baja solicitada también viene de la API.
  */
 export function cuentaDePerfil(p: PerfilApi): Cuenta {
   const documentos: Cuenta["documentos"] = {};
@@ -90,7 +91,12 @@ export function cuentaDePerfil(p: PerfilApi): Cuenta {
     verificado: true,
     documentos,
     estadoVerificacion:
-      p.perfilEstado === "COMPLETO" ? ("VERIFICADO" as const) : ("PENDIENTE" as const),
+      p.verificacion === "RECHAZADO"
+        ? ("RECHAZADO" as const)
+        : p.perfilEstado === "COMPLETO"
+          ? ("VERIFICADO" as const)
+          : ("PENDIENTE" as const),
+    bajaSolicitada: p.bajaSolicitada ?? undefined,
   };
   if (p.tipoPerfil === "ORGANIZACION") {
     return {
@@ -134,14 +140,14 @@ export function mensajeDeError(e: unknown): string {
       const min = s ? Math.max(1, Math.ceil(s / 60)) : 15;
       return `Tu cuenta quedó bloqueada por varios intentos fallidos. Intenta de nuevo en ${min} min.`;
     }
+    case "EMAIL_NOT_VERIFIED":
+      return "Aún no verificas tu correo. Abre el enlace que te enviamos o pide uno nuevo.";
+    case "INVALID_TOKEN":
+      return e.message || "El enlace no es válido.";
+    case "INVALID_PASSWORD":
+      return "La contraseña actual no es correcta.";
     case "ACCOUNT_DISABLED":
-      return "Tu cuenta está desactivada. Escribe a soporte si crees que es un error.";
-    case "MEMBERSHIP_REQUIRED":
-      return "Tu cuenta no está registrada en el portal de Iribarren.";
-    case "MEMBERSHIP_SUSPENDED":
-      return "Tu cuenta está suspendida en el portal de Iribarren.";
-    case "TENANT_SUSPENDED":
-      return "El portal no está disponible en este momento.";
+      return "Tu cuenta está suspendida. Escribe a soporte si crees que es un error.";
     case "TOO_MANY_REQUESTS":
       return "Hiciste demasiados intentos seguidos. Espera un momento y vuelve a intentarlo.";
     case "FILE_TOO_LARGE":

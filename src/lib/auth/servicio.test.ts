@@ -5,6 +5,7 @@ import {
   cambiarContrasena,
   cambiarEstadoParticipacion,
   cargarDocumento,
+  cerrarTodasLasSesiones,
   correoDeToken,
   cuentaDeSesion,
   enviarParticipacion,
@@ -159,6 +160,18 @@ describe("cuenta: contraseña y nombres", () => {
     expect(iniciarSesion(alm, "ana@ejemplo.com", CONTRASENA_DEMO).estado).toBe("CREDENCIALES");
     expect(iniciarSesion(alm, "ana@ejemplo.com", "Nueva#Clave2026").estado).toBe("OK");
     expect(cambiarContrasena(alm, undefined, "a", "b")).toBe("SIN_SESION");
+  });
+
+  it("cerrar sesión en todos los dispositivos cierra también la actual", () => {
+    const alm = almacenDemo();
+    const esta = sesionDe(alm, "ana@ejemplo.com");
+    const otra = sesionDe(alm, "ana@ejemplo.com");
+    const ajena = sesionDe(alm, "contacto@cardones.org");
+    expect(cerrarTodasLasSesiones(alm, esta)).toBe(true);
+    expect(cuentaDeSesion(alm, esta)).toBeUndefined();
+    expect(cuentaDeSesion(alm, otra)).toBeUndefined();
+    expect(cuentaDeSesion(alm, ajena)?.correo).toBe("contacto@cardones.org");
+    expect(cerrarTodasLasSesiones(alm, esta)).toBe(false);
   });
 
   it("corregir el nombre de un perfil verificado no lo saca de VERIFICADO", () => {
