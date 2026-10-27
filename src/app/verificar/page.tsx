@@ -7,6 +7,7 @@ import { FormReenviar } from "@/components/cuenta/formularios";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
 import { correoDeToken, verificarCorreo } from "@/lib/auth/servicio";
 import { almacen } from "@/lib/auth/sesion";
+import { pedirApi, usaApi, type EstadoEnlace } from "@/lib/plataforma-api/cliente";
 
 export const metadata: Metadata = { title: "Verificar correo", robots: { index: false } };
 
@@ -25,14 +26,27 @@ export default function VerificarPage({ searchParams }: { searchParams: SearchPa
   );
 }
 
+/** Gasta el enlace y dice cómo quedó; con VENCIDO, el correo para pedir otro. */
+async function estadoDeVerificacion(t: string): Promise<{ estado: EstadoEnlace; correo?: string }> {
+  if (!t) return { estado: "INVALIDO" };
+  if (usaApi()) {
+    const r = await pedirApi<{ estado: EstadoEnlace; email?: string }>("/portal/auth/verify", {
+      cuerpo: { token: t },
+      portal: true,
+    }).catch(() => ({ estado: "INVALIDO" as const, email: undefined }));
+    return { estado: r.estado, correo: r.email };
+  }
+  const alm = almacen();
+  const correo = correoDeToken(alm, t);
+  return { estado: verificarCorreo(alm, t), correo };
+}
+
 async function Resultado({ searchParams }: { searchParams: SearchParams }) {
   // El estado del enlace depende de la hora actual: se calcula siempre al pedir la página.
   await connection();
   const token = (await searchParams).token;
   const t = typeof token === "string" ? token : "";
-  const alm = almacen();
-  const correo = correoDeToken(alm, t);
-  const estado = t ? verificarCorreo(alm, t) : "INVALIDO";
+  const { estado, correo } = await estadoDeVerificacion(t);
 
   const vistas = {
     OK: {

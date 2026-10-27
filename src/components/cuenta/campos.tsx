@@ -374,6 +374,7 @@ const ETIQUETAS: Record<string, string> = {
   apellidos: "Apellidos",
   correo: "Correo",
   contrasena: "Contraseña",
+  contrasenaActual: "Contraseña actual",
   confirmarContrasena: "Confirmación de la contraseña",
   aceptaTerminos: "Términos de uso",
   aceptaPoliticaDatos: "Política de datos",

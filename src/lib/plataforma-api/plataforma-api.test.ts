@@ -124,6 +124,9 @@ describe("traducción de datos", () => {
       ocupacion: null,
       perfilEstado: "COMPLETO",
       missing: [],
+      verificacion: "VERIFICADO",
+      verificacionMotivo: null,
+      bajaSolicitada: null,
       identityDocuments: [doc("CEDULA")],
       organization: null,
     };
@@ -146,6 +149,9 @@ describe("traducción de datos", () => {
       ocupacion: null,
       perfilEstado: "INCOMPLETO",
       missing: ["archivoRepresentacion"],
+      verificacion: null,
+      verificacionMotivo: null,
+      bajaSolicitada: null,
       identityDocuments: [],
       organization: {
         id: "o1",
@@ -169,5 +175,33 @@ describe("traducción de datos", () => {
     expect(c.documentos.REPRESENTACION).toBeUndefined();
     expect(perfilCompleto(c)).toBe(false);
     expect(resumenCuenta(c).nombre).toBe("Consejo Comunal Los Cardones");
+  });
+
+  it("toma el rechazo de la identidad y la baja solicitada de la API", () => {
+    const perfil: PerfilApi = {
+      id: "u3",
+      email: "rosa@correo.test",
+      tipoPerfil: "NATURAL",
+      cedula: "V-11222333",
+      nombres: "Rosa",
+      apellidos: "Mora",
+      telefono: "0414-1234567",
+      ocupacion: null,
+      perfilEstado: "COMPLETO",
+      missing: [],
+      verificacion: "RECHAZADO",
+      verificacionMotivo: "La cédula no se lee.",
+      bajaSolicitada: "2026-10-27T13:00:00.000Z",
+      identityDocuments: [doc("CEDULA")],
+      organization: null,
+    };
+    const c = cuentaDePerfil(perfil);
+    expect(c.estadoVerificacion).toBe("RECHAZADO");
+    expect(c.bajaSolicitada).toBe("2026-10-27T13:00:00.000Z");
+  });
+
+  it("traduce el correo sin verificar y el enlace inválido", () => {
+    expect(mensajeDeError(new ErrorApi(403, "EMAIL_NOT_VERIFIED", "x"))).toMatch(/verificas/);
+    expect(mensajeDeError(new ErrorApi(400, "INVALID_TOKEN", ""))).toBe("El enlace no es válido.");
   });
 });

@@ -23,6 +23,7 @@ import {
   cambiarContrasena,
   cargarDocumento,
   cerrarSesion,
+  cerrarTodasLasSesiones,
   cuentaDeSesion,
   enviarParticipacion,
   guardarPerfil,
@@ -38,9 +39,13 @@ import {
 import {
   cambiarContrasenaApi,
   cerrarSesionApi,
+  cerrarTodasLasSesionesApi,
   guardarPerfilApi,
   ingresarApi,
-  NO_DISPONIBLE,
+  reenviarApi,
+  recuperarApi,
+  restablecerApi,
+  solicitarBajaApi,
   registrarApi,
 } from "./acciones-api";
 import {
@@ -212,10 +217,10 @@ export async function reenviarAccion(
   _prev: EstadoFormulario,
   fd: FormData,
 ): Promise<EstadoFormulario> {
-  if (usaApi()) return { mensaje: { tipo: "info", texto: NO_DISPONIBLE } };
   const correo = String(fd.get("correo") ?? "") || (await leerAviso())?.correo;
   if (!correo)
     return { mensaje: { tipo: "error", texto: "Vuelve a registrarte para recibir un enlace." } };
+  if (usaApi()) return reenviarApi(correo);
   const { tokenDesarrollo } = reenviarVerificacion(almacen(), correo);
   const enlaceDesarrollo = enlace("/verificar", tokenDesarrollo);
   await guardarAviso({ correo, enlaceDesarrollo });
@@ -273,6 +278,15 @@ export async function cerrarSesionAccion() {
   ir("/");
 }
 
+/** Cierra la sesión en este y en todos los dispositivos de la cuenta, y vuelve al ingreso. */
+export async function cerrarTodasLasSesionesAccion() {
+  // Si la API falla, la cookie ya se borró: igual hay que volver a ingresar.
+  if (usaApi()) await cerrarTodasLasSesionesApi().catch(() => {});
+  else cerrarTodasLasSesiones(almacen(), await idSesion());
+  await borrarSesion();
+  ir("/ingresar?aviso=sesiones");
+}
+
 /* ---------- Recuperar y restablecer ---------- */
 
 export async function recuperarAccion(
@@ -282,8 +296,7 @@ export async function recuperarAccion(
   const datos = leer(fd);
   const p = recuperarSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
-  if (usaApi())
-    return { valores: { correo: p.data.correo }, mensaje: { tipo: "info", texto: NO_DISPONIBLE } };
+  if (usaApi()) return recuperarApi(p.data.correo);
   const { tokenDesarrollo } = recuperar(almacen(), p.data.correo);
   return {
     valores: { correo: p.data.correo },
@@ -303,7 +316,7 @@ export async function restablecerAccion(
   const datos = leer(fd);
   const p = restablecerSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
-  if (usaApi()) return { mensaje: { tipo: "error", texto: NO_DISPONIBLE } };
+  if (usaApi()) return restablecerApi(p.data.token, p.data.contrasena);
   const estado = restablecer(almacen(), p.data.token, p.data.contrasena);
   if (estado === "OK") ir("/ingresar?aviso=contrasena");
   const texto =
@@ -431,9 +444,12 @@ export async function guardarNombresAccion(
   const datos = leer(fd);
   const p = nombresSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
-  // La API no deja cambiar los nombres de una persona natural (van ligados a su cédula).
   if (usaApi())
-    return { valores: valoresDe(datos), mensaje: { tipo: "error", texto: NO_DISPONIBLE } };
+    return guardarPerfilApi(
+      completo,
+      { nombres: p.data.nombres, apellidos: p.data.apellidos },
+      valoresDe(datos),
+    );
   actualizarNombres(almacen(), sesion, p.data.nombres, p.data.apellidos);
   return trasGuardar(completo);
 }
@@ -462,7 +478,7 @@ export async function cambiarContrasenaAccion(
 }
 
 export async function solicitarBajaAccion() {
-  if (usaApi()) ir("/mi-cuenta/seguridad");
+  if (usaApi()) return solicitarBajaApi();
   if (!solicitarBaja(almacen(), await idSesion())) ir("/ingresar");
   await refrescarSesion();
   ir("/mi-cuenta/seguridad?guardado=baja");

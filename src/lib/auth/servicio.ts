@@ -274,6 +274,18 @@ export function cerrarSesion(alm: Almacen, sesion?: string) {
   if (sesion) alm.sesiones.delete(sesion);
 }
 
+/**
+ * «Cerrar sesión en todos los dispositivos» (POST /auth/sessions/revoke-all): cierra todas las
+ * sesiones de la cuenta, también esta. Devuelve false si no hay sesión.
+ */
+export function cerrarTodasLasSesiones(alm: Almacen, sesion?: string, ahora = Date.now()) {
+  const c = cuentaDeSesion(alm, sesion);
+  if (!c) return false;
+  for (const [s, id] of alm.sesiones) if (id === c.id) alm.sesiones.delete(s);
+  c.sesionesDesde = ahora;
+  return true;
+}
+
 /* ---------- Recuperación de contraseña ---------- */
 
 /** Siempre neutro: solo genera enlace si la cuenta existe. */

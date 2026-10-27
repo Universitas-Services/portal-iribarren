@@ -2,7 +2,7 @@ import Image from "next/image";
 
 /** PDUL YA, el alcalde, los lemas de la gestión y la Alcaldía (archivos del cliente, 22-10-2026). */
 const MARCAS = [
-  { src: "/brand/pdul-ya-horizontal-divisor.png", alt: "PDUL YA", ancho: 1200, alto: 411 },
+  { src: "/brand/pdul-ya-horizontal-divisor.png", alt: "PDUL YA", ancho: 1200, alto: 402 },
   { src: "/brand/yanys-aguero.png", alt: "Yanys Agüero, Alcalde", ancho: 512, alto: 240 },
   {
     src: "/brand/iribarren-para-la-vida.png",

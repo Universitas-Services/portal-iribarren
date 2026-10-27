@@ -38,7 +38,7 @@ export const metadata: Metadata = {
       "Plan de Desarrollo Urbano Local de Iribarren: infórmate y participa en el Barquisimeto del futuro.",
     locale: "es_VE",
     type: "website",
-    images: [{ url: "/brand/pdul-ya-horizontal.png", width: 1200, height: 401, alt: "PDUL YA" }],
+    images: [{ url: "/brand/pdul-ya-horizontal.png", width: 1200, height: 412, alt: "PDUL YA" }],
   },
 };
 
