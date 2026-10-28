@@ -328,3 +328,15 @@ a {
     mask-image: none;
   }
 }
+
+/*
+ * Conoce el PDUL: una sección a la vez. El índice (src/components/conoce/indice.tsx) marca la
+ * activa con data-visible. Antes de que cargue, o sin JavaScript, manda el #id de la URL
+ * (:target); sin él, se ve la primera.
+ */
+.secciones-conoce:not([data-activa]):has([data-seccion]:target) [data-seccion]:not(:target),
+.secciones-conoce:not([data-activa]):not(:has([data-seccion]:target))
+  [data-seccion]:not(:first-child),
+.secciones-conoce[data-activa] [data-seccion]:not([data-visible]) {
+  display: none;
+}

@@ -26,9 +26,9 @@ import type {
 } from "./types";
 
 /*
- * Capa de datos del portal. Con plataforma-api (API_URL definida), las noticias (guía R7) y los
- * documentos (guía R8) salen de la API; lo demás, y todo sin API_URL, sigue con los datos de
- * ejemplo. Las pantallas no cambian.
+ * Capa de datos del portal. Con plataforma-api (API_URL definida), las noticias (guía R7), los
+ * documentos (guía R8) y el Marco legal (guía R9) salen de la API; lo demás, y todo sin API_URL,
+ * sigue con los datos de ejemplo. Las pantallas no cambian.
  */
 
 /**
@@ -86,13 +86,22 @@ export async function getProcess(): Promise<ProcessStatus> {
 }
 
 /**
- * Marco legal de Conoce el PDUL (GET /portal/legal-framework). Simulado hasta que exista la API:
- * los 7 ítems del texto del cliente (`MARCO` en `src/lib/conoce/contenido.ts`), que son también
- * el seed de Iribarren en la API.
+ * Marco legal de Conoce el PDUL. Con plataforma-api, GET /portal/legal-framework (guía R9): ya
+ * viene en su orden, hasta 10, y con el botón solo si su noticia o documento sigue publicado.
+ * Sin la API, los 7 ítems del texto del cliente (`MARCO` en `src/lib/conoce/contenido.ts`), que
+ * son también el seed de Iribarren en la API. Vida corta para que los cambios del Operador se
+ * vean pronto.
  */
 export async function getMarcoLegal(): Promise<ItemMarcoLegal[]> {
   "use cache";
-  cacheLife("hours");
+  cacheLife("minutes");
+  if (usaApi())
+    return (
+      await pedirApi<{ data: ItemMarcoLegal[] }>("/portal/legal-framework", {
+        portal: true,
+        publica: true,
+      })
+    ).data;
   return MARCO.slice(0, 10).map(({ nombre, texto, enlace }) => ({
     titulo: nombre,
     descripcion: texto,

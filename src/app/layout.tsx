@@ -3,8 +3,11 @@ import { Montserrat, Roboto } from "next/font/google";
 import { AgenteIus } from "@/components/layout/agente-ius";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { VigiaSesion } from "@/components/layout/vigia-sesion";
 import { siteUrl } from "@/env";
+import { RUTAS_PRIVADAS } from "@/lib/auth/rutas-privadas";
 import { esDemo } from "@/lib/auth/sesion";
+import { INACTIVIDAD_MS } from "@/lib/plataforma-api/renovacion";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -70,6 +73,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </main>
         <SiteFooter />
         <AgenteIus />
+        <VigiaSesion minutos={INACTIVIDAD_MS / 60_000} privadas={RUTAS_PRIVADAS} />
       </body>
     </html>
   );
