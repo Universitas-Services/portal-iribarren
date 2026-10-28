@@ -22,15 +22,21 @@ import { BannerCampana } from "@/components/campana/banner-campana";
 
 type Params = Promise<{ slug: string }>;
 
-/** Las noticias publicadas se prerenderizan; un slug nuevo se genera en su primera visita. */
+/**
+ * Las noticias publicadas se prerenderizan; un slug nuevo se genera en su primera visita. Con
+ * Cache Components la lista no puede ir vacía (pasa con la API recién estrenada): un slug que
+ * no existe ocupa su lugar y responde 404.
+ */
 export async function generateStaticParams() {
-  return (await getPostSlugs()).map(({ slug }) => ({ slug }));
+  const slugs = (await getPostSlugs()).map(({ slug }) => ({ slug }));
+  return slugs.length ? slugs : [{ slug: "sin-noticias" }];
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const post = await getPost((await params).slug);
   if (!post) return { title: "Noticia no encontrada" };
-  const portada = post.imagenes[0] ?? post.video?.portada;
+  // La foto de una noticia IMAGEN va en `portada` (API); los ejemplos la tienen en imagenes[0].
+  const portada = post.portada ?? post.imagenes[0] ?? post.video?.portada;
   return {
     title: post.titulo,
     description: post.resumen,
@@ -51,9 +57,10 @@ export default async function NoticiaPage({ params }: { params: Params }) {
   const post = await getPost(slug);
   if (!post) notFound();
 
+  const foto = post.portada ?? post.imagenes[0];
   const medio =
-    post.formato === "IMAGEN" && post.imagenes[0] ? (
-      <FiguraNoticia imagen={post.imagenes[0]} />
+    post.formato === "IMAGEN" && foto ? (
+      <FiguraNoticia imagen={foto} />
     ) : post.formato === "GALERIA" && post.imagenes.length > 0 ? (
       <Galeria imagenes={post.imagenes} titulo={post.titulo} />
     ) : post.formato === "VIDEO" && post.video ? (

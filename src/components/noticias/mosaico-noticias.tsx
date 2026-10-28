@@ -10,7 +10,7 @@ import {
   plural,
 } from "@/lib/formato";
 import { acomodarMosaico, type Celda } from "@/lib/noticias/mosaico";
-import { CATEGORIA, EtiquetaEjemplo } from "./news-card";
+import { EtiquetaEjemplo, estiloCategoria } from "./news-card";
 import type { CSSProperties } from "react";
 
 /*
@@ -208,7 +208,7 @@ function PiezaGaleria({ post }: { post: PostSummary }) {
 }
 
 function PiezaTexto({ post }: { post: PostSummary }) {
-  const c = CATEGORIA[post.categoria];
+  const c = estiloCategoria(post.categoria);
   const oscuro = Boolean(c.textoOscuro);
   const Icono = c.Icon;
   return (

@@ -47,6 +47,10 @@ export const CATEGORIA: Record<
   "Visión de futuro": { Icon: Telescope, fondo: "bg-noche", icono: "text-papel/15" },
 };
 
+/** Estilo de la categoría; si la API trae una que el portal no conoce, el de la primera. */
+export const estiloCategoria = (categoria: string) =>
+  CATEGORIA[categoria as PostCategory] ?? CATEGORIA["Análisis institucional"];
+
 /** Rótulo de las publicaciones de ejemplo de la maqueta (no son noticias reales). */
 export function EtiquetaEjemplo({ claro = false }: { claro?: boolean }) {
   return (
@@ -96,7 +100,7 @@ export function NewsCard({
   /** Vistas y «Me gusta», en el carril del inicio. */
   metricas?: { vistas: number; likes: number };
 }) {
-  const c = CATEGORIA[post.categoria];
+  const c = estiloCategoria(post.categoria);
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-tarjeta bg-papel shadow-tarjeta transition-[transform,box-shadow] duration-300 ease-out-expo hover:-translate-y-1 hover:shadow-elevada">
       <div className={`relative aspect-[16/10] shrink-0 overflow-hidden ${c.fondo}`}>

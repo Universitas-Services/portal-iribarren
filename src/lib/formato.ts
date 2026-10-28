@@ -14,8 +14,12 @@ const fechaLarga = new Intl.DateTimeFormat("es-VE", {
   timeZone: "America/Caracas",
 });
 
-/** Las fechas llegan como AAAA-MM-DD; se fijan al mediodía de Caracas para no correr de día. */
-const aFecha = (iso: string) => new Date(`${iso}T12:00:00-04:00`);
+/**
+ * Las fechas de ejemplo llegan como AAAA-MM-DD y se fijan al mediodía de Caracas para no correr
+ * de día; las de la API llegan en ISO 8601 completo y se muestran en la hora de Caracas.
+ */
+export const aFecha = (iso: string) =>
+  new Date(/^\d{4}-\d{2}-\d{2}$/.test(iso) ? `${iso}T12:00:00-04:00` : iso);
 
 export const formatearFecha = (iso: string) => fechaCorta.format(aFecha(iso));
 export const formatearFechaLarga = (iso: string) => fechaLarga.format(aFecha(iso));
