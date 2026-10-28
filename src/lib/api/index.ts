@@ -3,7 +3,11 @@ import { cacheLife } from "next/cache";
 import sanitizeHtml from "sanitize-html";
 import { MARCO } from "@/lib/conoce/contenido";
 import { bannersVigentes } from "@/lib/banners";
-import { consultarDocumentos } from "@/lib/documentos/consultas";
+import {
+  consultarDocumentos,
+  paginaDeDocumentosApi,
+  type PaginaDocumentosApi,
+} from "@/lib/documentos/consultas";
 import { banners, documentos, posts, processStatus } from "@/lib/mocks/data";
 import { paraPortada, relacionadas, consultarNoticias } from "@/lib/noticias/consultas";
 import { ErrorApi, pedirApi, urlApi, usaApi } from "@/lib/plataforma-api/cliente";
@@ -22,9 +26,9 @@ import type {
 } from "./types";
 
 /*
- * Capa de datos del portal. Con plataforma-api (API_URL definida), las noticias salen de la API
- * (guía R7); lo demás, y todo sin API_URL, sigue con los datos de ejemplo. Las pantallas no
- * cambian.
+ * Capa de datos del portal. Con plataforma-api (API_URL definida), las noticias (guía R7) y los
+ * documentos (guía R8) salen de la API; lo demás, y todo sin API_URL, sigue con los datos de
+ * ejemplo. Las pantallas no cambian.
  */
 
 /**
@@ -246,18 +250,47 @@ export async function getPostSlugs(): Promise<{ slug: string; publicadoEl: strin
   return posts.map(({ slug, publicadoEl }) => ({ slug, publicadoEl }));
 }
 
-/* Repositorio documental: público y cacheado como las noticias. */
+/* ---------- Repositorio documental (guía R8: /portal/documents) ---------- */
+
+/* Público y cacheado como las noticias. */
 
 export async function getDocumentos(filtros: FiltrosDocumentos): Promise<PaginaDocumentos> {
   "use cache";
   cacheLife("minutes");
+  if (usaApi()) {
+    const p = new URLSearchParams({ page: String(filtros.pagina) });
+    for (const [k, v] of Object.entries({
+      q: filtros.q,
+      categoria: filtros.categoria,
+      estado: filtros.estado,
+    }))
+      if (v) p.set(k, v);
+    return paginaDeDocumentosApi(
+      await pedirApi<PaginaDocumentosApi>(`/portal/documents?${p}`, {
+        portal: true,
+        publica: true,
+      }),
+    );
+  }
   await simularRed(1);
   return consultarDocumentos(documentos, filtros);
 }
 
+/** Un documento oculto o eliminado responde 404: para el portal, no existe. */
 export async function getDocumento(slug: string): Promise<Documento | undefined> {
   "use cache";
   cacheLife("minutes");
+  if (usaApi()) {
+    try {
+      return await pedirApi<Documento>(`/portal/documents/${encodeURIComponent(slug)}`, {
+        portal: true,
+        publica: true,
+      });
+    } catch (e) {
+      if (e instanceof ErrorApi && e.status === 404) return undefined;
+      throw e;
+    }
+  }
   await simularRed(1);
   return documentos.find((d) => d.slug === slug);
 }
@@ -266,6 +299,17 @@ export async function getDocumento(slug: string): Promise<Documento | undefined>
 export async function getDocumentoSlugs(): Promise<{ slug: string; fecha: string }[]> {
   "use cache";
   cacheLife("minutes");
+  if (usaApi()) {
+    const todos: { slug: string; fecha: string }[] = [];
+    for (let pagina = 1; ; pagina++) {
+      const r = await pedirApi<PaginaDocumentosApi>(`/portal/documents?limit=100&page=${pagina}`, {
+        portal: true,
+        publica: true,
+      });
+      todos.push(...r.data.map((d) => ({ slug: d.slug, fecha: d.actualizadoEl ?? d.publicadoEl })));
+      if (pagina >= r.meta.totalPages) return todos;
+    }
+  }
   return documentos.map((d) => ({ slug: d.slug, fecha: d.actualizadoEl ?? d.publicadoEl }));
 }
 

@@ -54,9 +54,10 @@ export function FilaDocumento({ documento: d }: { documento: Documento }) {
         </p>
       </div>
 
+      {/* Con la API, el enlace de descarga cuenta la descarga y ya responde como adjunto. */}
       <a
-        href={d.archivo.url}
-        download
+        href={d.descargaUrl ?? d.archivo.url}
+        download={d.descargaUrl ? undefined : true}
         className="relative z-10 col-start-2 inline-flex min-h-11 shrink-0 items-center justify-center gap-2 justify-self-start rounded-xl bg-noche px-4 font-display text-sm font-bold text-papel transition-[background-color,transform] duration-150 hover:bg-rojo active:scale-[0.97] sm:col-start-3"
       >
         <Download size={16} aria-hidden="true" />

@@ -7,12 +7,15 @@ import { urlDocumentos } from "@/components/documentos/urls";
 import { EncabezadoPagina } from "@/components/layout/encabezado-pagina";
 import { VisorDocumento } from "@/components/noticias/contenido-noticia";
 import { getDocumento, getDocumentoSlugs } from "@/lib/api";
+import { usaApi } from "@/lib/plataforma-api/cliente";
 import { formatearFechaLarga } from "@/lib/formato";
 
 type Params = Promise<{ slug: string }>;
 
 export async function generateStaticParams() {
-  return (await getDocumentoSlugs()).map(({ slug }) => ({ slug }));
+  const slugs = (await getDocumentoSlugs()).map(({ slug }) => ({ slug }));
+  // Cache Components no admite una lista vacía.
+  return slugs.length ? slugs : [{ slug: "sin-documentos" }];
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
@@ -64,12 +67,13 @@ export default async function DocumentoPage({ params }: { params: Params }) {
           </p>
         )}
 
-        <VisorDocumento adjunto={doc.archivo} />
+        <VisorDocumento adjunto={doc.archivo} descargaUrl={doc.descargaUrl} />
 
         {/* Solo la versión vigente: el historial de versiones queda para el equipo en el admin. */}
         <p className="text-sm text-tinta/75">
-          Publicado el {formatearFechaLarga(doc.publicadoEl)} · Documento de ejemplo, sin validez
-          oficial.
+          Publicado el {formatearFechaLarga(doc.publicadoEl)}
+          {/* Con la API los documentos son los reales de la alcaldía. */}
+          {!usaApi() && " · Documento de ejemplo, sin validez oficial."}
         </p>
 
         <Link

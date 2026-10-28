@@ -66,3 +66,29 @@ export function consultarDocumentos(
     porEstado,
   };
 }
+
+/** Página de documentos de la API: los conteos de los filtros vienen en `meta`. */
+export type PaginaDocumentosApi = {
+  data: Documento[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    porCategoria: PaginaDocumentos["porCategoria"];
+    porEstado: PaginaDocumentos["porEstado"];
+  };
+};
+
+/** La página de GET /portal/documents leída como la `PaginaDocumentos` del portal. */
+export function paginaDeDocumentosApi(r: PaginaDocumentosApi): PaginaDocumentos {
+  return {
+    items: r.data,
+    total: r.meta.total,
+    pagina: r.meta.page,
+    paginas: Math.max(1, r.meta.totalPages),
+    porPagina: r.meta.limit,
+    porCategoria: r.meta.porCategoria,
+    porEstado: r.meta.porEstado,
+  };
+}

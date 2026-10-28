@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Documento } from "@/lib/api/types";
 import { parseFiltrosDocumentos } from "@/lib/validation/schemas";
-import { consultarDocumentos } from "./consultas";
+import { consultarDocumentos, paginaDeDocumentosApi } from "./consultas";
 
 const doc = (slug: string, extra: Partial<Documento> = {}): Documento => ({
   slug,
@@ -74,5 +74,42 @@ describe("parseFiltrosDocumentos", () => {
     expect(
       parseFiltrosDocumentos({ estado: "archivado", categoria: "Leyes", pagina: "0" }),
     ).toEqual({ q: undefined, estado: undefined, categoria: undefined, pagina: 1 });
+  });
+});
+
+describe("paginaDeDocumentosApi", () => {
+  it("lee la página de la API con sus conteos y nunca menos de una página", () => {
+    const porCategoria = {
+      TODAS: 0,
+      "Decretos y normativa": 0,
+      "Plan de trabajo": 0,
+      "Informes técnicos": 0,
+      Cartografía: 0,
+      Minutas: 0,
+    };
+    const porEstado = { TODOS: 0, OFICIAL: 0, BORRADOR: 0 };
+    expect(
+      paginaDeDocumentosApi({
+        data: [],
+        meta: { page: 1, limit: 10, total: 0, totalPages: 0, porCategoria, porEstado },
+      }),
+    ).toEqual({
+      items: [],
+      total: 0,
+      pagina: 1,
+      paginas: 1,
+      porPagina: 10,
+      porCategoria,
+      porEstado,
+    });
+    const d = doc("decreto", {
+      descargaUrl: "https://api.test/api/v1/portal/documents/decreto/download",
+    });
+    const r = paginaDeDocumentosApi({
+      data: [d],
+      meta: { page: 2, limit: 10, total: 11, totalPages: 2, porCategoria, porEstado },
+    });
+    expect(r).toMatchObject({ pagina: 2, paginas: 2, total: 11 });
+    expect(r.items[0]!.descargaUrl).toMatch(/\/download$/);
   });
 });

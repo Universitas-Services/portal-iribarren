@@ -268,7 +268,7 @@ export type DocCategory = (typeof DOC_CATEGORIAS)[number];
 export const DOC_ESTADOS = ["OFICIAL", "BORRADOR"] as const;
 export type DocEstado = (typeof DOC_ESTADOS)[number];
 
-export type VersionDocumento = { version: string; fecha: string; nota: string };
+export type VersionDocumento = { version: string; fecha: string; nota: string; archivo?: Adjunto };
 
 export type Documento = {
   slug: string;
@@ -283,6 +283,11 @@ export type Documento = {
   archivo: Adjunto;
   /** Historial, de la más reciente a la más antigua (la primera es la vigente). */
   versiones: VersionDocumento[];
+  /**
+   * Enlace de plataforma-api que entrega el PDF vigente y cuenta la descarga (guía R8). Lo usan
+   * «Abrir» y «Descargar»; el visor embebido usa `archivo.url`, que no cuenta.
+   */
+  descargaUrl?: string;
 };
 
 export type FiltrosDocumentos = {
