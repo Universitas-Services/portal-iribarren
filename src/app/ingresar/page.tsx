@@ -1,10 +1,11 @@
-import { CircleCheck, Lock } from "lucide-react";
+import { CircleCheck, Clock, Lock } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { FormIngreso } from "@/components/cuenta/formularios";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
 import { soloInvitados } from "@/lib/auth/sesion";
+import { INACTIVIDAD_MS } from "@/lib/plataforma-api/renovacion";
 
 export const metadata: Metadata = { title: "Iniciar sesión", robots: { index: false } };
 
@@ -47,6 +48,16 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
         >
           <CircleCheck size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-exito-oscuro" />
           Tu contraseña se cambió. Inicia sesión con la nueva.
+        </p>
+      )}
+      {sp.aviso === "inactividad" && (
+        <p
+          role="status"
+          className="mb-6 flex items-start gap-3 rounded-2xl bg-superficie p-4 text-sm leading-relaxed text-noche"
+        >
+          <Clock size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
+          Cerramos tu sesión porque pasaron {INACTIVIDAD_MS / 60_000} minutos sin actividad. Vuelve
+          a ingresar para continuar.
         </p>
       )}
       {sp.aviso === "sesiones" && (

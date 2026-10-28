@@ -467,6 +467,25 @@ Guía `docs/frontend/FRONTEND_R8_DOCUMENTOS.md` de la API. Con `API_URL`, el rep
 - **Categorías:** el catálogo `categorias-documentos` de la API coincide con `DOC_CATEGORIAS`.
 - **Datos reales:** el Decreto N° 48-2026 ya está en producción con el slug `decreto-48-2026`.
 
+## 6.8 Sesión por inactividad, R9 y Conoce el PDUL por secciones (28-10-2026, rama `feat/sesion-r9-conoce`)
+
+**Sesión (decisión de Frank: se cierra a los 15 minutos sin usar el portal).** Antes, al vencer, el encabezado seguía con el nombre hasta recargar (el layout no se vuelve a pedir al navegar).
+
+- **Por qué se cerraba sola:** el refresh token rota y la API revoca toda la sesión si uno se usa dos veces (`REFRESH_TOKEN_REUSED`). Al navegar, la página y los prefetch salían a la vez con la misma cookie y todas renovaban.
+- **`renovacion.ts`** (`revisarCookie`, usado por `src/proxy.ts`):
+  - cierra la sesión tras 15 minutos sin actividad (`SESION_INACTIVIDAD_MIN`; se lee al compilar el layout, así que cambiarla pide volver a desplegar);
+  - los prefetch no renuevan ni cuentan como actividad;
+  - las renovaciones simultáneas comparten una sola llamada a `/auth/refresh` (recordada 30 s);
+  - la última actividad viaja en la cookie (`v`) y se reescribe como mucho una vez por minuto.
+- **`GET /api/sesion`** responde `{ conSesion }`. Como pasa por Proxy, también renueva y anota la actividad.
+- **`VigiaSesion`** (layout) consulta `/api/sesion` al usar la página (cada 4 min como mucho), al volver a la pestaña, al cambiar de ruta y al cumplirse el plazo. Si la sesión se cerró, refresca o lleva a `/ingresar?aviso=inactividad`, que muestra el aviso.
+- **Comprobado contra la API local** (access de 90 s, inactividad de 2 min): sin actividad, cierra y avisa; navegando cada 50 s, la sesión sigue más de 4 min sin ninguna `SESSION_REVOKED` nueva en la bitácora.
+- En una página pública, el encabezado pasa a «Iniciar sesión» solo; en `/mi-cuenta` o `/participa` (`RUTAS_PRIVADAS`), lleva a ingresar.
+
+**R9, Marco legal** (guía `FRONTEND_R9_MARCO_LEGAL.md`): `getMarcoLegal()` lee `GET /portal/legal-framework` con `cacheLife("minutes")`. Llega en orden, hasta 10, y con el botón solo si su destino sigue publicado. Sin la API, `MARCO`.
+
+**Conoce el PDUL, una sección a la vez:** el índice muestra solo la elegida (por defecto «¿Qué es un PDUL?») y la deja en la URL (`#marco-legal`), así funcionan los enlaces del pie y «Atrás». CSS en `globals.css` (`.secciones-conoce`, con `:target` antes de que cargue el índice); el foco va al título de la sección.
+
 ## 7. Noticias reales (Propuesta v4), ya cargadas
 
 | Slug                                    | Fecha | Categoría               | Formato                                            |

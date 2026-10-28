@@ -20,6 +20,8 @@ export type TokensApi = {
   x: number;
   /** Id del usuario en la API. */
   u: string;
+  /** Última actividad (epoch ms): sin actividad en 15 minutos, la sesión se cierra. */
+  v?: number;
 };
 
 const clave = (secreto: string) => createHash("sha256").update(`pdul-api:${secreto}`).digest();
@@ -59,6 +61,7 @@ export function tokensDeRespuesta(
     r: r.refreshToken,
     x: ahora + (r.expiresIn ?? 15 * 60) * 1000,
     u: r.user.id,
+    v: ahora,
   };
 }
 

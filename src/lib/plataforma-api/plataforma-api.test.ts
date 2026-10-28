@@ -26,7 +26,7 @@ describe("cookie cifrada", () => {
 
   it("calcula el vencimiento del access token", () => {
     const r = { accessToken: "a", refreshToken: "r", expiresIn: 900, user: { id: "u" } };
-    expect(tokensDeRespuesta(r, 0)).toEqual({ a: "a", r: "r", x: 900_000, u: "u" });
+    expect(tokensDeRespuesta(r, 0)).toEqual({ a: "a", r: "r", x: 900_000, u: "u", v: 0 });
   });
 });
 
@@ -203,5 +203,74 @@ describe("traducción de datos", () => {
   it("traduce el correo sin verificar y el enlace inválido", () => {
     expect(mensajeDeError(new ErrorApi(403, "EMAIL_NOT_VERIFIED", "x"))).toMatch(/verificas/);
     expect(mensajeDeError(new ErrorApi(400, "INVALID_TOKEN", ""))).toBe("El enlace no es válido.");
+  });
+});
+
+describe("renovación de la cookie (Proxy)", async () => {
+  const { esPrefetch, INACTIVIDAD_MS, renovarUnaVez, revisarCookie } = await import("./renovacion");
+  const { secretoSesion } = await import("./sello");
+  const ahora = 10_000_000;
+  const cookie = (t: Partial<{ x: number; v: number; r: string }>) =>
+    sellar({ a: "acceso", r: "refresco", x: ahora + 600_000, u: "u", ...t }, secretoSesion());
+  const sesionApi = { accessToken: "a2", refreshToken: "r2", expiresIn: 900, user: { id: "u" } };
+
+  it("cierra la sesión tras el plazo sin actividad, también en un prefetch", async () => {
+    const vieja = cookie({ v: ahora - INACTIVIDAD_MS - 1 });
+    for (const prefetch of [false, true])
+      expect(await revisarCookie(vieja, { prefetch, ahora })).toEqual({
+        valor: null,
+        motivo: "inactividad",
+      });
+  });
+
+  it("un prefetch no renueva ni cuenta como actividad", async () => {
+    const refrescar = vi.fn();
+    const porVencer = cookie({ x: ahora + 1_000, v: ahora - 120_000 });
+    expect(await revisarCookie(porVencer, { prefetch: true, ahora, refrescar })).toBeUndefined();
+    expect(refrescar).not.toHaveBeenCalled();
+  });
+
+  it("anota la actividad como mucho una vez por minuto", async () => {
+    expect(await revisarCookie(cookie({ v: ahora - 30_000 }), { prefetch: false, ahora })).toBe(
+      undefined,
+    );
+    const r = await revisarCookie(cookie({ v: ahora - 90_000 }), { prefetch: false, ahora });
+    expect(r && r.valor && abrirSello(r.valor, secretoSesion())?.v).toBe(ahora);
+  });
+
+  it("las peticiones simultáneas comparten una sola renovación", async () => {
+    const refrescar = vi.fn(async () => sesionApi);
+    const porVencer = cookie({ x: ahora + 1_000, v: ahora });
+    const [a, b] = await Promise.all([
+      revisarCookie(porVencer, { prefetch: false, ahora, refrescar: refrescar as never }),
+      revisarCookie(porVencer, { prefetch: false, ahora, refrescar: refrescar as never }),
+    ]);
+    expect(refrescar).toHaveBeenCalledTimes(1);
+    for (const r of [a, b])
+      expect(r && r.valor && abrirSello(r.valor, secretoSesion())?.r).toBe("r2");
+  });
+
+  it("si la API rechaza el refresh, la sesión termina; si no responde, queda igual", async () => {
+    // Otro refresh: el anterior quedó recordado por la prueba de las renovaciones compartidas.
+    const porVencer = cookie({ x: ahora + 1_000, v: ahora, r: "otro-refresco" });
+    const rechazo = async () => {
+      throw new ErrorApi(401, "REFRESH_TOKEN_REUSED", "x");
+    };
+    expect(
+      await revisarCookie(porVencer, { prefetch: false, ahora: ahora + 1, refrescar: rechazo }),
+    ).toEqual({ valor: null, motivo: "rechazada" });
+    const caida = async () => {
+      throw new ErrorApi(503, "API_SIN_RESPUESTA", "x");
+    };
+    expect(
+      await revisarCookie(porVencer, { prefetch: false, ahora: ahora + 2, refrescar: caida }),
+    ).toBeUndefined();
+  });
+
+  it("reconoce los prefetch del router", () => {
+    expect(esPrefetch(new Headers({ "next-router-prefetch": "1" }))).toBe(true);
+    expect(esPrefetch(new Headers({ "sec-purpose": "prefetch;prerender" }))).toBe(true);
+    expect(esPrefetch(new Headers())).toBe(false);
+    expect(renovarUnaVez).toBeTypeOf("function");
   });
 });

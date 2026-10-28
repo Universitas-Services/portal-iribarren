@@ -33,7 +33,7 @@ test.describe("protección de rutas e historial", () => {
     await page.goto("/mi-cuenta/seguridad");
     // Con varias pruebas en paralelo, esperar la carga evita pulsar antes de la hidratación.
     await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: "Cerrar sesión" }).click();
+    await page.getByRole("button", { name: "Cerrar sesión", exact: true }).click();
     await expect(page).toHaveURL(/\/$/);
     await page.goBack();
     await expect(page).toHaveURL(/\/ingresar\?volver=/);
@@ -85,7 +85,9 @@ test.describe("cuenta del ciudadano", () => {
       page.getByRole("status").filter({ hasText: "Contraseña actualizada" }),
     ).toBeVisible();
 
-    await page.getByRole("button", { name: "Cerrar sesión" }).click();
+    await page.getByRole("button", { name: "Cerrar sesión", exact: true }).click();
+    // Cerrar sesión lleva al inicio: se espera para no llegar al ingreso con la sesión abierta.
+    await page.waitForURL((u) => u.pathname === "/");
     await page.goto("/ingresar");
     await page.getByLabel("Correo electrónico").fill(c.correo);
     await page.locator("#contrasena").fill(c.contrasena);

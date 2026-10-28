@@ -78,12 +78,14 @@ function Seccion({ id, titulo, children }: { id: string; titulo: string; childre
   return (
     <section
       id={id}
+      data-seccion
       aria-labelledby={`${id}-titulo`}
       className="revelar scroll-mt-36 rounded-tarjeta bg-papel p-6 shadow-tarjeta sm:p-10 lg:scroll-mt-28"
     >
       <h2
         id={`${id}-titulo`}
-        className="font-display text-2xl font-extrabold text-noche sm:text-3xl"
+        tabIndex={-1}
+        className="font-display text-2xl font-extrabold text-noche outline-none sm:text-3xl"
       >
         {titulo}
       </h2>
@@ -106,7 +108,8 @@ export default function ConocePage() {
           <Indice secciones={SECCIONES} />
         </aside>
 
-        <div className="min-w-0 space-y-8">
+        {/* Una sección a la vez: la que elige el índice (o el #id de la URL). */}
+        <div className="secciones-conoce min-w-0 space-y-8">
           <Seccion id="que-es" titulo="¿Qué es un PDUL y por qué es crucial para Barquisimeto?">
             <div className="prosa">
               {QUE_ES.map((p) => (
