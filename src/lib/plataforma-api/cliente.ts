@@ -35,6 +35,11 @@ type Opciones = {
   token?: string;
   /** Rutas /portal/* y el login del portal: identifican el portal con x-client-id. */
   portal?: boolean;
+  /**
+   * Lectura pública cacheada («use cache»: noticias): no reenvía la IP del ciudadano, porque
+   * ahí no se pueden leer las cabeceras de la petición y esas rutas no tienen límite por IP.
+   */
+  publica?: boolean;
 };
 
 export async function pedirApi<T>(ruta: string, o: Opciones = {}): Promise<T> {
@@ -50,7 +55,7 @@ export async function pedirApi<T>(ruta: string, o: Opciones = {}): Promise<T> {
       headers.set("x-client-secret", process.env.PORTAL_CLIENT_SECRET);
       // La API limita por IP del ciudadano y solo acepta x-client-ip junto con el secreto; sin
       // ella vería la IP del servidor (Netlify), compartida por todos.
-      const ip = await ipDelCiudadano();
+      const ip = o.publica ? undefined : await ipDelCiudadano();
       if (ip) headers.set("x-client-ip", ip);
     }
   }

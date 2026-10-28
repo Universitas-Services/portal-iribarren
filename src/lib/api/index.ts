@@ -136,6 +136,7 @@ async function detalleApi(slug: string): Promise<DetalleApi | undefined> {
   try {
     return await pedirApi<DetalleApi>(`/portal/posts/${encodeURIComponent(slug)}`, {
       portal: true,
+      publica: true,
     });
   } catch (e) {
     if (e instanceof ErrorApi && e.status === 404) return undefined;
@@ -151,13 +152,13 @@ async function detalleApi(slug: string): Promise<DetalleApi | undefined> {
 async function portadaApi(limit: number): Promise<PostSummary[]> {
   const primeras = await pedirApi<PostSummary[] | { data: PostSummary[] }>(
     `/portal/posts/featured?limit=${Math.min(limit, 12)}`,
-    { portal: true },
+    { portal: true, publica: true },
   );
   const lista = Array.isArray(primeras) ? primeras : primeras.data;
   if (limit <= 12) return lista;
   const resto = await pedirApi<PaginaApi<PostSummary>>(
     `/portal/posts?limit=${Math.min(limit, 100)}&page=1`,
-    { portal: true },
+    { portal: true, publica: true },
   );
   const vistas = new Set(lista.map((p) => p.slug));
   return [...lista, ...resto.data.filter((p) => !vistas.has(p.slug))].slice(0, limit);
@@ -187,7 +188,10 @@ export async function getPosts(filtros: FiltrosNoticias): Promise<PaginaNoticias
       q: filtros.q,
     }))
       if (v) p.set(k, v);
-    const r = await pedirApi<PaginaApi<PostSummary>>(`/portal/posts?${p}`, { portal: true });
+    const r = await pedirApi<PaginaApi<PostSummary>>(`/portal/posts?${p}`, {
+      portal: true,
+      publica: true,
+    });
     return {
       items: r.data,
       total: r.meta.total,
@@ -233,6 +237,7 @@ export async function getPostSlugs(): Promise<{ slug: string; publicadoEl: strin
     for (let pagina = 1; ; pagina++) {
       const r = await pedirApi<PaginaApi<PostSummary>>(`/portal/posts?limit=100&page=${pagina}`, {
         portal: true,
+        publica: true,
       });
       todos.push(...r.data.map(({ slug, publicadoEl }) => ({ slug, publicadoEl })));
       if (pagina >= r.meta.totalPages) return todos;
