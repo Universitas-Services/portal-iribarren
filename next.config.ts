@@ -20,7 +20,9 @@ const nextConfig: NextConfig = {
           {
             protocol: api.protocol.replace(":", "") as "http" | "https",
             hostname: api.hostname,
-            port: api.port,
+            // Sin puerto cuando es el de siempre: Netlify convierte el patrón y un puerto vacío
+            // lo deja sin coincidir. Netlify también lo declara en netlify.toml.
+            ...(api.port ? { port: api.port } : {}),
             pathname: `${api.pathname.replace(/\/+$/, "")}/media/**`,
           },
         ]

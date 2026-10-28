@@ -1,0 +1,9 @@
+# Configuración que Netlify lee además de la de su panel (el comando de build sigue allí).
+#
+# Imágenes remotas que puede optimizar /_next/image: los medios de plataforma-api (guía R6).
+# Next ya los permite en next.config.ts (images.remotePatterns), pero el Image CDN de Netlify
+# los rechazaba («is not an allowed pattern»); aquí quedan declarados de forma explícita.
+# Si la API de la alcaldía cambia de dirección, hay que actualizar esta línea. Va entre comillas
+# simples (cadena literal de TOML): con dobles, las barras invertidas de la expresión no son válidas.
+[images]
+  remote_images = ['https://plataforma-pdul-api-uxpz62qsxq-uc\.a\.run\.app/api/v1/media/.*']
