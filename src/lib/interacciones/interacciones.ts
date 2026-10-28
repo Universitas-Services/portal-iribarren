@@ -68,7 +68,8 @@ export function resumenInteracciones(
   slug: string,
   cuentaId?: string,
 ): ResumenInteracciones {
-  const base = cifrasDeEjemplo(slug);
+  // Con plataforma-api los contadores empiezan en cero (guía R7): sin cifras de ejemplo.
+  const base = process.env.API_URL ? { vistas: 0, likes: 0, dislikes: 0 } : cifrasDeEjemplo(slug);
   const deNoticia = [...(alm.reacciones.get(slug)?.values() ?? [])];
   return {
     vistas: base.vistas + (alm.vistas.get(slug) ?? 0),

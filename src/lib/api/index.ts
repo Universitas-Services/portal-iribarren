@@ -6,6 +6,7 @@ import { bannersVigentes } from "@/lib/banners";
 import { consultarDocumentos } from "@/lib/documentos/consultas";
 import { banners, documentos, posts, processStatus } from "@/lib/mocks/data";
 import { paraPortada, relacionadas, consultarNoticias } from "@/lib/noticias/consultas";
+import { ErrorApi, pedirApi, urlApi, usaApi } from "@/lib/plataforma-api/cliente";
 import type {
   Banner,
   Documento,
@@ -21,8 +22,9 @@ import type {
 } from "./types";
 
 /*
- * Capa de datos del portal. Hoy devuelve datos de ejemplo; cuando exista plataforma-api,
- * estas funciones llamarán al BFF y las pantallas no cambian.
+ * Capa de datos del portal. Con plataforma-api (API_URL definida), las noticias salen de la API
+ * (guía R7); lo demás, y todo sin API_URL, sigue con los datos de ejemplo. Las pantallas no
+ * cambian.
  */
 
 /**
@@ -36,11 +38,33 @@ async function simularRed(factor = 1) {
   }
 }
 
+/** Imágenes del cuerpo: solo medios de la API (guía R6) y con texto alternativo. */
+const imagenDeLaApi = (src?: string) => {
+  const base = urlApi();
+  return Boolean(base && src?.startsWith(`${base}/media/`));
+};
+
 /** HTML permitido en el cuerpo de una noticia (lo que produce el editor del admin). */
 const HTML_PERMITIDO: sanitizeHtml.IOptions = {
-  allowedTags: ["p", "h2", "h3", "h4", "ul", "ol", "li", "strong", "em", "a", "blockquote", "br"],
-  allowedAttributes: { a: ["href", "title"] },
-  allowedSchemes: ["https", "mailto"],
+  allowedTags: [
+    "p",
+    "h2",
+    "h3",
+    "h4",
+    "ul",
+    "ol",
+    "li",
+    "strong",
+    "em",
+    "a",
+    "blockquote",
+    "br",
+    "img",
+  ],
+  allowedAttributes: { a: ["href", "title"], img: ["src", "alt"] },
+  allowedSchemes: ["http", "https", "mailto"],
+  allowedSchemesByTag: { img: ["https", "http"] },
+  exclusiveFilter: (f) => f.tag === "img" && (!imagenDeLaApi(f.attribs.src) || !f.attribs.alt),
   transformTags: {
     // Los enlaces externos se abren en otra pestaña sin dar acceso a window.opener.
     a: (tagName, attribs) => ({
@@ -95,7 +119,53 @@ export async function getBanners(): Promise<Banner[]> {
   return bannersVigentes(banners, Date.now()).slice(0, 6);
 }
 
+/* ---------- Noticias (guía R7: /portal/posts) ---------- */
+
+type PaginaApi<T> = {
+  data: T[];
+  meta: { page: number; limit: number; total: number; totalPages: number; porFormato?: unknown };
+};
+
+/** Detalle de la API: la noticia más sus relacionadas (totales y mia llegan con R12). */
+type DetalleApi = Post & { relacionadas?: PostSummary[] };
+
+const sanear = (p: Post): Post => ({ ...p, cuerpo: sanitizeHtml(p.cuerpo ?? "", HTML_PERMITIDO) });
+
+/** Una noticia no publicada responde 404: para el portal, no existe. */
+async function detalleApi(slug: string): Promise<DetalleApi | undefined> {
+  try {
+    return await pedirApi<DetalleApi>(`/portal/posts/${encodeURIComponent(slug)}`, {
+      portal: true,
+      publica: true,
+    });
+  } catch (e) {
+    if (e instanceof ErrorApi && e.status === 404) return undefined;
+    throw e;
+  }
+}
+
+/**
+ * Para el Inicio: destacadas primero y luego las más recientes. La API da hasta 12 por
+ * `featured`; si se piden más (los rankings de «Noticias y novedades»), se completan con el
+ * listado, que va de la más reciente a la más antigua.
+ */
+async function portadaApi(limit: number): Promise<PostSummary[]> {
+  const primeras = await pedirApi<PostSummary[] | { data: PostSummary[] }>(
+    `/portal/posts/featured?limit=${Math.min(limit, 12)}`,
+    { portal: true, publica: true },
+  );
+  const lista = Array.isArray(primeras) ? primeras : primeras.data;
+  if (limit <= 12) return lista;
+  const resto = await pedirApi<PaginaApi<PostSummary>>(
+    `/portal/posts?limit=${Math.min(limit, 100)}&page=1`,
+    { portal: true, publica: true },
+  );
+  const vistas = new Set(lista.map((p) => p.slug));
+  return [...lista, ...resto.data.filter((p) => !vistas.has(p.slug))].slice(0, limit);
+}
+
 export async function getLatestPosts(limit = 3): Promise<PostSummary[]> {
+  if (usaApi()) return portadaApi(limit);
   await simularRed(1.4);
   return paraPortada(posts, limit);
 }
@@ -108,6 +178,29 @@ export async function getLatestPosts(limit = 3): Promise<PostSummary[]> {
 export async function getPosts(filtros: FiltrosNoticias): Promise<PaginaNoticias> {
   "use cache";
   cacheLife("minutes");
+  if (usaApi()) {
+    const p = new URLSearchParams({ page: String(filtros.pagina) });
+    for (const [k, v] of Object.entries({
+      categoria: filtros.categoria,
+      formato: filtros.formato,
+      desde: filtros.desde,
+      hasta: filtros.hasta,
+      q: filtros.q,
+    }))
+      if (v) p.set(k, v);
+    const r = await pedirApi<PaginaApi<PostSummary>>(`/portal/posts?${p}`, {
+      portal: true,
+      publica: true,
+    });
+    return {
+      items: r.data,
+      total: r.meta.total,
+      pagina: r.meta.page,
+      paginas: Math.max(1, r.meta.totalPages),
+      porPagina: r.meta.limit,
+      porFormato: r.meta.porFormato as PaginaNoticias["porFormato"],
+    };
+  }
   await simularRed(1);
   return consultarNoticias(posts, filtros);
 }
@@ -115,14 +208,21 @@ export async function getPosts(filtros: FiltrosNoticias): Promise<PaginaNoticias
 export async function getPost(slug: string): Promise<Post | undefined> {
   "use cache";
   cacheLife("minutes");
+  if (usaApi()) {
+    const d = await detalleApi(slug);
+    if (!d) return undefined;
+    const { relacionadas: _r, ...post } = d;
+    return sanear(post);
+  }
   await simularRed(1);
   const post = posts.find((p) => p.slug === slug);
-  return post && { ...post, cuerpo: sanitizeHtml(post.cuerpo, HTML_PERMITIDO) };
+  return post && sanear(post);
 }
 
 export async function getRelatedPosts(slug: string): Promise<PostSummary[]> {
   "use cache";
   cacheLife("minutes");
+  if (usaApi()) return (await detalleApi(slug))?.relacionadas ?? [];
   await simularRed(1.2);
   const post = posts.find((p) => p.slug === slug);
   return post ? relacionadas(posts, post) : [];
@@ -132,6 +232,17 @@ export async function getRelatedPosts(slug: string): Promise<PostSummary[]> {
 export async function getPostSlugs(): Promise<{ slug: string; publicadoEl: string }[]> {
   "use cache";
   cacheLife("minutes");
+  if (usaApi()) {
+    const todos: { slug: string; publicadoEl: string }[] = [];
+    for (let pagina = 1; ; pagina++) {
+      const r = await pedirApi<PaginaApi<PostSummary>>(`/portal/posts?limit=100&page=${pagina}`, {
+        portal: true,
+        publica: true,
+      });
+      todos.push(...r.data.map(({ slug, publicadoEl }) => ({ slug, publicadoEl })));
+      if (pagina >= r.meta.totalPages) return todos;
+    }
+  }
   return posts.map(({ slug, publicadoEl }) => ({ slug, publicadoEl }));
 }
 
