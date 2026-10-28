@@ -453,6 +453,20 @@ Con la API en la rama `dev` (R2, guía `FRONTEND_R2_AUTENTICACION.md` del backen
 - **Términos y política de datos:** la API guarda la versión aceptada (`2026-10-17`). Si cambia el texto de `/terminos` o `/politica-de-datos`, hay que avisar a backend para subir la versión.
 - **El admin no cambia todavía:** no se conecta a la API. Cuando lo haga, entra sin `x-client-id` (contexto `admin`) y `user.permisos` manda sobre `permisosDe`.
 
+## 6.7 R8 de plataforma-api: repositorio de documentos (28-10-2026, rama `feat/api-r8-documentos`)
+
+Guía `docs/frontend/FRONTEND_R8_DOCUMENTOS.md` de la API. Con `API_URL`, el repositorio sale de la API; sin ella, de los datos de ejemplo.
+
+- **Lecturas** (`src/lib/api/index.ts`, con `publica: true` como las noticias):
+  - `getDocumentos` → `GET /portal/documents?q&categoria&estado&page`, 10 por página;
+  - `paginaDeDocumentosApi` (`src/lib/documentos/consultas.ts`) la pasa a `PaginaDocumentos`, con `meta.porCategoria` y `meta.porEstado`;
+  - `getDocumento` → `GET /portal/documents/:slug`; un documento oculto o eliminado da 404;
+  - `getDocumentoSlugs` recorre `?limit=100&page=N` para el detalle y el sitemap. `generateStaticParams` nunca queda vacío.
+- **Descargas contadas:** «Descargar» (fila del listado) y «Abrir» y «Descargar» (detalle) van a `descargaUrl` (`…/portal/documents/<slug>/download`). Cuenta una vez por visitante y documento cada 30 minutos. El visor embebido sigue con `archivo.url`, que no cuenta. Los adjuntos de las noticias no cambian.
+- **Texto «Documento de ejemplo, sin validez oficial»:** solo sin la API.
+- **Categorías:** el catálogo `categorias-documentos` de la API coincide con `DOC_CATEGORIAS`.
+- **Datos reales:** el Decreto N° 48-2026 ya está en producción con el slug `decreto-48-2026`.
+
 ## 7. Noticias reales (Propuesta v4), ya cargadas
 
 | Slug                                    | Fecha | Categoría               | Formato                                            |

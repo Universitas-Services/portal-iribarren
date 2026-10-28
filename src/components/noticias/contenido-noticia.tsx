@@ -89,7 +89,14 @@ export function FiguraNoticia({ imagen }: { imagen: Imagen }) {
  * Formato DOCUMENTO: ficha con abrir y descargar. En escritorio, si el navegador tiene visor
  * de PDF, el documento además se lee aquí mismo (ver VistaPdf).
  */
-export function VisorDocumento({ adjunto }: { adjunto: Adjunto }) {
+export function VisorDocumento({
+  adjunto,
+  descargaUrl,
+}: {
+  adjunto: Adjunto;
+  /** Enlace que cuenta la descarga (documentos del repositorio con la API, guía R8). */
+  descargaUrl?: string;
+}) {
   const detalle = [
     "PDF",
     formatearPeso(adjunto.pesoBytes),
@@ -123,7 +130,7 @@ export function VisorDocumento({ adjunto }: { adjunto: Adjunto }) {
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <a
-            href={adjunto.url}
+            href={descargaUrl ?? adjunto.url}
             target="_blank"
             rel="noopener noreferrer"
             className={`${boton} bg-noche text-papel hover:bg-tinta`}
@@ -133,8 +140,8 @@ export function VisorDocumento({ adjunto }: { adjunto: Adjunto }) {
             <span className="sr-only">(se abre en otra pestaña)</span>
           </a>
           <a
-            href={adjunto.url}
-            download
+            href={descargaUrl ?? adjunto.url}
+            download={descargaUrl ? undefined : true}
             className={`${boton} bg-rojo text-papel hover:bg-rojo-oscuro`}
           >
             <Download size={18} aria-hidden="true" />
