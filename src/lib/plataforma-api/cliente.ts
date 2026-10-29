@@ -178,23 +178,17 @@ export type PerfilApi = {
   ocupacion: string | null;
   perfilEstado: "INCOMPLETO" | "COMPLETO";
   missing: string[];
-  /** Decisión del Revisor sobre la identidad. El portal ya no la usa: no hay perfiles rechazados. */
-  verificacion: "VERIFICADO" | "RECHAZADO" | null;
-  verificacionMotivo: string | null;
   /** Fecha ISO de la solicitud de baja, o null. */
   bajaSolicitada: string | null;
-  /**
-   * Fecha ISO en que terminó o saltó el recorrido guiado; null si nunca (primer ingreso). Pedido
-   * a backend: mientras la API no lo mande, el portal no lanza el recorrido solo.
-   */
+  /** Fecha ISO en que terminó o saltó el recorrido guiado; null si nunca (primer ingreso). */
   tourVistoAt?: string | null;
   /**
-   * Versión aceptada y vigente de cada texto legal (R15, pedido a backend); `aceptada` null si
-   * nunca aceptó una. Mientras la API no lo mande, el portal no pide aceptar de nuevo.
+   * Versión aceptada y vigente de cada texto legal (R15). `aceptada` null si nunca aceptó una;
+   * `vigente` null si aún no hay versión publicada (entonces no hay nada pendiente).
    */
   textosLegales?: {
-    terminos: { aceptada: number | null; vigente: number };
-    politicaDatos: { aceptada: number | null; vigente: number };
+    terminos: { aceptada: number | null; vigente: number | null };
+    politicaDatos: { aceptada: number | null; vigente: number | null };
   };
   identityDocuments: DocumentoApi[];
   organization: {

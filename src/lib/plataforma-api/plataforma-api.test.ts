@@ -124,8 +124,6 @@ describe("traducción de datos", () => {
       ocupacion: null,
       perfilEstado: "COMPLETO",
       missing: [],
-      verificacion: "VERIFICADO",
-      verificacionMotivo: null,
       bajaSolicitada: null,
       identityDocuments: [doc("CEDULA")],
       organization: null,
@@ -149,8 +147,6 @@ describe("traducción de datos", () => {
       ocupacion: null,
       perfilEstado: "INCOMPLETO",
       missing: ["archivoRepresentacion"],
-      verificacion: null,
-      verificacionMotivo: null,
       bajaSolicitada: null,
       identityDocuments: [],
       organization: {
@@ -189,14 +185,11 @@ describe("traducción de datos", () => {
       ocupacion: null,
       perfilEstado: "COMPLETO",
       missing: [],
-      verificacion: "RECHAZADO",
-      verificacionMotivo: "La cédula no se lee.",
       bajaSolicitada: "2026-10-27T13:00:00.000Z",
       identityDocuments: [doc("CEDULA")],
       organization: null,
     };
     const c = cuentaDePerfil(perfil);
-    // No hay perfiles rechazados: un RECHAZADO de la API ya no cambia el estado.
     expect(c.estadoVerificacion).toBe("VERIFICADO");
     expect(c.bajaSolicitada).toBe("2026-10-27T13:00:00.000Z");
     // Sin `textosLegales` (la API aún no lo manda) no se pide aceptar nada de nuevo.
@@ -209,6 +202,16 @@ describe("traducción de datos", () => {
           politicaDatos: { aceptada: null, vigente: 1 },
         },
       }).textosAceptados,
+    ).toEqual({ TERMINOS: "2", POLITICA_DATOS: "" });
+    // Sin versión publicada (vigente null): queda vacía, y con vacía no hay nada pendiente.
+    expect(
+      cuentaDePerfil({
+        ...perfil,
+        textosLegales: {
+          terminos: { aceptada: 1, vigente: 2 },
+          politicaDatos: { aceptada: null, vigente: null },
+        },
+      }).textosVigentes,
     ).toEqual({ TERMINOS: "2", POLITICA_DATOS: "" });
     // Sin `tourVistoAt` (la API aún no lo manda) el recorrido no se lanza solo.
     expect(resumenCuenta(c).tourPendiente).toBe(false);

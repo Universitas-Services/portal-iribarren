@@ -74,8 +74,8 @@ function documento(d: PerfilApi["identityDocuments"][number]): DocumentoCargado 
 
 /**
  * Cuenta del portal armada desde GET /portal/me/profile. La contraseña no viaja (hash vacío): la
- * valida la API. COMPLETO equivale a VERIFICADO en el portal. No hay perfiles rechazados (28-10-2026):
- * si la API todavía manda `verificacion: "RECHAZADO"`, no se toma en cuenta. La baja solicitada también viene de la API.
+ * valida la API. COMPLETO equivale a VERIFICADO en el portal (no hay perfiles rechazados, D15). La
+ * baja solicitada también viene de la API.
  */
 export function cuentaDePerfil(p: PerfilApi): Cuenta {
   const documentos: Cuenta["documentos"] = {};
@@ -98,6 +98,11 @@ export function cuentaDePerfil(p: PerfilApi): Cuenta {
     textosAceptados: p.textosLegales && {
       TERMINOS: String(p.textosLegales.terminos.aceptada ?? ""),
       POLITICA_DATOS: String(p.textosLegales.politicaDatos.aceptada ?? ""),
+    },
+    // Lo vigente según la API, al instante (el texto del portal se cachea unos minutos).
+    textosVigentes: p.textosLegales && {
+      TERMINOS: String(p.textosLegales.terminos.vigente ?? ""),
+      POLITICA_DATOS: String(p.textosLegales.politicaDatos.vigente ?? ""),
     },
   };
   if (p.tipoPerfil === "ORGANIZACION") {

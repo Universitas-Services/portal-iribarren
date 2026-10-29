@@ -9,7 +9,9 @@ import type { Cuenta } from "./servicio";
  */
 
 export async function textosVigentes(): Promise<Record<TipoTextoLegal, TextoLegal | null>> {
-  const [TERMINOS, POLITICA_DATOS] = await Promise.all(TIPOS_TEXTO_LEGAL.map(getTextoLegal));
+  const [TERMINOS, POLITICA_DATOS] = await Promise.all(
+    TIPOS_TEXTO_LEGAL.map((t) => getTextoLegal(t)),
+  );
   return { TERMINOS: TERMINOS ?? null, POLITICA_DATOS: POLITICA_DATOS ?? null };
 }
 
@@ -19,6 +21,22 @@ export async function textosVigentes(): Promise<Record<TipoTextoLegal, TextoLega
  */
 export async function textosPendientes(c: Cuenta | undefined): Promise<TextoLegal[]> {
   if (!c?.textosAceptados) return [];
+  const conPerfil = c.textosVigentes;
+  if (conPerfil) {
+    // Con la API decide el perfil (vigente al instante). Si el texto cacheado es de otra versión,
+    // se pide sin caché, para mostrar y aceptar exactamente la vigente.
+    const tipos = TIPOS_TEXTO_LEGAL.filter((t) => {
+      const v = conPerfil[t];
+      return !!v && c.textosAceptados?.[t] !== v;
+    });
+    const textos = await Promise.all(
+      tipos.map(async (t) => {
+        const texto = await getTextoLegal(t);
+        return texto?.version === conPerfil[t] ? texto : getTextoLegal(t, { fresco: true });
+      }),
+    );
+    return textos.filter((t): t is TextoLegal => t !== null);
+  }
   const vigentes = await textosVigentes();
   return TIPOS_TEXTO_LEGAL.flatMap((t) => {
     const v = vigentes[t];

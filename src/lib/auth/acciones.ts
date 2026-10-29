@@ -10,7 +10,6 @@ import { usaApi } from "@/lib/plataforma-api/cliente";
 import {
   MENSAJE_TEXTOS_PENDIENTES,
   textosPendientes,
-  textosVigentes,
   versionesVistasVigentes,
 } from "./textos-legales";
 import {
@@ -578,15 +577,21 @@ export async function aceptarTextosLegalesAccion(
   versiones: Partial<Record<TipoTextoLegal, string>>,
 ): Promise<{ ok: boolean; mensaje?: string }> {
   const sesion = await idSesion();
-  const vigentes = await textosVigentes();
+  const pendientes = await textosPendientes(cuentaDeSesion(almacen(), sesion));
   const aceptadas: Partial<Record<TipoTextoLegal, string>> = {};
   for (const [tipo, version] of Object.entries(versiones) as [TipoTextoLegal, string][]) {
-    if (vigentes[tipo]?.version !== version)
+    if (pendientes.find((t) => t.tipo === tipo)?.version !== version) {
+      refresh();
       return { ok: false, mensaje: "Hay una versión más nueva: léela antes de aceptarla." };
+    }
     aceptadas[tipo] = version;
   }
-  if (usaApi()) await aceptarTextosLegalesApi(aceptadas);
-  else if (aceptarTextosLegales(almacen(), sesion, aceptadas)) await refrescarSesion(sesion);
+  if (usaApi()) {
+    const r = await aceptarTextosLegalesApi(aceptadas);
+    refresh();
+    return r;
+  }
+  if (aceptarTextosLegales(almacen(), sesion, aceptadas)) await refrescarSesion(sesion);
   else ir("/ingresar");
   refresh();
   return { ok: true };

@@ -1,4 +1,5 @@
 import "server-only";
+import { refresh } from "next/cache";
 import { RedirectType, redirect } from "next/navigation";
 import {
   ErrorApi,
@@ -232,6 +233,7 @@ export async function restablecerApi(token: string, contrasena: string): Promise
     }
     if (e instanceof ErrorApi && e.code === "VALIDATION_ERROR" && Array.isArray(e.details))
       return { errores: { contrasena: e.details.join(" ") } };
+    siHayTextosPendientes(e);
     return error(mensajeDeError(e));
   }
   // También queda cerrada la sesión de este navegador, si había.
@@ -333,6 +335,7 @@ export async function guardarPerfilApi(
       await pedirApi("/portal/me/profile", { metodo: "PATCH", cuerpo, token, portal: true });
     if (documento) await subir(token, documento.tipo, documento.archivo);
   } catch (e) {
+    siHayTextosPendientes(e);
     return error(mensajeDeError(e), valores);
   }
   return trasGuardarApi(estabaCompleto);
@@ -357,19 +360,41 @@ export async function marcarTourVistoApi() {
 
 /* ---------- Textos legales (R15) ---------- */
 
-/** POST /portal/me/legal-acceptances con las versiones vigentes que la persona aceptó. */
-export async function aceptarTextosLegalesApi(versiones: Partial<Record<TipoTextoLegal, string>>) {
+/**
+ * POST /portal/me/legal-acceptances con las versiones que la persona aceptó. Si mientras leía se
+ * publicó otra (409 TEXTO_LEGAL_DESACTUALIZADO), se avisa y el modal muestra la nueva.
+ */
+export async function aceptarTextosLegalesApi(
+  versiones: Partial<Record<TipoTextoLegal, string>>,
+): Promise<{ ok: boolean; mensaje?: string }> {
   const token = await tokenOIngresar("/");
-  await pedirApi("/portal/me/legal-acceptances", {
-    metodo: "POST",
-    token,
-    portal: true,
-    cuerpo: {
-      ...(versiones.TERMINOS && { terminos: Number(versiones.TERMINOS) }),
-      ...(versiones.POLITICA_DATOS && { politicaDatos: Number(versiones.POLITICA_DATOS) }),
-    },
-  });
-  await sincronizarCuentaApi(almacen());
+  try {
+    await pedirApi("/portal/me/legal-acceptances", {
+      metodo: "POST",
+      token,
+      portal: true,
+      cuerpo: {
+        ...(versiones.TERMINOS && { terminos: Number(versiones.TERMINOS) }),
+        ...(versiones.POLITICA_DATOS && { politicaDatos: Number(versiones.POLITICA_DATOS) }),
+      },
+    });
+    return { ok: true };
+  } catch (e) {
+    if (e instanceof ErrorApi && e.code === "TEXTO_LEGAL_DESACTUALIZADO")
+      return { ok: false, mensaje: "Hay una versión más nueva: léela antes de aceptarla." };
+    return { ok: false, mensaje: mensajeDeError(e) };
+  } finally {
+    // Con lo que diga ahora el perfil, el modal se cierra o muestra la versión nueva.
+    await sincronizarCuentaApi(almacen()).catch(() => undefined);
+  }
+}
+
+/**
+ * La API rechazó una escritura porque hay textos legales por aceptar (la caché del portal aún no
+ * lo sabía): se vuelve a pintar la página, que ya muestra el modal.
+ */
+function siHayTextosPendientes(e: unknown) {
+  if (e instanceof ErrorApi && e.code === "TEXTOS_LEGALES_PENDIENTES") refresh();
 }
 
 /* ---------- Baja ---------- */

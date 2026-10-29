@@ -49,6 +49,8 @@ export type Cuenta = {
    * de nuevo para seguir usando la cuenta. Sin el dato (la API aún no lo informa), nada pendiente.
    */
   textosAceptados?: Partial<Record<TipoTextoLegal, string>>;
+  /** Versión vigente de cada texto según la API ("" si no hay ninguna publicada). */
+  textosVigentes?: Partial<Record<TipoTextoLegal, string>>;
   /** Persona natural. */
   cedula?: string;
   nombres?: string;

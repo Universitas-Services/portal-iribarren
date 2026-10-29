@@ -246,15 +246,13 @@ type TextoLegalApi = {
   nota?: string | null;
 };
 
-/** GET /portal/legal-texts/{tipo}: la versión vigente. Se cachea; la API caída da null. */
-async function textoLegalApi(tipo: TipoTextoLegal): Promise<TextoLegal | null> {
-  "use cache";
+/** GET /portal/legal-texts/{tipo}: la versión vigente, o null (404: sin versión publicada). */
+async function pedirTextoLegal(tipo: TipoTextoLegal): Promise<TextoLegal | null> {
   try {
     const t = await pedirApi<TextoLegalApi>(`/portal/legal-texts/${tipo}`, {
       portal: true,
       publica: true,
     });
-    cacheLife("hours");
     return {
       tipo,
       version: String(t.version),
@@ -263,19 +261,29 @@ async function textoLegalApi(tipo: TipoTextoLegal): Promise<TextoLegal | null> {
       nota: t.nota ?? undefined,
     };
   } catch (e) {
-    // La API aún no tiene la ruta (404) o no responde: el portal enlaza a la página del texto.
+    // Sin versión publicada (404) o la API no responde: el portal enlaza a la página del texto.
     if (!(e instanceof ErrorApi) || (e.status !== 404 && !apiCaida(e, "textos legales"))) throw e;
-    cacheLife("minutes");
     return null;
   }
+}
+
+/** La misma lectura, cacheada unos minutos: una versión nueva se ve pronto. */
+async function textoLegalApi(tipo: TipoTextoLegal): Promise<TextoLegal | null> {
+  "use cache";
+  cacheLife("minutes");
+  return pedirTextoLegal(tipo);
 }
 
 /**
  * Términos de uso o política de datos vigentes, o null si no se pudieron leer. Sin la API, el
  * contenido provisional (en memoria: la ruta de desarrollo puede publicar una versión nueva).
  */
-export async function getTextoLegal(tipo: TipoTextoLegal): Promise<TextoLegal | null> {
-  if (usaApi()) return textoLegalApi(tipo);
+export async function getTextoLegal(
+  tipo: TipoTextoLegal,
+  { fresco = false }: { fresco?: boolean } = {},
+): Promise<TextoLegal | null> {
+  // `fresco`: sin caché, cuando el perfil dice que hay una versión más nueva que la cacheada.
+  if (usaApi()) return fresco ? pedirTextoLegal(tipo) : textoLegalApi(tipo);
   return textoLegalSimulado(tipo);
 }
 
