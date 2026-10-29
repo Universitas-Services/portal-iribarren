@@ -25,7 +25,8 @@ const TIPO_URL: Record<string, TipoParticipacion> = {
 
 /*
  * Formulario de participación (backlog 3.10; v3, formulario 3). Sin sesión lleva a iniciar
- * sesión con el aviso; con el perfil incompleto el envío queda bloqueado y dice qué falta.
+ * sesión con el aviso. Las opiniones solo piden la sesión; la propuesta formal, además, el
+ * perfil completo: si falta, el envío de la propuesta queda bloqueado y dice qué falta.
  */
 export default function ParticipaPage({ searchParams }: { searchParams: SearchParams }) {
   return (
@@ -60,7 +61,7 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
       noticias={noticias}
       tipoInicial={tipo}
       noticiaInicial={noticias.some((n) => n.slug === noticia) ? noticia : undefined}
-      puedeEnviar={u.puedeParticipar}
+      puedeProponer={u.puedeProponer}
       faltantes={u.faltantes}
       // Una clave por formulario abierto: un doble clic o un reintento no crean dos folios.
       idempotencia={randomUUID()}

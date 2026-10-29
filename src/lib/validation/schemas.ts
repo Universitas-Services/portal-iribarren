@@ -217,7 +217,10 @@ export const participacionSchema = z
     video: z.preprocess((v) => (v === "" ? undefined : v), videoSchema.optional()),
     /** Documento de soporte: obligatorio en la propuesta formal. */
     soporte: archivoSchema().optional(),
-    mostrarNombre: z.boolean(),
+    /** Pregunta Sí/No obligatoria: si la alcaldía lo publica, ¿aparece su nombre? */
+    mostrarNombre: z
+      .enum(["si", "no"], { error: "Elige si quieres que aparezca tu nombre." })
+      .transform((v) => v === "si"),
     idempotencia: z.string().min(8),
   })
   .superRefine((d, ctx) => {

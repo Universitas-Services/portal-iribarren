@@ -18,9 +18,13 @@ async function auditar(page: Page) {
   // Espera a que el contenido en streaming reemplace a los skeletons.
   await page.waitForLoadState("networkidle");
   await expect(page.locator(".skeleton")).toHaveCount(0);
-  // Toda imagen del portal describe lo que muestra (axe acepta alt="" como decorativa).
+  // Toda imagen visible del portal describe lo que muestra (axe acepta alt="" como decorativa).
+  // Se exceptúan las ocultas a propósito para los lectores de pantalla: las fotos del carrusel
+  // que no están a la vista (aria-hidden), los mosaicos del mapa (Leaflet les pone alt="") y
+  // los adornos que repiten un texto ya descrito.
+  const visibles = ':not([aria-hidden="true"]):not([role="presentation"]):not(.leaflet-tile)';
   await expect(
-    page.locator('main img:not([alt]), main img[alt=""], header img[alt=""]'),
+    page.locator(`main img:not([alt]), main img[alt=""]${visibles}, header img[alt=""]${visibles}`),
   ).toHaveCount(0);
   const { violations } = await new AxeBuilder({ page })
     .withTags(ETIQUETAS_WCAG)
@@ -153,8 +157,16 @@ test.describe("estados interactivos", () => {
     await page
       .getByLabel("Tu opinión")
       .fill("Opinión de prueba para revisar la accesibilidad del diálogo de confirmación.");
+    await page.getByRole("radio", { name: /^Sí, como/ }).check();
     await page.getByRole("button", { name: "Revisar y enviar" }).click();
     await expect(page.getByRole("dialog", { name: "Confirma tu envío" })).toBeVisible();
+    await auditar(page);
+  });
+
+  test("recorrido guiado abierto", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "Recorrido guiado de esta página" }).click();
+    await expect(page.getByRole("dialog").filter({ hasText: "Paso 1 de" })).toBeVisible();
     await auditar(page);
   });
 

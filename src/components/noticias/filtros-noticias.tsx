@@ -206,7 +206,7 @@ export function FiltrosNoticias({
                 onClick={() =>
                   cambiar(a.clave === "fecha" ? { desde: "", hasta: "" } : { [a.clave]: "" })
                 }
-                className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-rojo/10 px-3 font-display text-sm font-bold text-rojo transition-colors hover:bg-rojo/15"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-rojo/10 px-3 font-display text-sm font-bold text-rojo-oscuro transition-colors hover:bg-rojo/15"
               >
                 {a.texto}
                 <X size={14} aria-hidden="true" />

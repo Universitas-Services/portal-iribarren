@@ -40,6 +40,7 @@ export function MobileNav({ cuenta }: { cuenta: ReactNode }) {
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
+        data-tour="menu-movil"
         onClick={() => setOpen((v) => !v)}
         className="-mr-2 grid size-11 place-items-center text-tinta transition-transform duration-150 active:scale-[0.94]"
       >

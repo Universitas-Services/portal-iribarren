@@ -8,6 +8,13 @@ import type { EstadoParticipacion, TipoParticipacion } from "@/lib/api/types";
  */
 export const tieneSeguimiento = (tipo: TipoParticipacion) => tipo === "PROPUESTA_FORMAL";
 
+/**
+ * Cómo aparece el autor de un aporte publicado si eligió no mostrar su nombre. La alcaldía puede
+ * publicar cualquier aporte; la persona solo decide si aparece su nombre (decisión del cliente,
+ * 28-10-2026).
+ */
+export const AUTOR_ANONIMO = "Ciudadano de Iribarren";
+
 /** Cambios de estado que el Revisor puede hacer en una opinión: publicarla o despublicarla. */
 export const TRANSICIONES_OPINION: Partial<Record<EstadoParticipacion, EstadoParticipacion[]>> = {
   PENDIENTE: ["PUBLICADA"],

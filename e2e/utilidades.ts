@@ -44,3 +44,16 @@ export async function ingresar(page: Page, correo: string, contrasena = CONTRASE
   await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await page.waitForURL((url) => url.pathname !== "/ingresar");
 }
+
+/**
+ * Una cuenta nueva ve el recorrido guiado al entrar por primera vez: se salta, y así queda
+ * marcado como visto (no vuelve a abrirse).
+ */
+export async function saltarRecorrido(page: Page) {
+  const recorrido = page.getByRole("dialog").filter({ hasText: /Paso 1 de/ });
+  await expect(recorrido).toContainText("Te damos la bienvenida", { timeout: 15_000 });
+  await recorrido.getByRole("button", { name: "Saltar el recorrido" }).click();
+  await expect(recorrido).toHaveCount(0);
+  // Marcarlo como visto renueva la sesión y la página: se espera a que termine.
+  await page.waitForLoadState("networkidle");
+}

@@ -196,8 +196,29 @@ describe("traducción de datos", () => {
       organization: null,
     };
     const c = cuentaDePerfil(perfil);
-    expect(c.estadoVerificacion).toBe("RECHAZADO");
+    // No hay perfiles rechazados: un RECHAZADO de la API ya no cambia el estado.
+    expect(c.estadoVerificacion).toBe("VERIFICADO");
     expect(c.bajaSolicitada).toBe("2026-10-27T13:00:00.000Z");
+    // Sin `textosLegales` (la API aún no lo manda) no se pide aceptar nada de nuevo.
+    expect(c.textosAceptados).toBeUndefined();
+    expect(
+      cuentaDePerfil({
+        ...perfil,
+        textosLegales: {
+          terminos: { aceptada: 2, vigente: 3 },
+          politicaDatos: { aceptada: null, vigente: 1 },
+        },
+      }).textosAceptados,
+    ).toEqual({ TERMINOS: "2", POLITICA_DATOS: "" });
+    // Sin `tourVistoAt` (la API aún no lo manda) el recorrido no se lanza solo.
+    expect(resumenCuenta(c).tourPendiente).toBe(false);
+    expect(resumenCuenta(cuentaDePerfil({ ...perfil, tourVistoAt: null })).tourPendiente).toBe(
+      true,
+    );
+    expect(
+      resumenCuenta(cuentaDePerfil({ ...perfil, tourVistoAt: "2026-10-28T12:00:00.000Z" }))
+        .tourPendiente,
+    ).toBe(false);
   });
 
   it("traduce el correo sin verificar y el enlace inválido", () => {

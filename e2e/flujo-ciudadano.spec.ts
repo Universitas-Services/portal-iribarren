@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { PDF, PNG, ciudadanoNuevo, elegir, ingresar } from "./utilidades";
+import { PDF, PNG, ciudadanoNuevo, elegir, ingresar, saltarRecorrido } from "./utilidades";
 
 /*
  * Backlog 3.13: registrarse, verificar el correo, completar el perfil, enviar una propuesta y
@@ -42,6 +42,8 @@ test("de registrarse a ver el cambio de estado de su propuesta", async ({ page }
   await test.step("primer ingreso: lleva al asistente de perfil", async () => {
     await ingresar(page, c.correo, c.contrasena);
     await expect(page).toHaveURL(/\/mi-cuenta/);
+    // Primer ingreso: el recorrido guiado se abre solo.
+    await saltarRecorrido(page);
     await expect(page.getByRole("progressbar", { name: "Avance del perfil" })).toHaveAttribute(
       "aria-valuenow",
       "0",
@@ -59,7 +61,7 @@ test("de registrarse a ver el cambio de estado de su propuesta", async ({ page }
     await page.locator("#archivo-IDENTIDAD").setInputFiles(PNG);
     await page.getByRole("button", { name: "Subir documento" }).click();
     await expect(
-      page.getByText("Tu perfil está completo y verificado, ya puedes participar."),
+      page.getByText("Tu perfil está completo y verificado, ya puedes enviar propuestas formales."),
     ).toBeVisible();
     // La verificación es automática al completar el perfil: no espera al Revisor.
     await expect(page.getByText("Estado de verificación: Verificado")).toBeVisible();
@@ -83,7 +85,10 @@ test("de registrarse a ver el cambio de estado de su propuesta", async ({ page }
         "Propuesta de prueba automatizada: ampliar las aceras de la avenida 20 y ordenar el transporte público en el centro.",
       );
     await page.locator("#soporte").setInputFiles(PDF);
-    await page.getByLabel(/Mostrar mi nombre si se publica/).check();
+    // Sin responder si aparece el nombre, no deja seguir: la pregunta no trae respuesta por defecto.
+    await page.getByRole("button", { name: "Revisar y enviar" }).click();
+    await expect(page.getByText("Elige si quieres que aparezca tu nombre.").first()).toBeVisible();
+    await page.getByRole("radio", { name: /^Sí, como/ }).check();
     await page.getByRole("button", { name: "Revisar y enviar" }).click();
 
     const dialogo = page.getByRole("dialog", { name: "Confirma tu envío" });

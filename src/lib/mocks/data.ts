@@ -587,7 +587,7 @@ export const posts: Post[] = [
     cuerpo: `<p><strong>¿Qué cambia con este PDUL?</strong></p>
 <p>El plan anterior es de 2003. La ciudad creció y hoy necesitamos ordenar ese crecimiento con información actualizada y con la participación de quienes viven en cada parroquia.</p>
 <p><strong>¿Qué pasa con una propuesta enviada desde el portal?</strong></p>
-<p>Recibe un folio, un revisor la evalúa y la persona recibe una respuesta. Las aprobadas pueden publicarse si el autor lo autoriza.</p>${nota}`,
+<p>Recibe un folio, un revisor la evalúa y la persona recibe una respuesta. Las aprobadas pueden publicarse; el autor decide si aparece su nombre.</p>${nota}`,
   },
   {
     slug: "jornada-juan-de-villegas",

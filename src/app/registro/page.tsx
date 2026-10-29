@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { FormRegistroNatural, FormRegistroOrganizacion } from "@/components/cuenta/formularios";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
+import { getTextoLegal } from "@/lib/api";
 import { soloInvitados } from "@/lib/auth/sesion";
 
 export const metadata: Metadata = {
@@ -46,6 +47,15 @@ export default function RegistroPage({ searchParams }: { searchParams: SearchPar
   );
 }
 
+/** Los textos vigentes, para leerlos en el modal del registro. */
+async function textosRegistro() {
+  const [TERMINOS, POLITICA_DATOS] = await Promise.all([
+    getTextoLegal("TERMINOS"),
+    getTextoLegal("POLITICA_DATOS"),
+  ]);
+  return { TERMINOS, POLITICA_DATOS };
+}
+
 async function Paso({ searchParams }: { searchParams: SearchParams }) {
   await soloInvitados();
   const tipo = (await searchParams).tipo;
@@ -69,7 +79,11 @@ async function Paso({ searchParams }: { searchParams: SearchParams }) {
             Cambiar tipo de cuenta
           </Link>
         </div>
-        {tipo === "natural" ? <FormRegistroNatural /> : <FormRegistroOrganizacion />}
+        {tipo === "natural" ? (
+          <FormRegistroNatural textos={await textosRegistro()} />
+        ) : (
+          <FormRegistroOrganizacion textos={await textosRegistro()} />
+        )}
         <p className="mt-6 text-center text-sm text-tinta">
           ¿Ya tienes cuenta?{" "}
           <Link href="/ingresar" className="font-semibold text-rojo hover:underline">

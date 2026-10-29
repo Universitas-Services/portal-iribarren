@@ -13,6 +13,20 @@ export async function ThermometerTile({ className = "" }: { className?: string }
   const estadoDe = (i: number): Estado =>
     i < faseActual ? "cumplida" : i === faseActual ? "actual" : "proxima";
 
+  // Sin fases (la API no respondió): el mosaico no muestra un «1/0».
+  if (fases.length === 0)
+    return (
+      <Tile aria-labelledby="proceso-titulo" className={`bg-papel p-6 sm:p-8 ${className}`}>
+        <h2 id="proceso-titulo" className="font-display text-2xl font-extrabold text-noche">
+          ¿En qué etapa está el PDUL?
+        </h2>
+        <p className="mt-2 leading-relaxed text-tinta">
+          El avance del proceso no está disponible en este momento. Vuelve a intentarlo en unos
+          minutos.
+        </p>
+      </Tile>
+    );
+
   return (
     <Tile aria-labelledby="proceso-titulo" className={`bg-papel p-6 sm:p-8 ${className}`}>
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">

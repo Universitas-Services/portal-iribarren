@@ -126,7 +126,7 @@ export function NewsCard({
 
       <div className="flex flex-1 flex-col p-6">
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-tinta/75">
-          <span className="rounded-full bg-rojo/10 px-2.5 py-0.5 font-display text-xs font-bold text-rojo">
+          <span className="rounded-full bg-rojo/10 px-2.5 py-0.5 font-display text-xs font-bold text-rojo-oscuro">
             {post.categoria}
           </span>
           {post.ejemplo && <EtiquetaEjemplo />}

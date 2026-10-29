@@ -1,9 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Roboto } from "next/font/google";
+import { Suspense } from "react";
+import { AceptacionSesion } from "@/components/cuenta/aceptacion-sesion";
 import { AgenteIus } from "@/components/layout/agente-ius";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { VigiaSesion } from "@/components/layout/vigia-sesion";
+import { Tour } from "@/components/tour/tour";
+import { TourSesion } from "@/components/tour/tour-sesion";
 import { siteUrl } from "@/env";
 import { RUTAS_PRIVADAS } from "@/lib/auth/rutas-privadas";
 import { esDemo } from "@/lib/auth/sesion";
@@ -72,7 +76,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <SiteFooter />
-        <AgenteIus />
+        <AgenteIus
+          tour={
+            <Suspense fallback={<Tour conSesion={false} pendiente={false} />}>
+              <TourSesion />
+            </Suspense>
+          }
+        />
+        {/* Textos legales actualizados: la cuenta no se usa hasta aceptarlos (R15). */}
+        <Suspense>
+          <AceptacionSesion />
+        </Suspense>
         <VigiaSesion minutos={INACTIVIDAD_MS / 60_000} privadas={RUTAS_PRIVADAS} />
       </body>
     </html>

@@ -79,12 +79,24 @@ describe("participacionSchema", () => {
     categoriaTecnica: "Vialidad y Transporte",
     descripcion:
       "Propongo mejorar la señalización y los pasos peatonales de la avenida principal del sector.",
-    mostrarNombre: false,
+    mostrarNombre: "no",
     idempotencia: "clave-de-prueba-123",
   };
 
   it("acepta una opinión general sin adjunto", () => {
     expect(participacionSchema.safeParse(base).success).toBe(true);
+  });
+
+  it("exige responder Sí o No a mostrar el nombre, sin respuesta por defecto", () => {
+    const { mostrarNombre: _, ...sinRespuesta } = base;
+    const r = participacionSchema.safeParse(sinRespuesta);
+    expect(r.error?.issues[0]).toMatchObject({
+      path: ["mostrarNombre"],
+      message: "Elige si quieres que aparezca tu nombre.",
+    });
+    expect(participacionSchema.safeParse({ ...base, mostrarNombre: "on" }).success).toBe(false);
+    expect(participacionSchema.parse({ ...base, mostrarNombre: "si" }).mostrarNombre).toBe(true);
+    expect(participacionSchema.parse(base).mostrarNombre).toBe(false);
   });
 
   it("exige adjunto y ubicación en la propuesta formal y acepta PNG", () => {

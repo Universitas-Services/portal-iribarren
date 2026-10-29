@@ -9,6 +9,7 @@ import {
   type PaginaDocumentosApi,
 } from "@/lib/documentos/consultas";
 import { banners, documentos, posts, processStatus } from "@/lib/mocks/data";
+import { textoLegalSimulado } from "@/lib/mocks/textos-legales";
 import { paraPortada, relacionadas, consultarNoticias } from "@/lib/noticias/consultas";
 import { ErrorApi, pedirApi, urlApi, usaApi } from "@/lib/plataforma-api/cliente";
 import type {
@@ -23,6 +24,8 @@ import type {
   Post,
   PostSummary,
   ProcessStatus,
+  TextoLegal,
+  TipoTextoLegal,
 } from "./types";
 
 /*
@@ -80,7 +83,36 @@ const HTML_PERMITIDO: sanitizeHtml.IOptions = {
   },
 };
 
+/**
+ * La API no responde o falla (5xx): el contenido del Inicio se muestra vacío en vez de tumbar la
+ * página entera. El error queda en el registro del servidor.
+ */
+function apiCaida(e: unknown, que: string) {
+  if (!(e instanceof ErrorApi) || e.status < 500) return false;
+  console.error(`[portal] No se pudo leer ${que} de la API: ${e.code}`);
+  return true;
+}
+
+/**
+ * Fases del PDUL y fase actual (termómetro y «¿En qué va el proceso?»). Con plataforma-api,
+ * GET /portal/process (guía R10): el estado de cada fase ya viene calculado (D3: las anteriores
+ * «Completado», la actual «En curso», las siguientes lo que fije el Operador).
+ */
 export async function getProcess(): Promise<ProcessStatus> {
+  "use cache";
+  cacheLife("minutes");
+  if (usaApi()) {
+    try {
+      const r = await pedirApi<Omit<ProcessStatus, "ejemplo">>("/portal/process", {
+        portal: true,
+        publica: true,
+      });
+      return { fases: r.fases, faseActual: r.faseActual, ejemplo: false };
+    } catch (e) {
+      if (!apiCaida(e, "proceso")) throw e;
+      return { fases: [], faseActual: 0, ejemplo: false };
+    }
+  }
   await simularRed(0.6);
   return processStatus;
 }
@@ -110,12 +142,21 @@ export async function getMarcoLegal(): Promise<ItemMarcoLegal[]> {
 }
 
 /**
- * Inicio elegido por la alcaldía (GET /portal/home). Simulado hasta que exista la API: el
- * mensaje del alcalde queda vacío y el Inicio muestra el texto provisional (decisión D10).
+ * Inicio elegido por la alcaldía. Con plataforma-api, GET /portal/home (guía R10): el mensaje
+ * del alcalde es una noticia de texto publicada, o null. Con null (y sin la API), el Inicio
+ * muestra el texto provisional (decisión D10).
  */
 export async function getHome(): Promise<InicioPortal> {
   "use cache";
   cacheLife("minutes");
+  if (usaApi()) {
+    try {
+      return await pedirApi<InicioPortal>("/portal/home", { portal: true, publica: true });
+    } catch (e) {
+      if (!apiCaida(e, "inicio")) throw e;
+      return { mensajeAlcalde: null };
+    }
+  }
   await simularRed(1);
   return { mensajeAlcalde: null };
 }
@@ -126,10 +167,69 @@ export async function getHome(): Promise<InicioPortal> {
  */
 export async function getBanners(): Promise<Banner[]> {
   "use cache";
+  if (usaApi()) {
+    try {
+      // GET /portal/banners (guía R10) ya trae las 6 primeras vigentes, en su orden.
+      const r = await pedirApi<{ data: Omit<Banner, "orden" | "vigencia">[] }>("/portal/banners", {
+        portal: true,
+        publica: true,
+      });
+      cacheLife("hours");
+      return r.data.map((b, orden) => ({ ...b, orden }));
+    } catch (e) {
+      if (!apiCaida(e, "diapositivas")) throw e;
+      // Se reintenta pronto: el fallo no queda guardado por horas.
+      cacheLife("minutes");
+      return [];
+    }
+  }
   cacheLife("hours");
   await simularRed(1);
   // La tarjeta muestra hasta 6 diapositivas a la vez.
   return bannersVigentes(banners, Date.now()).slice(0, 6);
+}
+
+/* ---------- Textos legales (R15, pedido a backend) ---------- */
+
+type TextoLegalApi = {
+  tipo: TipoTextoLegal;
+  version: number;
+  publicadoAt: string;
+  html: string;
+  nota?: string | null;
+};
+
+/** GET /portal/legal-texts/{tipo}: la versión vigente. Se cachea; la API caída da null. */
+async function textoLegalApi(tipo: TipoTextoLegal): Promise<TextoLegal | null> {
+  "use cache";
+  try {
+    const t = await pedirApi<TextoLegalApi>(`/portal/legal-texts/${tipo}`, {
+      portal: true,
+      publica: true,
+    });
+    cacheLife("hours");
+    return {
+      tipo,
+      version: String(t.version),
+      publicadoEl: t.publicadoAt,
+      html: sanitizeHtml(t.html, HTML_PERMITIDO),
+      nota: t.nota ?? undefined,
+    };
+  } catch (e) {
+    // La API aún no tiene la ruta (404) o no responde: el portal enlaza a la página del texto.
+    if (!(e instanceof ErrorApi) || (e.status !== 404 && !apiCaida(e, "textos legales"))) throw e;
+    cacheLife("minutes");
+    return null;
+  }
+}
+
+/**
+ * Términos de uso o política de datos vigentes, o null si no se pudieron leer. Sin la API, el
+ * contenido provisional (en memoria: la ruta de desarrollo puede publicar una versión nueva).
+ */
+export async function getTextoLegal(tipo: TipoTextoLegal): Promise<TextoLegal | null> {
+  if (usaApi()) return textoLegalApi(tipo);
+  return textoLegalSimulado(tipo);
 }
 
 /* ---------- Noticias (guía R7: /portal/posts) ---------- */
@@ -178,7 +278,14 @@ async function portadaApi(limit: number): Promise<PostSummary[]> {
 }
 
 export async function getLatestPosts(limit = 3): Promise<PostSummary[]> {
-  if (usaApi()) return portadaApi(limit);
+  if (usaApi()) {
+    try {
+      return await portadaApi(limit);
+    } catch (e) {
+      if (!apiCaida(e, "noticias de portada")) throw e;
+      return [];
+    }
+  }
   await simularRed(1.4);
   return paraPortada(posts, limit);
 }

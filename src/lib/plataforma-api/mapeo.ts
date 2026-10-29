@@ -74,8 +74,8 @@ function documento(d: PerfilApi["identityDocuments"][number]): DocumentoCargado 
 
 /**
  * Cuenta del portal armada desde GET /portal/me/profile. La contraseña no viaja (hash vacío): la
- * valida la API. El estado sale de la API: RECHAZADO si el Revisor lo rechazó; si no, COMPLETO
- * equivale a VERIFICADO en el portal. La baja solicitada también viene de la API.
+ * valida la API. COMPLETO equivale a VERIFICADO en el portal. No hay perfiles rechazados (28-10-2026):
+ * si la API todavía manda `verificacion: "RECHAZADO"`, no se toma en cuenta. La baja solicitada también viene de la API.
  */
 export function cuentaDePerfil(p: PerfilApi): Cuenta {
   const documentos: Cuenta["documentos"] = {};
@@ -91,12 +91,14 @@ export function cuentaDePerfil(p: PerfilApi): Cuenta {
     verificado: true,
     documentos,
     estadoVerificacion:
-      p.verificacion === "RECHAZADO"
-        ? ("RECHAZADO" as const)
-        : p.perfilEstado === "COMPLETO"
-          ? ("VERIFICADO" as const)
-          : ("PENDIENTE" as const),
+      p.perfilEstado === "COMPLETO" ? ("VERIFICADO" as const) : ("PENDIENTE" as const),
     bajaSolicitada: p.bajaSolicitada ?? undefined,
+    // Sin el campo (la API aún no lo tiene) se toma como visto: así no se lanza en cada ingreso.
+    tourVistoAt: p.tourVistoAt === null ? undefined : (p.tourVistoAt ?? ""),
+    textosAceptados: p.textosLegales && {
+      TERMINOS: String(p.textosLegales.terminos.aceptada ?? ""),
+      POLITICA_DATOS: String(p.textosLegales.politicaDatos.aceptada ?? ""),
+    },
   };
   if (p.tipoPerfil === "ORGANIZACION") {
     return {
@@ -135,6 +137,10 @@ export function mensajeDeError(e: unknown): string {
   switch (e.code) {
     case "INVALID_CREDENTIALS":
       return "El correo o la contraseña no son correctos.";
+    case "TEXTO_LEGAL_DESACTUALIZADO":
+      return "Los términos de uso o la política de datos se actualizaron. Léelos y acéptalos de nuevo.";
+    case "TEXTOS_LEGALES_PENDIENTES":
+      return "Se actualizaron los términos de uso o la política de datos: acéptalos para continuar.";
     case "ACCOUNT_LOCKED": {
       const s = (e.details as { retryAfterSeconds?: number } | undefined)?.retryAfterSeconds;
       const min = s ? Math.max(1, Math.ceil(s / 60)) : 15;

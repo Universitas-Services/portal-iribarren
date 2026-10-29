@@ -1,6 +1,6 @@
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import type { EnlaceVideo } from "@/lib/noticias/video";
-import { TRANSICIONES_OPINION, tieneSeguimiento } from "@/lib/participacion";
+import { AUTOR_ANONIMO, TRANSICIONES_OPINION, tieneSeguimiento } from "@/lib/participacion";
 export { tieneSeguimiento };
 import type {
   CategoriaTecnica,
@@ -8,6 +8,7 @@ import type {
   EstadoVerificacion,
   Parroquia,
   TipoParticipacion,
+  TipoTextoLegal,
 } from "@/lib/api/types";
 
 /*
@@ -38,6 +39,16 @@ export type Cuenta = {
   estadoVerificacion: EstadoVerificacion;
   /** Fecha ISO en que pidió la baja de la cuenta. */
   bajaSolicitada?: string;
+  /**
+   * Fecha ISO en que terminó o saltó el recorrido guiado. Sin ella, el recorrido se lanza solo en
+   * el primer ingreso. Vacía ("") si la API no lo informa: se toma como visto.
+   */
+  tourVistoAt?: string;
+  /**
+   * Versión aceptada de cada texto legal. Si una es distinta de la vigente, tiene que aceptarla
+   * de nuevo para seguir usando la cuenta. Sin el dato (la API aún no lo informa), nada pendiente.
+   */
+  textosAceptados?: Partial<Record<TipoTextoLegal, string>>;
   /** Persona natural. */
   cedula?: string;
   nombres?: string;
@@ -159,7 +170,7 @@ const porCorreo = (alm: Almacen, correo: string) =>
 
 /* ---------- Registro ---------- */
 
-export type DatosRegistro =
+export type DatosRegistro = (
   | {
       tipo: "NATURAL";
       cedula: string;
@@ -175,7 +186,11 @@ export type DatosRegistro =
       rif: string;
       correo: string;
       contrasena: string;
-    };
+    }
+) & {
+  /** Versiones de los textos legales que aceptó al registrarse. */
+  textosAceptados?: Cuenta["textosAceptados"];
+};
 
 export type ResultadoRegistro =
   /** Respuesta neutra (202): igual exista o no la cuenta, para no revelar correos registrados. */
@@ -379,9 +394,12 @@ export function pasosPerfil(c: Cuenta): PasoPerfil[] {
 
 export const perfilCompleto = (c: Cuenta) => pasosPerfil(c).every((p) => p.hecho);
 
-/** Puede enviar participaciones: perfil completo y sin rechazo del Revisor. */
-export const puedeParticipar = (c: Cuenta) =>
-  perfilCompleto(c) && c.estadoVerificacion !== "RECHAZADO";
+/**
+ * Solo la propuesta formal exige el perfil completo; las opiniones (general o sobre una noticia)
+ * solo piden la sesión (decisión del cliente, 28-10-2026).
+ */
+export const puedeEnviarTipo = (c: Cuenta, tipo: TipoParticipacion) =>
+  tipo !== "PROPUESTA_FORMAL" || perfilCompleto(c);
 
 /** Lo que falta para completar el perfil, en palabras para la persona. */
 export const faltantesPerfil = (c: Cuenta) =>
@@ -391,10 +409,9 @@ export const faltantesPerfil = (c: Cuenta) =>
 
 /**
  * La verificación es automática: un perfil completo queda VERIFICADO (y sigue así aunque se
- * reemplace un documento). Solo un RECHAZADO puesto desde el admin se conserva.
+ * reemplace un documento).
  */
 function sincronizarVerificacion(c: Cuenta) {
-  if (c.estadoVerificacion === "RECHAZADO") return;
   c.estadoVerificacion = perfilCompleto(c) ? "VERIFICADO" : "PENDIENTE";
 }
 
@@ -470,10 +487,34 @@ export function resumenCuenta(c: Cuenta) {
     tipo: c.tipo,
     correo: c.correo,
     perfilCompleto: perfilCompleto(c),
-    puedeParticipar: puedeParticipar(c),
+    /** Puede enviar una propuesta formal; las opiniones no tienen requisito. */
+    puedeProponer: perfilCompleto(c),
     faltantes: faltantesPerfil(c),
     estadoVerificacion: c.estadoVerificacion,
+    /** Primer ingreso: el recorrido guiado se lanza solo. */
+    tourPendiente: c.tourVistoAt === undefined,
   };
+}
+
+/** Registra la aceptación de las versiones vigentes de los textos legales. */
+export function aceptarTextosLegales(
+  alm: Almacen,
+  sesion: string | undefined,
+  versiones: Partial<Record<TipoTextoLegal, string>>,
+) {
+  const c = cuentaDeSesion(alm, sesion);
+  if (!c) return false;
+  c.textosAceptados = { ...c.textosAceptados, ...versiones };
+  c.actualizadaEl = Date.now();
+  return true;
+}
+
+/** Marca el recorrido guiado como visto (al terminarlo o saltarlo). */
+export function marcarTourVisto(alm: Almacen, sesion?: string, ahora = Date.now()) {
+  const c = cuentaDeSesion(alm, sesion);
+  if (!c) return false;
+  c.tourVistoAt ??= new Date(ahora).toISOString();
+  return true;
 }
 
 export type ResumenCuenta = ReturnType<typeof resumenCuenta>;
@@ -524,7 +565,7 @@ export function enviarParticipacion(
   const clave = `${c.id}:${idempotencia}`;
   const previo = alm.idempotencia.get(clave);
   if (previo) return { estado: "OK", folio: previo };
-  if (!puedeParticipar(c)) return { estado: "PERFIL_INCOMPLETO" };
+  if (!puedeEnviarTipo(c, d.tipo)) return { estado: "PERFIL_INCOMPLETO" };
 
   alm.secuencia += 1;
   const fecha = new Date(ahora);
@@ -562,7 +603,6 @@ export type ResultadoTransicion =
   | { estado: "NO_EXISTE" }
   | { estado: "TRANSICION_INVALIDA" }
   | { estado: "FALTA_MOTIVO" }
-  | { estado: "SIN_NOMBRE_AUTORIZADO" }
   /** Las opiniones solo se publican o despublican: no pasan por revisión ni rechazo. */
   | { estado: "SIN_SEGUIMIENTO" };
 
@@ -584,7 +624,6 @@ export function cambiarEstadoParticipacion(
   } else if (!TRANSICIONES[p.estado].includes(nuevo)) return { estado: "TRANSICION_INVALIDA" };
   const texto = comentario?.trim() || undefined;
   if (nuevo === "RECHAZADA" && !texto) return { estado: "FALTA_MOTIVO" };
-  if (nuevo === "PUBLICADA" && !p.mostrarNombre) return { estado: "SIN_NOMBRE_AUTORIZADO" };
   p.estado = nuevo;
   p.historial.push({ estado: nuevo, fecha: new Date(ahora).toISOString(), comentario: texto });
   return { estado: "OK" };
@@ -642,31 +681,39 @@ export function filtrarParticipaciones(lista: Participacion[], f: FiltroParticip
       (!f.parroquia || p.parroquia === f.parroquia) &&
       (!f.categoriaTecnica || p.categoriaTecnica === f.categoriaTecnica) &&
       (!f.folio || coincideFolio(p.folio, f.folio)) &&
-      (!q || sinTildes(`${p.descripcion} ${p.sector} ${p.autor}`).includes(q)),
+      // El nombre de quien no lo autorizó no se busca: encontrarlo por su nombre lo delataría.
+      (!q || sinTildes(`${p.descripcion} ${p.sector} ${autorVisible(p)}`).includes(q)),
   );
 }
 
+const autorVisible = (p: Participacion) => (p.mostrarNombre ? p.autor : AUTOR_ANONIMO);
+
 /**
  * Lo que puede ver cualquier visitante de una participación publicada: nunca el id de la
- * cuenta ni datos de contacto. El autor solo aparece si autorizó mostrar su nombre (v3, 5.1).
+ * cuenta ni datos de contacto. Sin nombre autorizado, el autor es «Ciudadano de Iribarren».
  */
 export function vistaPublica(p: Participacion) {
   // La ubicación exacta no se publica: puede ser la casa de la persona.
-  const { cuentaId: _cuenta, historial, mostrarNombre, autor, ubicacion: _ubicacion, ...resto } = p;
+  const {
+    cuentaId: _cuenta,
+    historial,
+    mostrarNombre: _mostrar,
+    autor: _autor,
+    ubicacion: _ubicacion,
+    ...resto
+  } = p;
   return {
     ...resto,
-    autor: mostrarNombre ? autor : undefined,
+    autor: autorVisible(p),
     publicadaEl: historial.find((h) => h.estado === "PUBLICADA")?.fecha ?? p.creadaEl,
   };
 }
 
 export type PropuestaPublica = ReturnType<typeof vistaPublica>;
 
-/** Galería pública: solo PUBLICADA y con nombre autorizado, de la más reciente a la más antigua. */
+/** Galería pública: todo lo PUBLICADA, de lo más reciente a lo más antiguo. */
 export function propuestasPublicadas(alm: Almacen, f: FiltroParticipaciones = {}) {
-  const publicadas = [...alm.participaciones.values()].filter(
-    (p) => p.estado === "PUBLICADA" && p.mostrarNombre,
-  );
+  const publicadas = [...alm.participaciones.values()].filter((p) => p.estado === "PUBLICADA");
   return filtrarParticipaciones(publicadas, { ...f, estado: undefined })
     .map(vistaPublica)
     .sort((a, b) => b.publicadaEl.localeCompare(a.publicadaEl));
@@ -674,5 +721,5 @@ export function propuestasPublicadas(alm: Almacen, f: FiltroParticipaciones = {}
 
 export function propuestaPublica(alm: Almacen, folio: string) {
   const p = alm.participaciones.get(folio.toUpperCase());
-  return p && p.estado === "PUBLICADA" && p.mostrarNombre ? vistaPublica(p) : undefined;
+  return p && p.estado === "PUBLICADA" ? vistaPublica(p) : undefined;
 }

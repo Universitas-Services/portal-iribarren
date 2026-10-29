@@ -389,17 +389,27 @@ export function CampoSelect({
 /**
  * Diálogo modal nativo: el navegador atrapa el foco, Escape lo cierra y el resto de la página
  * queda inerte. Al cerrarse, el foco vuelve al control que lo abrió.
+ * - `largo`: para textos extensos; el cuerpo tiene scroll propio y `pie` queda siempre visible.
+ * - `bloqueante`: ni Escape ni el fondo lo cierran (solo sus propios botones).
  */
 export function Dialogo({
   abierto,
   onCerrar,
   titulo,
+  subtitulo,
   children,
+  pie,
+  largo = false,
+  bloqueante = false,
 }: {
   abierto: boolean;
   onCerrar: () => void;
   titulo: string;
+  subtitulo?: ReactNode;
   children: ReactNode;
+  pie?: ReactNode;
+  largo?: boolean;
+  bloqueante?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const idTitulo = useId();
@@ -415,19 +425,45 @@ export function Dialogo({
     <dialog
       ref={ref}
       aria-labelledby={idTitulo}
-      onClose={onCerrar}
+      onCancel={(e) => {
+        // Escape: un diálogo bloqueante no se cierra.
+        if (bloqueante) e.preventDefault();
+      }}
+      onClose={() => {
+        // Si el navegador lo cerró igual (p. ej. un segundo Escape), se vuelve a abrir.
+        if (bloqueante && abierto) ref.current?.showModal();
+        else onCerrar();
+      }}
       onClick={(e) => {
         // Clic en el fondo: cierra.
-        if (e.target === ref.current) onCerrar();
+        if (!bloqueante && e.target === ref.current) onCerrar();
       }}
-      className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-tarjeta bg-papel p-0 text-tinta shadow-elevada backdrop:bg-noche/60"
+      className={`m-auto w-[calc(100%-2rem)] rounded-tarjeta bg-papel p-0 text-tinta shadow-elevada backdrop:bg-noche/60 ${largo ? "max-w-2xl" : "max-w-lg"}`}
     >
-      <div className="p-6 sm:p-8">
-        <h2 id={idTitulo} className="font-display text-xl font-extrabold text-noche">
-          {titulo}
-        </h2>
-        {children}
-      </div>
+      {largo ? (
+        <div className="flex max-h-[calc(100dvh-2rem)] flex-col">
+          <div className="border-b border-linea px-6 pt-6 pb-4 sm:px-8">
+            <h2 id={idTitulo} className="font-display text-xl font-extrabold text-noche">
+              {titulo}
+            </h2>
+            {subtitulo && <p className="mt-1 text-sm text-tinta/80">{subtitulo}</p>}
+          </div>
+          {/* Enfocable: con el teclado se puede desplazar el texto. */}
+          <div tabIndex={0} className="min-h-0 flex-1 overflow-y-auto px-6 py-5 sm:px-8">
+            {children}
+          </div>
+          {pie && <div className="border-t border-linea px-6 py-4 sm:px-8">{pie}</div>}
+        </div>
+      ) : (
+        <div className="p-6 sm:p-8">
+          <h2 id={idTitulo} className="font-display text-xl font-extrabold text-noche">
+            {titulo}
+          </h2>
+          {subtitulo && <p className="mt-1 text-sm text-tinta/80">{subtitulo}</p>}
+          {children}
+          {pie}
+        </div>
+      )}
     </dialog>
   );
 }

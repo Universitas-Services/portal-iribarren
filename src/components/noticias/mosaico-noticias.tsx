@@ -39,7 +39,7 @@ const pieza =
 function Meta({ post, claro = false }: { post: PostSummary; claro?: boolean }) {
   return (
     <p
-      className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-xs ${claro ? "text-papel/85" : "text-tinta/75"}`}
+      className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-xs ${claro ? "text-papel" : "text-tinta/75"}`}
     >
       <span
         className={`rounded-full px-2.5 py-0.5 font-display font-bold ${
@@ -228,7 +228,7 @@ function PiezaTexto({ post }: { post: PostSummary }) {
         />
         <p
           className={`mt-2 line-clamp-2 max-w-xl text-sm leading-relaxed sm:line-clamp-1 ${
-            oscuro ? "text-noche/85" : "text-papel/85"
+            oscuro ? "text-noche/85" : "text-papel"
           }`}
         >
           {post.resumen}

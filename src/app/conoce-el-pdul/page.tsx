@@ -347,7 +347,7 @@ export default function ConocePage() {
             <h2 id="participa-titulo" className="font-display text-2xl font-extrabold sm:text-3xl">
               {LLAMADO.titulo}
             </h2>
-            <p className="mt-3 max-w-xl leading-relaxed text-papel/90">{LLAMADO.texto}</p>
+            <p className="mt-3 max-w-xl leading-relaxed text-papel">{LLAMADO.texto}</p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Suspense fallback={<BotonLlamado href="/registro" texto="Regístrate y participa" />}>
                 <LlamadoSegunSesion />
@@ -413,7 +413,7 @@ async function ListaMarcoLegal() {
             {boton && (
               <Link
                 href={boton.href}
-                className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-rojo/10 px-4 font-display text-sm font-bold text-rojo transition-colors hover:bg-rojo/15"
+                className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-rojo/10 px-4 font-display text-sm font-bold text-rojo-oscuro transition-colors hover:bg-rojo/15"
               >
                 {boton.texto}
                 <ArrowRight size={16} aria-hidden="true" />
