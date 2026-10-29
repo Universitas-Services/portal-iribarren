@@ -9,7 +9,9 @@
  * con ellos se usa noche. El rosa (#E63956) es solo decorativo.
  */
 @theme {
-  --color-rojo: #e11d48;
+  /* Un punto más oscuro que el #e11d48 de la marca: así el texto rojo pasa 4.5:1 (WCAG AA)
+     también sobre el fondo gris claro (superficie) y el blanco sobre rojo gana margen. */
+  --color-rojo: #dd1b46;
   --color-rojo-oscuro: #be123c;
   --color-rosa: #e63956;
   --color-naranja: #f97316;

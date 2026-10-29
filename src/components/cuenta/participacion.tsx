@@ -31,6 +31,7 @@ import { Campo, ResumenErrores } from "./campos";
 import { CampoArchivo, CampoImagenes, CampoSelect, Dialogo } from "./piezas";
 import { SelectorUbicacion } from "./selector-ubicacion";
 import { formatoCoordenadas } from "@/lib/ubicacion";
+import { AUTOR_ANONIMO } from "@/lib/participacion";
 
 const TIPOS: { valor: TipoParticipacion; titulo: string; texto: string; Icon: typeof FileText }[] =
   [
@@ -65,7 +66,7 @@ function leerFormulario(form: HTMLFormElement) {
     else if (v.size > 0) datos[k] = v;
   }
   datos.imagenes = fd.getAll("imagenes").filter((f) => f instanceof File && f.size > 0);
-  datos.mostrarNombre = fd.get("mostrarNombre") === "on";
+  datos.mostrarNombre = fd.get("mostrarNombre") ?? undefined;
   return datos;
 }
 
@@ -74,7 +75,7 @@ export function FormParticipacion({
   noticias,
   tipoInicial,
   noticiaInicial,
-  puedeEnviar,
+  puedeProponer,
   faltantes,
   idempotencia,
   autor,
@@ -82,7 +83,8 @@ export function FormParticipacion({
   noticias: { slug: string; titulo: string }[];
   tipoInicial: TipoParticipacion;
   noticiaInicial?: string;
-  puedeEnviar: boolean;
+  /** Perfil completo: lo exige solo la propuesta formal. Las opiniones no tienen requisito. */
+  puedeProponer: boolean;
   faltantes: string[];
   idempotencia: string;
   autor: string;
@@ -93,6 +95,7 @@ export function FormParticipacion({
   const [tipo, setTipo] = useState<TipoParticipacion>(
     (v.tipo as TipoParticipacion | undefined) ?? tipoInicial,
   );
+  const bloqueado = tipo === "PROPUESTA_FORMAL" && !puedeProponer;
   const [descripcion, setDescripcion] = useState(v.descripcion ?? "");
   const [locales, setLocales] = useState<Record<string, string>>({});
   const [resumen, setResumen] = useState<Record<string, string> | null>(null);
@@ -139,7 +142,7 @@ export function FormParticipacion({
       ...(d.video
         ? { Video: d.video.fuente === "YOUTUBE" ? "Enlace de YouTube" : "Enlace de Instagram" }
         : {}),
-      "Nombre público": d.mostrarNombre ? `Sí, como «${autor}»` : "No",
+      "Nombre público": d.mostrarNombre ? `Sí, como «${autor}»` : `No, como «${AUTOR_ANONIMO}»`,
     });
   }
 
@@ -147,11 +150,13 @@ export function FormParticipacion({
     <form ref={form} action={accion} noValidate className="space-y-6">
       <input type="hidden" name="idempotencia" value={idempotencia} />
 
-      {!puedeEnviar && (
+      {bloqueado && (
         <div className="flex items-start gap-3 rounded-2xl bg-amarillo/15 p-5 text-noche ring-1 ring-amarillo/60 ring-inset">
           <Lock size={20} aria-hidden="true" className="mt-0.5 shrink-0" />
           <div>
-            <p className="font-semibold">Para enviar, primero completa tu perfil.</p>
+            <p className="font-semibold">
+              Para enviar una propuesta formal, primero completa tu perfil.
+            </p>
             {faltantes.length > 0 && (
               <ul className="mt-2 list-disc pl-5 text-sm">
                 {faltantes.map((f) => (
@@ -171,7 +176,7 @@ export function FormParticipacion({
 
       <ResumenErrores estado={mostrado} />
 
-      <fieldset>
+      <fieldset data-tour="tipo">
         <legend className="mb-2 font-display text-sm font-bold text-noche">
           ¿Qué quieres enviar?
         </legend>
@@ -197,6 +202,12 @@ export function FormParticipacion({
               <span className="font-display font-extrabold text-noche">{t.titulo}</span>
               <span id={`tipo-${t.valor}`} className="text-sm leading-snug text-tinta/80">
                 {t.texto}
+                {t.valor === "PROPUESTA_FORMAL" && !puedeProponer && (
+                  <span className="mt-1 flex items-center gap-1 font-semibold text-noche">
+                    <Lock size={13} aria-hidden="true" />
+                    Requiere el perfil completo.
+                  </span>
+                )}
               </span>
             </label>
           ))}
@@ -317,37 +328,64 @@ export function FormParticipacion({
         error={errores.soporte}
       />
 
-      <div className="rounded-2xl bg-superficie p-4">
-        <p id="mostrar-nombre-ayuda" className="leading-relaxed text-tinta">
-          Si tu aporte es seleccionado para el portal público, aparecerá como «{autor}». Si no lo
-          autorizas, se evalúa igual, pero no se publica.
+      <fieldset
+        data-tour="nombre-publico"
+        className="rounded-2xl bg-superficie p-4"
+        aria-describedby={
+          errores.mostrarNombre
+            ? "mostrar-nombre-ayuda mostrarNombre-error"
+            : "mostrar-nombre-ayuda"
+        }
+      >
+        <legend className="float-left mb-1 font-display font-bold text-noche">
+          Si la alcaldía publica tu aporte, ¿quieres que aparezca tu nombre?
+        </legend>
+        <p id="mostrar-nombre-ayuda" className="clear-left leading-relaxed text-tinta">
+          La alcaldía puede publicar cualquier aporte en el portal; tú decides si se ve tu nombre.
         </p>
-        <label className="mt-3 flex cursor-pointer items-center gap-3">
-          <input
-            type="checkbox"
-            name="mostrarNombre"
-            defaultChecked={v.mostrarNombre === "true"}
-            aria-describedby="mostrar-nombre-ayuda"
-            className="size-5 shrink-0 accent-rojo"
-          />
-          <span className="font-semibold text-noche">Mostrar mi nombre si se publica.</span>
-        </label>
-      </div>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          {[
+            { valor: "si", texto: `Sí, como «${autor}»` },
+            { valor: "no", texto: `No, como «${AUTOR_ANONIMO}»` },
+          ].map((o, i) => (
+            <label
+              key={o.valor}
+              className="flex min-h-12 cursor-pointer items-center gap-2.5 rounded-xl border border-linea bg-papel px-4 font-semibold text-noche has-[:checked]:border-rojo has-[:checked]:bg-rojo/5 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-rojo"
+            >
+              <input
+                type="radio"
+                id={i === 0 ? "mostrarNombre" : undefined}
+                name="mostrarNombre"
+                value={o.valor}
+                defaultChecked={v.mostrarNombre === o.valor}
+                className="size-4 shrink-0 accent-rojo"
+              />
+              {o.texto}
+            </label>
+          ))}
+        </div>
+        {errores.mostrarNombre && (
+          <p id="mostrarNombre-error" className="mt-1.5 text-sm text-rojo">
+            {errores.mostrarNombre}
+          </p>
+        )}
+      </fieldset>
 
-      <div>
+      <div data-tour="enviar">
         <button
           type="button"
           onClick={revisar}
-          disabled={!puedeEnviar}
-          aria-describedby={!puedeEnviar ? "envio-bloqueado" : undefined}
+          disabled={bloqueado}
+          aria-describedby={bloqueado ? "envio-bloqueado" : undefined}
           className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-rojo px-6 font-display font-bold text-papel transition-[background-color,transform] duration-150 hover:bg-rojo-oscuro active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-plata disabled:active:scale-100"
         >
           <ClipboardCheck size={18} aria-hidden="true" />
           Revisar y enviar
         </button>
-        {!puedeEnviar && (
+        {bloqueado && (
           <p id="envio-bloqueado" className="mt-2 text-center text-sm text-tinta/80">
-            El envío se habilita cuando completes tu perfil.
+            La propuesta formal se habilita cuando completes tu perfil. Una opinión la puedes enviar
+            ya.
           </p>
         )}
       </div>

@@ -68,7 +68,7 @@ export function ActorsSection() {
             <PRINCIPAL.Icon size={28} aria-hidden="true" />
           </span>
           <h3 className="mt-auto pt-16 font-display text-3xl font-extrabold">{PRINCIPAL.nombre}</h3>
-          <p className="mt-2 max-w-sm text-lg leading-relaxed text-papel/90">{PRINCIPAL.detalle}</p>
+          <p className="mt-2 max-w-sm text-lg leading-relaxed text-papel">{PRINCIPAL.detalle}</p>
           <Link
             href="/registro"
             className="group mt-6 inline-flex min-h-12 items-center gap-2 self-start rounded-xl bg-papel px-5 font-display font-bold text-rojo transition-transform duration-150 active:scale-[0.97]"

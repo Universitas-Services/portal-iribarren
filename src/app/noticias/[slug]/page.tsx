@@ -126,9 +126,9 @@ export default async function NoticiaPage({ params }: { params: Params }) {
           >
             ¿Qué opinas de esta noticia?
           </h2>
-          <p className="relative mt-3 max-w-xl leading-relaxed text-papel/90">
-            Tu opinión llega al equipo del PDUL con un folio. Solo necesitas tu cuenta con el perfil
-            completo.
+          <p className="relative mt-3 max-w-xl leading-relaxed text-papel">
+            Tu opinión llega al equipo del PDUL con un folio. Solo necesitas iniciar sesión con tu
+            cuenta.
           </p>
           <Link
             href={`/participa?tipo=opinion-noticia&noticia=${post.slug}`}

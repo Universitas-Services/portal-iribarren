@@ -53,7 +53,8 @@ async function Resultado({ searchParams }: { searchParams: SearchParams }) {
       Icon: CircleCheck,
       color: "bg-exito/10 text-exito-oscuro",
       titulo: "¡Listo! Tu correo está verificado",
-      texto: "Ya puedes iniciar sesión y completar tu perfil para participar.",
+      texto:
+        "Ya puedes iniciar sesión y opinar. Para enviar propuestas formales, completa tu perfil.",
     },
     VENCIDO: {
       Icon: Clock,

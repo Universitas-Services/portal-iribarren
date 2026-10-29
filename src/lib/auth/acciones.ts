@@ -1,9 +1,17 @@
 "use server";
 
 import { RedirectType, redirect } from "next/navigation";
+import { refresh } from "next/cache";
 import type { z } from "zod";
+import type { TipoTextoLegal } from "@/lib/api/types";
 import { getPost } from "@/lib/api";
 import { usaApi } from "@/lib/plataforma-api/cliente";
+import {
+  MENSAJE_TEXTOS_PENDIENTES,
+  textosPendientes,
+  textosVigentes,
+  versionesVistasVigentes,
+} from "./textos-legales";
 import {
   acreditacionSchema,
   cambiarContrasenaSchema,
@@ -27,6 +35,8 @@ import {
   cuentaDeSesion,
   enviarParticipacion,
   guardarPerfil,
+  marcarTourVisto,
+  aceptarTextosLegales,
   perfilCompleto,
   solicitarBaja,
   iniciarSesion,
@@ -42,6 +52,8 @@ import {
   cerrarTodasLasSesionesApi,
   guardarPerfilApi,
   ingresarApi,
+  marcarTourVistoApi,
+  aceptarTextosLegalesApi,
   reenviarApi,
   recuperarApi,
   restablecerApi,
@@ -72,7 +84,7 @@ export type EstadoFormulario = {
   noVerificado?: boolean;
 };
 
-const CASILLAS = ["aceptaTerminos", "aceptaPoliticaDatos", "mostrarNombre"];
+const CASILLAS = ["aceptaTerminos", "aceptaPoliticaDatos"];
 const SECRETOS = ["contrasenaActual", "contrasena", "confirmarContrasena"];
 
 /** Convierte el FormData en objeto: casillas a booleano y prefijos de cédula/RIF unidos. */
@@ -97,6 +109,8 @@ function valoresDe(datos: Record<string, unknown>) {
   const valores: Record<string, string> = {};
   for (const [k, v] of Object.entries(datos)) {
     if (typeof v === "string" && !SECRETOS.includes(k)) valores[k] = v;
+    // Las casillas marcadas vuelven marcadas.
+    else if (v === true) valores[k] = "on";
   }
   return valores;
 }
@@ -160,6 +174,29 @@ async function finalizarRegistro(
   ir("/registro/revisa-tu-correo");
 }
 
+/**
+ * Con un texto legal pendiente de aceptar, la cuenta no escribe nada (R15): ni perfil, ni
+ * contraseña, ni aportes. El modal de aceptación ya está a la vista.
+ */
+async function bloqueoPorTextos(): Promise<EstadoFormulario | undefined> {
+  const pendientes = await textosPendientes(cuentaDeSesion(almacen(), await idSesion()));
+  if (pendientes.length === 0) return undefined;
+  return { mensaje: { tipo: "error", texto: MENSAJE_TEXTOS_PENDIENTES } };
+}
+
+/** Un texto legal cambió mientras la persona llenaba el registro: debe leerlo otra vez. */
+function textosCambiaron(datos: Record<string, unknown>): EstadoFormulario {
+  const { aceptaTerminos: _t, aceptaPoliticaDatos: _p, ...resto } = datos;
+  return {
+    valores: valoresDe(resto),
+    mensaje: {
+      tipo: "error",
+      texto:
+        "Los términos de uso o la política de datos se actualizaron mientras te registrabas. Léelos y acéptalos de nuevo.",
+    },
+  };
+}
+
 export async function registrarNaturalAccion(
   _prev: EstadoFormulario,
   fd: FormData,
@@ -168,12 +205,15 @@ export async function registrarNaturalAccion(
   const p = registroNaturalSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
   const { cedula, nombres, apellidos, correo, contrasena } = p.data;
+  const textosAceptados = await versionesVistasVigentes(fd);
+  if (!textosAceptados) return textosCambiaron(datos);
   if (usaApi())
     return registrarApi(
       { tipo: "NATURAL", cedula, nombres, apellidos },
       correo,
       contrasena,
       valoresDe(datos),
+      textosAceptados,
     );
   const r = registrar(almacen(), {
     tipo: "NATURAL",
@@ -182,6 +222,7 @@ export async function registrarNaturalAccion(
     apellidos,
     correo,
     contrasena,
+    textosAceptados,
   });
   return finalizarRegistro(r, correo, datos, contrasena);
 }
@@ -194,12 +235,15 @@ export async function registrarOrganizacionAccion(
   const p = registroOrganizacionSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
   const { tipoEntidad, razonSocial, rif, correo, contrasena } = p.data;
+  const textosAceptados = await versionesVistasVigentes(fd);
+  if (!textosAceptados) return textosCambiaron(datos);
   if (usaApi())
     return registrarApi(
       { tipo: "ORGANIZACION", tipoEntidad, razonSocial, rif },
       correo,
       contrasena,
       valoresDe(datos),
+      textosAceptados,
     );
   const r = registrar(almacen(), {
     tipo: "ORGANIZACION",
@@ -208,6 +252,7 @@ export async function registrarOrganizacionAccion(
     rif,
     correo,
     contrasena,
+    textosAceptados,
   });
   return finalizarRegistro(r, correo, datos, contrasena);
 }
@@ -355,6 +400,8 @@ export async function guardarDatosNaturalAccion(
   _prev: EstadoFormulario,
   fd: FormData,
 ): Promise<EstadoFormulario> {
+  const bloqueo = await bloqueoPorTextos();
+  if (bloqueo) return bloqueo;
   const { sesion, completo } = await cuentaActual();
   const datos = leer(fd);
   const p = datosNaturalSchema.safeParse(datos);
@@ -373,6 +420,8 @@ export async function guardarRepresentanteAccion(
   _prev: EstadoFormulario,
   fd: FormData,
 ): Promise<EstadoFormulario> {
+  const bloqueo = await bloqueoPorTextos();
+  if (bloqueo) return bloqueo;
   const { sesion, completo } = await cuentaActual();
   const datos = leer(fd);
   const p = representanteSchema.safeParse(datos);
@@ -387,6 +436,8 @@ export async function guardarAcreditacionAccion(
   _prev: EstadoFormulario,
   fd: FormData,
 ): Promise<EstadoFormulario> {
+  const bloqueo = await bloqueoPorTextos();
+  if (bloqueo) return bloqueo;
   const { sesion, completo } = await cuentaActual();
   const datos = leer(fd);
   const p = acreditacionSchema.safeParse(datos);
@@ -422,6 +473,8 @@ export async function cargarDocumentoAccion(
   _prev: EstadoFormulario,
   fd: FormData,
 ): Promise<EstadoFormulario> {
+  const bloqueo = await bloqueoPorTextos();
+  if (bloqueo) return bloqueo;
   const { sesion, completo } = await cuentaActual();
   const datos = leer(fd);
   const p = documentoPerfilSchema.safeParse(datos);
@@ -440,6 +493,8 @@ export async function guardarNombresAccion(
   _prev: EstadoFormulario,
   fd: FormData,
 ): Promise<EstadoFormulario> {
+  const bloqueo = await bloqueoPorTextos();
+  if (bloqueo) return bloqueo;
   const { sesion, completo } = await cuentaActual();
   const datos = leer(fd);
   const p = nombresSchema.safeParse(datos);
@@ -461,6 +516,8 @@ export async function cambiarContrasenaAccion(
   _prev: EstadoFormulario,
   fd: FormData,
 ): Promise<EstadoFormulario> {
+  const bloqueo = await bloqueoPorTextos();
+  if (bloqueo) return bloqueo;
   const sesion = await idSesion();
   const datos = leer(fd);
   const p = cambiarContrasenaSchema.safeParse(datos);
@@ -484,12 +541,50 @@ export async function solicitarBajaAccion() {
   ir("/mi-cuenta/seguridad?guardado=baja");
 }
 
+/* ---------- Textos legales (R15) ---------- */
+
+/**
+ * Acepta las versiones vigentes de los textos pendientes. `versiones`: las que la persona leyó;
+ * si alguna dejó de ser la vigente, no se acepta y el modal muestra la nueva.
+ */
+export async function aceptarTextosLegalesAccion(
+  versiones: Partial<Record<TipoTextoLegal, string>>,
+): Promise<{ ok: boolean; mensaje?: string }> {
+  const sesion = await idSesion();
+  const vigentes = await textosVigentes();
+  const aceptadas: Partial<Record<TipoTextoLegal, string>> = {};
+  for (const [tipo, version] of Object.entries(versiones) as [TipoTextoLegal, string][]) {
+    if (vigentes[tipo]?.version !== version)
+      return { ok: false, mensaje: "Hay una versión más nueva: léela antes de aceptarla." };
+    aceptadas[tipo] = version;
+  }
+  if (usaApi()) await aceptarTextosLegalesApi(aceptadas);
+  else if (aceptarTextosLegales(almacen(), sesion, aceptadas)) await refrescarSesion(sesion);
+  else ir("/ingresar");
+  refresh();
+  return { ok: true };
+}
+
+/* ---------- Recorrido guiado ---------- */
+
+/**
+ * Al terminar o saltar el recorrido guiado: no vuelve a lanzarse solo. Sin sesión, nada. No
+ * reescribe la cookie de sesión: eso obligaría a volver a pintar la página mientras la persona
+ * sigue usándola.
+ */
+export async function marcarTourVistoAccion() {
+  if (usaApi()) return marcarTourVistoApi();
+  marcarTourVisto(almacen(), await idSesion());
+}
+
 /* ---------- Participación ---------- */
 
 export async function enviarParticipacionAccion(
   _prev: EstadoFormulario,
   fd: FormData,
 ): Promise<EstadoFormulario> {
+  const bloqueo = await bloqueoPorTextos();
+  if (bloqueo) return bloqueo;
   const sesion = await idSesion();
   if (!cuentaDeSesion(almacen(), sesion)) ir("/ingresar?volver=/participa&motivo=participar");
   const datos = leer(fd);
@@ -521,7 +616,10 @@ export async function enviarParticipacionAccion(
   if (r.estado === "PERFIL_INCOMPLETO")
     return {
       valores: valoresDe(datos),
-      mensaje: { tipo: "error", texto: "Completa tu perfil en Mi cuenta antes de enviar." },
+      mensaje: {
+        tipo: "error",
+        texto: "Para enviar una propuesta formal, completa tu perfil en Mi cuenta.",
+      },
     };
   ir(`/participa/enviada?folio=${r.folio}`);
 }

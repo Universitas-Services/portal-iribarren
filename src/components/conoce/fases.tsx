@@ -9,6 +9,12 @@ import { ETIQUETA_FASE } from "@/lib/proceso";
  */
 export async function FasesPdul({ compacto = false }: { compacto?: boolean }) {
   const { fases, faseActual, ejemplo } = await getProcess();
+  if (fases.length === 0)
+    return (
+      <p className="leading-relaxed text-tinta">
+        El avance del proceso no está disponible en este momento.
+      </p>
+    );
   return (
     <>
       <ol className="space-y-1">

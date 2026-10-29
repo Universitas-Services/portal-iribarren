@@ -250,7 +250,15 @@ const participaciones: (Omit<Participacion, "folio" | "estado" | "creadaEl"> & {
 export function almacenDemo(): Almacen {
   const alm = crearAlmacen();
   const hash = cifrar(CONTRASENA_DEMO);
-  for (const c of cuentas) alm.cuentas.set(c.id, { ...c, hash });
+  // Las cuentas de ejemplo ya vieron el recorrido guiado: solo las nuevas lo ven al entrar.
+  for (const c of cuentas)
+    alm.cuentas.set(c.id, {
+      ...c,
+      hash,
+      tourVistoAt: "2026-09-01T12:00:00.000Z",
+      // Aceptaron las versiones vigentes de los textos legales (las de los datos de ejemplo).
+      textosAceptados: { TERMINOS: "2026-10-17", POLITICA_DATOS: "2026-10-17" },
+    });
   // Enlaces de ejemplo para ver los estados «vencido» y «ya usado».
   alm.tokens.set("demo-vencido", {
     cuentaId: "demo-luis",

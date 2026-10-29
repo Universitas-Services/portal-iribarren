@@ -343,10 +343,13 @@ export function CampoContrasena({
 export function Casilla({
   id,
   error,
+  marcada,
   children,
 }: {
   id: string;
   error?: string;
+  /** Marca con que vuelve el formulario tras un error. */
+  marcada?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -356,6 +359,7 @@ export function Casilla({
           id={id}
           name={id}
           type="checkbox"
+          defaultChecked={marcada}
           required
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${id}-error` : undefined}

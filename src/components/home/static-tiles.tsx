@@ -27,7 +27,7 @@ export function OpinionTile({ className = "" }: { className?: string }) {
       <h2 id="opinion-titulo" className="font-display text-2xl leading-tight font-extrabold">
         Tu opinión construye ciudad
       </h2>
-      <p className="mt-3 leading-relaxed text-papel/90">
+      <p className="mt-3 leading-relaxed text-papel">
         Opina sobre una noticia, envía una idea o presenta una propuesta formal. Cada aporte recibe
         su folio, y las propuestas formales, además, una respuesta.
       </p>

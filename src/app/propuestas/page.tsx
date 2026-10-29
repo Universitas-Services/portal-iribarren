@@ -80,7 +80,7 @@ export default function PropuestasPage({ searchParams }: { searchParams: SearchP
       <EncabezadoPagina
         migas={[{ href: "/", label: "Inicio" }, { label: "Propuestas" }]}
         titulo="Propuestas y opiniones"
-        bajada="Propuestas y opiniones de la ciudadanía que el equipo de la alcaldía publicó con autorización de sus autores."
+        bajada="Propuestas y opiniones de la ciudadanía que el equipo de la alcaldía eligió publicar. Cada autor decide si aparece su nombre."
       />
       <div className="relative z-10 mx-auto -mt-16 max-w-7xl px-4 pb-24 sm:px-6 lg:-mt-20 lg:px-8">
         <Suspense fallback={<GaleriaSkeleton />}>
@@ -158,7 +158,7 @@ async function Galeria({ searchParams }: { searchParams: SearchParams }) {
             <p className="mt-2 max-w-md leading-relaxed text-tinta">
               {hayFiltros
                 ? "Prueba con otras palabras, otra parroquia u otra categoría."
-                : "Las propuestas aparecen aquí cuando el equipo técnico las aprueba y su autor autorizó publicarlas."}
+                : "Las propuestas y opiniones aparecen aquí cuando el equipo de la alcaldía las publica."}
             </p>
           </div>
         )}

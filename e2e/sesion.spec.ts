@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ciudadanoNuevo, ingresar } from "./utilidades";
+import { ciudadanoNuevo, ingresar, saltarRecorrido } from "./utilidades";
 
 /*
  * Sesión e historial: tras iniciar o cerrar sesión, «atrás» no debe volver a mostrar el
@@ -69,6 +69,7 @@ test.describe("cuenta del ciudadano", () => {
     await page.getByRole("link", { name: "Abrir el enlace" }).click();
     await expect(page.getByRole("heading", { name: /correo está verificado/ })).toBeVisible();
     await ingresar(page, c.correo, c.contrasena);
+    await saltarRecorrido(page);
 
     await page.goto("/mi-cuenta/seguridad");
     await page.locator("#contrasenaActual").fill("NoEsLaClave#1");

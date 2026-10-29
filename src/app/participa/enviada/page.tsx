@@ -8,6 +8,7 @@ import { CopiarFolio, Imprimir } from "@/components/cuenta/participacion";
 import { FichaAporte } from "@/components/participacion/aporte";
 import { getParticipacion, getUsuario } from "@/lib/auth/sesion";
 import { formatearFechaHora } from "@/lib/formato";
+import { AUTOR_ANONIMO } from "@/lib/participacion";
 
 export const metadata: Metadata = { title: "Aporte recibido", robots: { index: false } };
 
@@ -86,7 +87,10 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
             ["Enviado por", p.autor],
             ["Fecha", formatearFechaHora(p.creadaEl)],
             ["Estado", "Pendiente de revisión"],
-            ["Nombre público", p.mostrarNombre ? "Autorizado" : "No autorizado"],
+            [
+              "Nombre público",
+              p.mostrarNombre ? "Sí, con tu nombre" : `No, como «${AUTOR_ANONIMO}»`,
+            ],
           ]}
           pie="El aporte quedó registrado tal como lo enviaste: no se puede editar ni eliminar."
         />

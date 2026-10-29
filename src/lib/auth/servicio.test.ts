@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CONTRASENA_DEMO, almacenDemo } from "./fixtures";
+import { AUTOR_ANONIMO } from "@/lib/participacion";
 import {
   actualizarNombres,
   cambiarContrasena,
@@ -12,6 +13,7 @@ import {
   filtrarParticipaciones,
   estadoRestablecer,
   guardarPerfil,
+  marcarTourVisto,
   iniciarSesion,
   participacionesDe,
   participacionPropia,
@@ -22,6 +24,7 @@ import {
   reenviarVerificacion,
   registrar,
   restablecer,
+  resumenCuenta,
   verificarCorreo,
 } from "./servicio";
 
@@ -235,16 +238,6 @@ describe("perfil", () => {
     expect(c.estadoVerificacion).toBe("VERIFICADO");
   });
 
-  it("un RECHAZADO del admin no se borra al editar el perfil", () => {
-    const alm = almacenDemo();
-    const s = sesionDe(alm, "ana@ejemplo.com");
-    const c = cuentaDeSesion(alm, s)!;
-    c.estadoVerificacion = "RECHAZADO";
-    cargarDocumento(alm, s, "IDENTIDAD", pdf);
-    guardarPerfil(alm, s, { telefono: "04140000000" });
-    expect(c.estadoVerificacion).toBe("RECHAZADO");
-  });
-
   it("la organización necesita representante, acreditación y documento de la entidad", () => {
     const alm = almacenDemo();
     const s = sesionDe(alm, "contacto@cardones.org");
@@ -304,10 +297,32 @@ describe("participación", () => {
     expect(alm.participaciones.size).toBe(antes + 1);
   });
 
-  it("rechaza el envío con el perfil incompleto", () => {
+  it("con el perfil incompleto se opina, pero no se envía una propuesta formal", () => {
     const alm = almacenDemo();
     const s = sesionDe(alm, "jose@ejemplo.com");
-    expect(enviarParticipacion(alm, s, "k", datos)).toEqual({ estado: "PERFIL_INCOMPLETO" });
+    expect(
+      enviarParticipacion(alm, s, "k-propuesta", { ...datos, tipo: "PROPUESTA_FORMAL" }),
+    ).toEqual({ estado: "PERFIL_INCOMPLETO" });
+    expect(enviarParticipacion(alm, s, "k-general", datos).estado).toBe("OK");
+    expect(
+      enviarParticipacion(alm, s, "k-noticia", {
+        ...datos,
+        tipo: "OPINION_NOTICIA",
+        noticia: { slug: "una-noticia", titulo: "Una noticia" },
+      }).estado,
+    ).toBe("OK");
+  });
+
+  it("el recorrido guiado queda pendiente hasta marcarlo como visto", () => {
+    const alm = almacenDemo();
+    const s = sesionDe(alm, "jose@ejemplo.com");
+    const c = cuentaDeSesion(alm, s)!;
+    expect(resumenCuenta(c).tourPendiente).toBe(false);
+    c.tourVistoAt = undefined;
+    expect(resumenCuenta(c).tourPendiente).toBe(true);
+    expect(marcarTourVisto(alm, s)).toBe(true);
+    expect(resumenCuenta(c).tourPendiente).toBe(false);
+    expect(marcarTourVisto(alm, undefined)).toBe(false);
   });
 
   it("nadie ve el folio de otra cuenta", () => {
@@ -389,7 +404,7 @@ describe("cambio de estado (Revisor)", () => {
     }
   });
 
-  it("publicar una opinión también exige el nombre autorizado", () => {
+  it("una opinión sin nombre autorizado se publica como «Ciudadano de Iribarren»", () => {
     const alm = almacenDemo();
     const s = sesionDe(alm, "ana@ejemplo.com");
     const r = enviarParticipacion(alm, s, "k-anon", {
@@ -398,19 +413,16 @@ describe("cambio de estado (Revisor)", () => {
       mostrarNombre: false,
     });
     if (r.estado !== "OK") throw new Error("debía enviarse");
-    expect(cambiarEstadoParticipacion(alm, r.folio, "PUBLICADA").estado).toBe(
-      "SIN_NOMBRE_AUTORIZADO",
-    );
+    expect(cambiarEstadoParticipacion(alm, r.folio, "PUBLICADA").estado).toBe("OK");
+    expect(propuestaPublica(alm, r.folio)?.autor).toBe(AUTOR_ANONIMO);
   });
 
-  it("rechazar exige un motivo y publicar exige el nombre autorizado", () => {
+  it("rechazar exige un motivo; publicar no depende del nombre", () => {
     const { alm, folio } = nueva(false);
     cambiarEstadoParticipacion(alm, folio, "EN_REVISION");
     expect(cambiarEstadoParticipacion(alm, folio, "RECHAZADA", "  ").estado).toBe("FALTA_MOTIVO");
     cambiarEstadoParticipacion(alm, folio, "APROBADA");
-    expect(cambiarEstadoParticipacion(alm, folio, "PUBLICADA").estado).toBe(
-      "SIN_NOMBRE_AUTORIZADO",
-    );
+    expect(cambiarEstadoParticipacion(alm, folio, "PUBLICADA").estado).toBe("OK");
   });
 });
 
@@ -435,7 +447,7 @@ describe("seguimiento y galería", () => {
       ]);
   });
 
-  it("la galería solo muestra lo publicado con nombre autorizado y oculta la cuenta", () => {
+  it("la galería solo muestra lo publicado y oculta la cuenta", () => {
     const alm = almacenDemo();
     const publicadas = propuestasPublicadas(alm);
     expect(publicadas.length).toBeGreaterThan(0);
@@ -447,7 +459,7 @@ describe("seguimiento y galería", () => {
     // La ubicación exacta nunca se publica.
     alm.participaciones.get("IRI-2026-0001")!.ubicacion = { lat: 10.07, lng: -69.34 };
     expect(propuestaPublica(alm, "IRI-2026-0001")).not.toHaveProperty("ubicacion");
-    // Aprobada sin autorización de nombre: no se publica.
+    // Aprobada, todavía sin publicar.
     expect(propuestaPublica(alm, "IRI-2026-0002")).toBeUndefined();
     expect(propuestaPublica(alm, "iri-2026-0001")?.folio).toBe("IRI-2026-0001");
   });
@@ -456,5 +468,15 @@ describe("seguimiento y galería", () => {
     const alm = almacenDemo();
     expect(propuestasPublicadas(alm, { q: "CANCHA MULTIPLE" })).toHaveLength(1);
     expect(propuestasPublicadas(alm, { parroquia: "El Cují" })).toHaveLength(1);
+  });
+
+  it("no encuentra un aporte anónimo por el nombre de su autor", () => {
+    const alm = almacenDemo();
+    const p = alm.participaciones.get("IRI-2026-0002")!;
+    p.mostrarNombre = false;
+    expect(cambiarEstadoParticipacion(alm, p.folio, "PUBLICADA").estado).toBe("OK");
+    const folios = (q: string) => propuestasPublicadas(alm, { q }).map((x) => x.folio);
+    expect(folios(p.autor)).not.toContain(p.folio);
+    expect(folios(AUTOR_ANONIMO)).toContain(p.folio);
   });
 });

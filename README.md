@@ -71,8 +71,8 @@ Mientras no exista `plataforma-api`, el registro, el acceso, el perfil y la part
 
 | Correo                  | Caso                                                   |
 | ----------------------- | ------------------------------------------------------ |
-| `ana@ejemplo.com`       | Persona verificada, perfil completo: puede participar  |
-| `jose@ejemplo.com`      | Persona con el perfil vacío: recorre el asistente      |
+| `ana@ejemplo.com`       | Persona verificada, perfil completo: puede proponer    |
+| `jose@ejemplo.com`      | Perfil vacío: puede opinar, no proponer                |
 | `rosa@ejemplo.com`      | Perfil a medias: tiene el teléfono, falta la cédula    |
 | `luis@ejemplo.com`      | Correo sin verificar                                   |
 | `carla@ejemplo.com`     | Cuenta de otra alcaldía: pasa por «Unirme a Iribarren» |

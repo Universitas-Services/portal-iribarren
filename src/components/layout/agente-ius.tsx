@@ -2,7 +2,8 @@
 
 import { ArrowUpRight, MessageCircle, X } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { EVENTO_TOUR } from "@/components/tour/tour";
 
 /*
  * Agente integrado, en todas las páginas del portal: un botón flotante abre un panel tipo chat donde la asistente de
@@ -12,12 +13,20 @@ import { useEffect, useId, useRef, useState } from "react";
 
 const SITIO = "https://iusurbano.universitas.legal/";
 
-export function AgenteIus() {
+/** `tour`: la brújula del recorrido guiado, a la izquierda del avatar. */
+export function AgenteIus({ tour }: { tour?: ReactNode }) {
   const [abierto, setAbierto] = useState(false);
   const [escribiendo, setEscribiendo] = useState(true);
   const boton = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
   const id = useId();
+
+  // El recorrido guiado cierra el panel: no deben taparse.
+  useEffect(() => {
+    const cerrar = () => setAbierto(false);
+    window.addEventListener(EVENTO_TOUR, cerrar);
+    return () => window.removeEventListener(EVENTO_TOUR, cerrar);
+  }, []);
 
   // Al abrir: un instante de «escribiendo…» y el foco pasa al panel.
   useEffect(() => {
@@ -125,34 +134,38 @@ export function AgenteIus() {
         </div>
       )}
 
-      <button
-        ref={boton}
-        type="button"
-        onClick={() => {
-          if (!abierto) setEscribiendo(true);
-          setAbierto((v) => !v);
-        }}
-        aria-expanded={abierto}
-        aria-controls={abierto ? id : undefined}
-        aria-label={
-          abierto ? "Cerrar el asistente de Ius Urbano" : "Abrir el asistente de Ius Urbano"
-        }
-        className="group relative size-13 rounded-full bg-papel p-0.5 shadow-elevada ring-1 ring-linea transition-transform duration-200 ease-out-expo hover:-translate-y-0.5 active:scale-95"
-      >
-        <Image
-          src="/agentes/ius-urbano.webp"
-          alt=""
-          width={48}
-          height={48}
-          className="size-12 rounded-full object-cover"
-        />
-        <span
-          aria-hidden="true"
-          className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-rojo text-papel ring-2 ring-papel"
+      {/* La brújula: encima del avatar en el teléfono, a su izquierda desde sm. */}
+      <div className="flex flex-col items-center gap-3 sm:flex-row">
+        {tour}
+        <button
+          ref={boton}
+          type="button"
+          onClick={() => {
+            if (!abierto) setEscribiendo(true);
+            setAbierto((v) => !v);
+          }}
+          aria-expanded={abierto}
+          aria-controls={abierto ? id : undefined}
+          aria-label={
+            abierto ? "Cerrar el asistente de Ius Urbano" : "Abrir el asistente de Ius Urbano"
+          }
+          className="group relative size-13 rounded-full bg-papel p-0.5 shadow-elevada ring-1 ring-linea transition-transform duration-200 ease-out-expo hover:-translate-y-0.5 active:scale-95"
         >
-          {abierto ? <X size={11} /> : <MessageCircle size={11} />}
-        </span>
-      </button>
+          <Image
+            src="/agentes/ius-urbano.webp"
+            alt=""
+            width={48}
+            height={48}
+            className="size-12 rounded-full object-cover"
+          />
+          <span
+            aria-hidden="true"
+            className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-rojo text-papel ring-2 ring-papel"
+          >
+            {abierto ? <X size={11} /> : <MessageCircle size={11} />}
+          </span>
+        </button>
+      </div>
     </div>
   );
 }

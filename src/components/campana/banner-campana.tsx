@@ -35,7 +35,9 @@ export function SelloCampana({ className = "" }: { className?: string }) {
       />
       <Image
         src={CAMPANA.cinta}
+        // La cinta repite el nombre de la campaña, ya descrito en la ilustración.
         alt=""
+        aria-hidden="true"
         width={1593}
         height={241}
         className="-mt-[3%] h-auto w-[66%]"

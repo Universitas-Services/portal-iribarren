@@ -15,6 +15,9 @@ export type ProcessPhase = {
   nombre: string;
   descripcion: string;
   estado: EstadoFase;
+  /** Fechas AAAA-MM-DD, opcionales (la API las manda si el Operador las fijó). */
+  inicio?: string;
+  fin?: string;
 };
 
 export type ProcessStatus = {
@@ -160,9 +163,10 @@ export const ACREDITACION_REPRESENTANTE = ["Sí", "No", "No aplica"] as const;
 
 /**
  * Estado de verificación del perfil: PENDIENTE mientras está incompleto y VERIFICADO en cuanto
- * se completa (automático). RECHAZADO lo pone el admin y bloquea el envío de aportes.
+ * se completa (automático). No hay perfiles rechazados: lo que se rechaza son las propuestas
+ * formales (decisión del cliente, 28-10-2026).
  */
-export const ESTADOS_VERIFICACION = ["PENDIENTE", "VERIFICADO", "RECHAZADO"] as const;
+export const ESTADOS_VERIFICACION = ["PENDIENTE", "VERIFICADO"] as const;
 export type EstadoVerificacion = (typeof ESTADOS_VERIFICACION)[number];
 
 export const TIPOS_PARTICIPACION = [
@@ -320,4 +324,37 @@ export type ItemMarcoLegal = {
   titulo: string;
   descripcion: string;
   boton?: { texto: string; href: string };
+};
+
+/* ---------- Textos legales (R15, pedido a backend) ---------- */
+
+export const TIPOS_TEXTO_LEGAL = ["TERMINOS", "POLITICA_DATOS"] as const;
+export type TipoTextoLegal = (typeof TIPOS_TEXTO_LEGAL)[number];
+
+export const TITULO_TEXTO_LEGAL: Record<TipoTextoLegal, string> = {
+  TERMINOS: "Términos de uso",
+  POLITICA_DATOS: "Política de tratamiento de datos personales",
+};
+
+/** Ruta pública de cada texto. */
+export const RUTA_TEXTO_LEGAL: Record<TipoTextoLegal, string> = {
+  TERMINOS: "/terminos",
+  POLITICA_DATOS: "/politica-de-datos",
+};
+
+/**
+ * La versión vigente de un texto legal. La publica un Administrador desde plataforma-admin;
+ * cada versión nueva pide a las personas registradas aceptarla otra vez.
+ */
+export type TextoLegal = {
+  tipo: TipoTextoLegal;
+  version: string;
+  /** Fecha ISO de publicación. */
+  publicadoEl: string;
+  /** HTML ya saneado. */
+  html: string;
+  /** Qué cambió respecto de la versión anterior (la ve quien debe aceptarla otra vez). */
+  nota?: string;
+  /** Contenido provisional: todavía no es el texto aprobado por la alcaldía. */
+  provisional?: boolean;
 };

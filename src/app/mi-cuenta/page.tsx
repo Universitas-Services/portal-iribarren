@@ -1,10 +1,4 @@
-import {
-  CircleAlert,
-  CircleCheck,
-  ClipboardList,
-  MessageSquareText,
-  ShieldCheck,
-} from "lucide-react";
+import { CircleCheck, ClipboardList, MessageSquareText, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -40,21 +34,10 @@ export default function MiCuentaPage({ searchParams }: { searchParams: SearchPar
   );
 }
 
-/** Insignia del perfil completo: se verifica solo al completarse; «Rechazado» lo pone el admin. */
-const INSIGNIA = {
-  VERIFICADO: {
-    texto: "Verificado",
-    clase: "bg-exito/10 text-exito-oscuro ring-exito/30",
-    Icon: ShieldCheck,
-  },
-  RECHAZADO: { texto: "Rechazado", clase: "bg-rojo/8 text-rojo ring-rojo/30", Icon: CircleAlert },
-};
-
 async function Contenido({ searchParams }: { searchParams: SearchParams }) {
   const u = await getPerfil();
   if (!u) redirect("/ingresar?volver=/mi-cuenta");
   const { guardado } = await searchParams;
-  const verif = INSIGNIA[u.estadoVerificacion === "RECHAZADO" ? "RECHAZADO" : "VERIFICADO"];
 
   return (
     <div>
@@ -65,28 +48,19 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
           </p>
           <h2 className="mt-1 font-display text-2xl font-extrabold text-noche">Hola, {u.corto}</h2>
         </div>
+        {/* Insignia del perfil completo: se verifica solo al completarse. */}
         {u.perfilCompleto && (
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ring-1 ring-inset ${verif.clase}`}
-          >
-            <verif.Icon size={15} aria-hidden="true" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-exito/10 px-3 py-1 text-sm font-semibold text-exito-oscuro ring-1 ring-exito/30 ring-inset">
+            <ShieldCheck size={15} aria-hidden="true" />
             <span className="sr-only">Estado de verificación: </span>
-            {verif.texto}
+            Verificado
           </span>
         )}
       </div>
 
       <Aviso guardado={guardado} />
 
-      {u.estadoVerificacion === "RECHAZADO" && (
-        <p className="mt-6 flex items-start gap-3 rounded-2xl bg-rojo/8 p-4 text-sm text-noche ring-1 ring-rojo/30 ring-inset">
-          <CircleAlert size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
-          El equipo revisor no pudo validar tu identidad, así que por ahora no puedes enviar
-          aportes. Escribe a soporte si crees que es un error.
-        </p>
-      )}
-
-      <div className="mt-6 rounded-2xl bg-superficie p-5">
+      <div data-tour="progreso" className="mt-6 rounded-2xl bg-superficie p-5">
         <Progreso pasos={u.pasos} />
       </div>
 
@@ -191,7 +165,7 @@ function Aviso({ guardado }: { guardado: unknown }) {
           <CircleCheck size={22} aria-hidden="true" className="mt-0.5 shrink-0 text-exito-oscuro" />
           <span>
             <strong className="font-semibold">
-              Tu perfil está completo y verificado, ya puedes participar.
+              Tu perfil está completo y verificado, ya puedes enviar propuestas formales.
             </strong>
           </span>
         </p>

@@ -17,6 +17,7 @@ import {
   telefonoApi,
   valorDeCatalogo,
 } from "@/lib/plataforma-api/mapeo";
+import type { TipoTextoLegal } from "@/lib/api/types";
 import type { EstadoFormulario } from "./acciones";
 import { perfilCompleto, type TipoDocumento } from "./servicio";
 import { almacen, guardarAviso } from "./sesion";
@@ -118,6 +119,7 @@ export async function registrarApi(
   correo: string,
   contrasena: string,
   valores: Record<string, string>,
+  textos: Partial<Record<TipoTextoLegal, string>> = {},
 ): Promise<EstadoFormulario> {
   let r: RegistroApi;
   try {
@@ -136,6 +138,9 @@ export async function registrarApi(
           password: contrasena,
           aceptaTerminos: true,
           aceptaPoliticaDatos: true,
+          // Las versiones que la persona vio (R15). Si ya no son las vigentes: 409.
+          ...(textos.TERMINOS && { versionTerminos: Number(textos.TERMINOS) }),
+          ...(textos.POLITICA_DATOS && { versionPoliticaDatos: Number(textos.POLITICA_DATOS) }),
         },
         portal: true,
       },
@@ -331,6 +336,40 @@ export async function guardarPerfilApi(
     return error(mensajeDeError(e), valores);
   }
   return trasGuardarApi(estabaCompleto);
+}
+
+/* ---------- Recorrido guiado ---------- */
+
+/**
+ * Marca el recorrido guiado como visto (POST /portal/me/tour-visto, pedido a backend). Si la API
+ * todavía no tiene la ruta, no pasa nada: sin `tourVistoAt` el recorrido no se lanza solo.
+ */
+export async function marcarTourVistoApi() {
+  const t = await tokensDeCookie();
+  if (!t || t.x <= Date.now()) return;
+  try {
+    await pedirApi("/portal/me/tour-visto", { metodo: "POST", token: t.a, portal: true });
+    await sincronizarCuentaApi(almacen());
+  } catch (e) {
+    if (!(e instanceof ErrorApi) || e.status !== 404) throw e;
+  }
+}
+
+/* ---------- Textos legales (R15) ---------- */
+
+/** POST /portal/me/legal-acceptances con las versiones vigentes que la persona aceptó. */
+export async function aceptarTextosLegalesApi(versiones: Partial<Record<TipoTextoLegal, string>>) {
+  const token = await tokenOIngresar("/");
+  await pedirApi("/portal/me/legal-acceptances", {
+    metodo: "POST",
+    token,
+    portal: true,
+    cuerpo: {
+      ...(versiones.TERMINOS && { terminos: Number(versiones.TERMINOS) }),
+      ...(versiones.POLITICA_DATOS && { politicaDatos: Number(versiones.POLITICA_DATOS) }),
+    },
+  });
+  await sincronizarCuentaApi(almacen());
 }
 
 /* ---------- Baja ---------- */

@@ -13,6 +13,8 @@ import {
 } from "@/lib/auth/acciones";
 import { correoSchema, nombrePersonaSchema } from "@/lib/validation/common";
 import { TIPOS_ENTIDAD } from "@/lib/validation/schemas";
+import type { TextoLegal, TipoTextoLegal } from "@/lib/api/types";
+import { ModalTextoLegal } from "./texto-legal";
 import { CampoSelect } from "./piezas";
 import {
   AvisoDesarrollo,
@@ -27,24 +29,63 @@ import {
 
 const inicial: EstadoFormulario = {};
 
-function Aceptaciones({ estado }: { estado: EstadoFormulario }) {
-  const enlace = "font-semibold text-rojo underline underline-offset-2";
+/** Los textos vigentes que se aceptan al registrarse; null si no se pudieron leer. */
+export type TextosRegistro = Record<TipoTextoLegal, TextoLegal | null>;
+
+/**
+ * Las dos aceptaciones. Cada texto se lee en un modal, sin salir del formulario; el botón está
+ * fuera de la casilla, así abrirlo no la marca. Se envía la versión que la persona vio.
+ */
+function Aceptaciones({ estado, textos }: { estado: EstadoFormulario; textos: TextosRegistro }) {
+  const [abierto, setAbierto] = useState<TipoTextoLegal | null>(null);
+  const v = estado.valores ?? {};
+  const enlace =
+    "font-semibold text-rojo underline underline-offset-2 hover:text-rojo-oscuro cursor-pointer";
+  const leer = (tipo: TipoTextoLegal, texto: string) => (
+    <button
+      type="button"
+      onClick={(e) => {
+        // Dentro de la etiqueta: abrir el texto no marca la casilla.
+        e.preventDefault();
+        setAbierto(tipo);
+      }}
+      aria-haspopup="dialog"
+      className={enlace}
+    >
+      {texto}
+    </button>
+  );
   return (
     <div className="space-y-3 border-t border-linea pt-5">
-      <Casilla id="aceptaTerminos" error={estado.errores?.aceptaTerminos}>
-        Acepto los{" "}
-        <Link href="/terminos" target="_blank" className={enlace}>
-          términos de uso
-        </Link>
-        .
+      <input type="hidden" name="versionTerminos" value={textos.TERMINOS?.version ?? ""} />
+      <input
+        type="hidden"
+        name="versionPoliticaDatos"
+        value={textos.POLITICA_DATOS?.version ?? ""}
+      />
+      <Casilla
+        id="aceptaTerminos"
+        marcada={v.aceptaTerminos === "on"}
+        error={estado.errores?.aceptaTerminos}
+      >
+        Acepto los {leer("TERMINOS", "términos de uso")}.
       </Casilla>
-      <Casilla id="aceptaPoliticaDatos" error={estado.errores?.aceptaPoliticaDatos}>
-        Acepto la{" "}
-        <Link href="/politica-de-datos" target="_blank" className={enlace}>
-          política de tratamiento de datos personales
-        </Link>
-        .
+      <Casilla
+        id="aceptaPoliticaDatos"
+        marcada={v.aceptaPoliticaDatos === "on"}
+        error={estado.errores?.aceptaPoliticaDatos}
+      >
+        Acepto la {leer("POLITICA_DATOS", "política de tratamiento de datos personales")}.
       </Casilla>
+      {(["TERMINOS", "POLITICA_DATOS"] as const).map((tipo) => (
+        <ModalTextoLegal
+          key={tipo}
+          tipo={tipo}
+          texto={textos[tipo]}
+          abierto={abierto === tipo}
+          onCerrar={() => setAbierto(null)}
+        />
+      ))}
     </div>
   );
 }
@@ -70,7 +111,7 @@ function Contrasenas({ estado }: { estado: EstadoFormulario }) {
 }
 
 /** Registro de persona natural (v3: cédula, nombres, apellidos, correo y contraseña). */
-export function FormRegistroNatural() {
+export function FormRegistroNatural({ textos }: { textos: TextosRegistro }) {
   const [estado, accion] = useActionState(registrarNaturalAccion, inicial);
   const v = estado.valores ?? {};
   return (
@@ -125,14 +166,14 @@ export function FormRegistroNatural() {
         error={estado.errores?.correo}
       />
       <Contrasenas estado={estado} />
-      <Aceptaciones estado={estado} />
+      <Aceptaciones estado={estado} textos={textos} />
       <BotonEnviar enviando="Creando tu cuenta…">Crear mi cuenta</BotonEnviar>
     </form>
   );
 }
 
 /** Registro de organización (v3: la cuenta usa el correo institucional, sin cédula). */
-export function FormRegistroOrganizacion() {
+export function FormRegistroOrganizacion({ textos }: { textos: TextosRegistro }) {
   const [estado, accion] = useActionState(registrarOrganizacionAccion, inicial);
   const v = estado.valores ?? {};
   return (
@@ -180,7 +221,7 @@ export function FormRegistroOrganizacion() {
         Después de verificar el correo te pediremos los datos de quien representa a la organización
         y el documento que lo acredita.
       </p>
-      <Aceptaciones estado={estado} />
+      <Aceptaciones estado={estado} textos={textos} />
       <BotonEnviar enviando="Registrando…">Registrar la organización</BotonEnviar>
     </form>
   );

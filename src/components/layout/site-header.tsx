@@ -26,7 +26,7 @@ export function SiteHeader() {
           <EnlacesNav />
         </nav>
 
-        <div className="hidden shrink-0 lg:block">
+        <div data-tour="cuenta" className="hidden shrink-0 lg:block">
           <Suspense fallback={<AccesoEscritorio />}>
             <CuentaEscritorio />
           </Suspense>
