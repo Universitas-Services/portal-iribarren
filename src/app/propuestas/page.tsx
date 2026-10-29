@@ -2,18 +2,15 @@ import { MessageSquareText, SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { getCatalogo } from "@/lib/api";
+import { soloDeLista } from "@/lib/catalogos";
 import { EncabezadoPagina } from "@/components/layout/encabezado-pagina";
 import { FiltrosUrl, type CampoFiltro } from "@/components/listado/filtros-url";
 import { Paginacion } from "@/components/listado/paginacion";
 import { TransicionListado, ZonaResultados } from "@/components/listado/transicion";
 import { TarjetaAporte } from "@/components/participacion/aporte";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  CATEGORIAS_TECNICAS,
-  NOMBRE_TIPO_PARTICIPACION,
-  PARROQUIAS,
-  TIPOS_PARTICIPACION,
-} from "@/lib/api/types";
+import { NOMBRE_TIPO_PARTICIPACION, TIPOS_PARTICIPACION } from "@/lib/api/types";
 import { getPropuestasPublicadas } from "@/lib/auth/sesion";
 import { plural } from "@/lib/formato";
 import { metricasAporte } from "@/lib/interacciones/almacen";
@@ -34,7 +31,8 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 const POR_PAGINA = 12;
 
-const CAMPOS: CampoFiltro[] = [
+/** Los filtros, con los desplegables vigentes de la alcaldía. */
+const camposDe = (parroquias: string[], categoriasTecnicas: string[]): CampoFiltro[] => [
   { tipo: "texto", nombre: "q", etiqueta: "Buscar", placeholder: "Tema, sector o autor" },
   {
     tipo: "selector",
@@ -51,14 +49,14 @@ const CAMPOS: CampoFiltro[] = [
     nombre: "parroquia",
     etiqueta: "Parroquia",
     vacio: "Todas",
-    opciones: PARROQUIAS,
+    opciones: parroquias,
   },
   {
     tipo: "selector",
     nombre: "categoriaTecnica",
     etiqueta: "Categoría técnica",
     vacio: "Todas",
-    opciones: CATEGORIAS_TECNICAS,
+    opciones: categoriasTecnicas,
   },
 ];
 
@@ -92,7 +90,15 @@ export default function PropuestasPage({ searchParams }: { searchParams: SearchP
 }
 
 async function Galeria({ searchParams }: { searchParams: SearchParams }) {
-  const filtros = filtrosParticipacionesSchema.parse(await searchParams);
+  const [parroquias, categoriasTecnicas] = await Promise.all([
+    getCatalogo("parroquias"),
+    getCatalogo("categorias-tecnicas"),
+  ]);
+  const filtros = soloDeLista(
+    soloDeLista(filtrosParticipacionesSchema.parse(await searchParams), "parroquia", parroquias),
+    "categoriaTecnica",
+    categoriasTecnicas,
+  );
   const todas = await getPropuestasPublicadas({
     q: filtros.q,
     tipo: filtros.tipo,
@@ -110,7 +116,7 @@ async function Galeria({ searchParams }: { searchParams: SearchParams }) {
     <TransicionListado>
       <FiltrosUrl
         ruta="/propuestas"
-        campos={CAMPOS}
+        campos={camposDe(parroquias, categoriasTecnicas)}
         valores={{
           q: filtros.q ?? "",
           tipo: filtros.tipo ? aSlug(filtros.tipo) : "",

@@ -64,9 +64,10 @@ describe("registroOrganizacionSchema", () => {
     expect(r.data?.rif).toBe("C-29876543-7");
   });
 
-  it("rechaza un tipo de entidad fuera de la lista de la v3", () => {
+  it("exige el tipo de entidad (la lista vigente la comprueba la acción)", () => {
+    expect(registroOrganizacionSchema.safeParse({ ...base, tipoEntidad: "" }).success).toBe(false);
     expect(registroOrganizacionSchema.safeParse({ ...base, tipoEntidad: "Club" }).success).toBe(
-      false,
+      true,
     );
   });
 });
@@ -142,11 +143,10 @@ describe("participacionSchema", () => {
     expect(r.error?.issues[0]?.path).toEqual(["noticia"]);
   });
 
-  it("solo admite parroquias y categorías del catálogo", () => {
-    expect(participacionSchema.safeParse({ ...base, parroquia: "Cabudare" }).success).toBe(false);
-    expect(participacionSchema.safeParse({ ...base, categoriaTecnica: "Vialidad" }).success).toBe(
-      false,
-    );
+  it("exige parroquia y categoría técnica (la lista vigente la comprueba la acción)", () => {
+    expect(participacionSchema.safeParse({ ...base, parroquia: "" }).success).toBe(false);
+    expect(participacionSchema.safeParse({ ...base, categoriaTecnica: " " }).success).toBe(false);
+    expect(participacionSchema.safeParse({ ...base, parroquia: "Cabudare" }).success).toBe(true);
   });
 
   it("pide entre 50 y 3000 caracteres en la descripción", () => {
@@ -206,9 +206,10 @@ describe("perfil", () => {
     expect(datosNaturalSchema.safeParse({ telefono: "0414-1234567", ocupacion: "" }).success).toBe(
       true,
     );
+    // La ocupación se compara con la lista vigente en la acción.
     expect(
       datosNaturalSchema.safeParse({ telefono: "0414-1234567", ocupacion: "Astronauta" }).success,
-    ).toBe(false);
+    ).toBe(true);
     expect(datosNaturalSchema.safeParse({ telefono: "" }).success).toBe(false);
   });
 
@@ -254,7 +255,8 @@ describe("filtrosParticipacionesSchema", () => {
       estado: "EN_REVISION",
       tipo: "PROPUESTA_FORMAL",
       parroquia: "El Cují",
-      categoriaTecnica: undefined,
+      // Los valores de catálogo los descarta la página si no están en la lista (soloDeLista).
+      categoriaTecnica: "Inventada",
       folio: "IRI-2026-0004",
       pagina: 1,
     });

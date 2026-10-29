@@ -4,7 +4,8 @@ import { RedirectType, redirect } from "next/navigation";
 import { refresh } from "next/cache";
 import type { z } from "zod";
 import type { TipoTextoLegal } from "@/lib/api/types";
-import { getPost } from "@/lib/api";
+import { getCatalogo, getPost, type TipoCatalogo } from "@/lib/api";
+import { enLista } from "@/lib/catalogos";
 import { usaApi } from "@/lib/plataforma-api/cliente";
 import {
   MENSAJE_TEXTOS_PENDIENTES,
@@ -184,6 +185,20 @@ async function bloqueoPorTextos(): Promise<EstadoFormulario | undefined> {
   return { mensaje: { tipo: "error", texto: MENSAJE_TEXTOS_PENDIENTES } };
 }
 
+/**
+ * Los desplegables los administra la alcaldía (R16): el valor elegido tiene que estar en la
+ * lista vigente. Si no está (lo desactivaron mientras se llenaba el formulario), se marca.
+ */
+async function fueraDeLista(
+  datos: Record<string, unknown>,
+  campos: [campo: string, tipo: TipoCatalogo, valor: string | undefined, error: string][],
+): Promise<EstadoFormulario | undefined> {
+  const errores: Record<string, string> = {};
+  for (const [campo, tipo, valor, error] of campos)
+    if (valor && !enLista(await getCatalogo(tipo), valor)) errores[campo] = error;
+  return Object.keys(errores).length ? { errores, valores: valoresDe(datos) } : undefined;
+}
+
 /** Un texto legal cambió mientras la persona llenaba el registro: debe leerlo otra vez. */
 function textosCambiaron(datos: Record<string, unknown>): EstadoFormulario {
   const { aceptaTerminos: _t, aceptaPoliticaDatos: _p, ...resto } = datos;
@@ -234,6 +249,10 @@ export async function registrarOrganizacionAccion(
   const datos = leer(fd);
   const p = registroOrganizacionSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
+  const fuera = await fueraDeLista(datos, [
+    ["tipoEntidad", "tipos-entidad", p.data.tipoEntidad, "Selecciona el tipo de entidad."],
+  ]);
+  if (fuera) return fuera;
   const { tipoEntidad, razonSocial, rif, correo, contrasena } = p.data;
   const textosAceptados = await versionesVistasVigentes(fd);
   if (!textosAceptados) return textosCambiaron(datos);
@@ -406,6 +425,14 @@ export async function guardarDatosNaturalAccion(
   const datos = leer(fd);
   const p = datosNaturalSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
+  // La ocupación que ya tenía se acepta aunque la alcaldía la haya desactivado.
+  const actual = cuentaDeSesion(almacen(), sesion)?.perfil.ocupacion;
+  if (p.data.ocupacion && p.data.ocupacion !== actual) {
+    const fuera = await fueraDeLista(datos, [
+      ["ocupacion", "ocupaciones", p.data.ocupacion, "Elige una ocupación de la lista."],
+    ]);
+    if (fuera) return fuera;
+  }
   if (usaApi())
     return guardarPerfilApi(
       completo,
@@ -590,6 +617,16 @@ export async function enviarParticipacionAccion(
   const datos = leer(fd);
   const p = participacionSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
+  const fuera = await fueraDeLista(datos, [
+    ["parroquia", "parroquias", p.data.parroquia, "Selecciona la parroquia."],
+    [
+      "categoriaTecnica",
+      "categorias-tecnicas",
+      p.data.categoriaTecnica,
+      "Selecciona la categoría técnica.",
+    ],
+  ]);
+  if (fuera) return fuera;
   const { idempotencia, noticia: slug, imagenes, soporte, latitud, longitud, ...resto } = p.data;
   const ubicacion =
     latitud !== undefined && longitud !== undefined ? { lat: latitud, lng: longitud } : undefined;

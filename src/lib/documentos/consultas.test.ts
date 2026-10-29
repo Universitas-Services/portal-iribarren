@@ -73,7 +73,8 @@ describe("parseFiltrosDocumentos", () => {
   it("descarta valores inválidos sin lanzar error", () => {
     expect(
       parseFiltrosDocumentos({ estado: "archivado", categoria: "Leyes", pagina: "0" }),
-    ).toEqual({ q: undefined, estado: undefined, categoria: undefined, pagina: 1 });
+      // La categoría se compara con la lista vigente en la página (soloDeLista).
+    ).toEqual({ q: undefined, estado: undefined, categoria: "Leyes", pagina: 1 });
   });
 });
 

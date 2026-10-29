@@ -12,6 +12,8 @@ import { banners, documentos, posts, processStatus } from "@/lib/mocks/data";
 import { textoLegalSimulado } from "@/lib/mocks/textos-legales";
 import { paraPortada, relacionadas, consultarNoticias } from "@/lib/noticias/consultas";
 import { ErrorApi, pedirApi, urlApi, usaApi } from "@/lib/plataforma-api/cliente";
+import { TIPOS_ENTIDAD } from "@/lib/validation/schemas";
+import { CATEGORIAS, CATEGORIAS_TECNICAS, DOC_CATEGORIAS, OCUPACIONES, PARROQUIAS } from "./types";
 import type {
   Banner,
   Documento,
@@ -115,6 +117,51 @@ export async function getProcess(): Promise<ProcessStatus> {
   }
   await simularRed(0.6);
   return processStatus;
+}
+
+/* ---------- Desplegables (catálogos de la alcaldía, R16) ---------- */
+
+/** Nombre de cada catálogo en la URL de plataforma-api (/portal/catalogs/:tipo). */
+export type TipoCatalogo =
+  | "parroquias"
+  | "categorias-tecnicas"
+  | "categorias-noticias"
+  | "categorias-documentos"
+  | "ocupaciones"
+  | "tipos-entidad";
+
+/** Las listas de siempre: sin la API, o si no responde, el portal sigue ofreciéndolas. */
+const CATALOGO_RESPALDO: Record<TipoCatalogo, readonly string[]> = {
+  parroquias: PARROQUIAS,
+  "categorias-tecnicas": CATEGORIAS_TECNICAS,
+  "categorias-noticias": CATEGORIAS,
+  "categorias-documentos": DOC_CATEGORIAS,
+  ocupaciones: OCUPACIONES,
+  "tipos-entidad": TIPOS_ENTIDAD,
+};
+
+/**
+ * Los valores activos de un desplegable, en su orden. Los administra la alcaldía desde el panel
+ * (Configuración); con plataforma-api, GET /portal/catalogs/:tipo. Vida corta para que un
+ * cambio se vea pronto; si la API falla, las listas de siempre.
+ */
+export async function getCatalogo(tipo: TipoCatalogo): Promise<string[]> {
+  "use cache";
+  if (usaApi()) {
+    try {
+      const r = await pedirApi<{ data: { valor: string }[] }>(`/portal/catalogs/${tipo}`, {
+        portal: true,
+        publica: true,
+      });
+      cacheLife("minutes");
+      if (r.data.length) return r.data.map((i) => i.valor);
+    } catch (e) {
+      if (!(e instanceof ErrorApi) || (e.status !== 404 && !apiCaida(e, `el catálogo ${tipo}`)))
+        throw e;
+      cacheLife("minutes");
+    }
+  } else cacheLife("hours");
+  return [...CATALOGO_RESPALDO[tipo]];
 }
 
 /**

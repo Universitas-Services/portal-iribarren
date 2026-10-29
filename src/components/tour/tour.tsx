@@ -35,12 +35,27 @@ const visible = (el: Element) => {
   return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== "hidden";
 };
 
+/**
+ * Los elementos que resalta el paso: los visibles del primer selector que encuentre alguno. Un
+ * selector puede abarcar varios (por ejemplo, el buscador y las pestañas de formato): el hueco
+ * los cubre a todos.
+ */
 function objetivoDe(paso: PasoTour | undefined) {
   for (const sel of paso?.objetivo ?? []) {
-    const el = [...document.querySelectorAll(sel)].find(visible);
-    if (el) return el;
+    const els = [...document.querySelectorAll(sel)].filter(visible);
+    if (els.length) return els;
   }
   return undefined;
+}
+
+/** El rectángulo que cubre a todos los elementos. */
+function cajaDe(els: Element[]) {
+  const rs = els.map((e) => e.getBoundingClientRect());
+  const top = Math.min(...rs.map((r) => r.top));
+  const left = Math.min(...rs.map((r) => r.left));
+  const bottom = Math.max(...rs.map((r) => r.bottom));
+  const right = Math.max(...rs.map((r) => r.right));
+  return { top, left, width: right - left, height: bottom - top, bottom };
 }
 
 const sinMovimiento = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -93,25 +108,47 @@ export function Tour({ conSesion, pendiente }: { conSesion: boolean; pendiente: 
   // Lleva el objetivo a la vista y sigue su posición al hacer scroll o cambiar el tamaño.
   useLayoutEffect(() => {
     if (!paso) return;
-    const el = objetivoDe(paso);
-    if (!el) return;
-    const r0 = el.getBoundingClientRect();
-    if (r0.top < 72 || r0.bottom > window.innerHeight)
-      el.scrollIntoView({ block: "center", behavior: sinMovimiento() ? "auto" : "smooth" });
+    // Un paso de una sección que se muestra por el #id (Conoce el PDUL): primero se abre, como
+    // si se eligiera en el índice de la página.
+    if (paso.seccion && window.location.hash !== `#${paso.seccion}`)
+      window.location.hash = paso.seccion;
+
     let marco = 0;
+    let espera = 0;
+    let els: Element[] | undefined;
     const medir = () => {
+      if (!els) return;
       cancelAnimationFrame(marco);
       marco = requestAnimationFrame(() => {
-        const r = el.getBoundingClientRect();
+        const r = cajaDe(els!);
         setCaja({ para: paso, top: r.top, left: r.left, width: r.width, height: r.height });
         // El globo va donde hay más espacio; en el teléfono, en el borde contrario al objetivo.
-        setArriba(r.top + r.height / 2 > window.innerHeight / 2);
+        // Con un objetivo muy alto (una sección entera), abajo: así no tapa su título.
+        const alto = r.height > window.innerHeight * 0.6;
+        setArriba(!alto && r.top + r.height / 2 > window.innerHeight / 2);
       });
     };
-    medir();
+    // El elemento puede tardar un instante en mostrarse (sección recién abierta, contenido en
+    // streaming): se reintenta hasta 1,5 s antes de dejar el paso centrado.
+    const buscar = (intento = 0) => {
+      els = objetivoDe(paso);
+      if (!els) {
+        if (intento < 30) espera = window.setTimeout(() => buscar(intento + 1), 50);
+        return;
+      }
+      const r0 = cajaDe(els);
+      if (r0.top < 72 || r0.bottom > window.innerHeight)
+        els[0]!.scrollIntoView({
+          block: r0.height > window.innerHeight * 0.6 ? "start" : "center",
+          behavior: sinMovimiento() ? "auto" : "smooth",
+        });
+      medir();
+    };
+    buscar();
     window.addEventListener("scroll", medir, { passive: true });
     window.addEventListener("resize", medir);
     return () => {
+      clearTimeout(espera);
       cancelAnimationFrame(marco);
       window.removeEventListener("scroll", medir);
       window.removeEventListener("resize", medir);
@@ -120,7 +157,8 @@ export function Tour({ conSesion, pendiente }: { conSesion: boolean; pendiente: 
 
   // El foco pasa al globo en cada paso: el lector de pantalla lee el título y el texto.
   useEffect(() => {
-    if (paso) globo.current?.focus();
+    // Sin desplazar: el foco no debe cortar el scroll que lleva al elemento del paso.
+    if (paso) globo.current?.focus({ preventScroll: true });
   }, [paso]);
 
   const total = pasos?.length ?? 0;

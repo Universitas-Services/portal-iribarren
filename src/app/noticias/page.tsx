@@ -10,9 +10,9 @@ import { Paginacion } from "@/components/listado/paginacion";
 import { TransicionListado, ZonaResultados } from "@/components/listado/transicion";
 import { urlPaginaNoticias } from "@/components/noticias/urls";
 import { ListadoSkeleton } from "@/components/noticias/skeletons";
-import { getPosts } from "@/lib/api";
-import { CATEGORIAS } from "@/lib/api/types";
+import { getCatalogo, getPosts } from "@/lib/api";
 import { plural } from "@/lib/formato";
+import { soloDeLista } from "@/lib/catalogos";
 import { parseFiltrosNoticias } from "@/lib/validation/schemas";
 
 export const metadata: Metadata = {
@@ -45,7 +45,9 @@ export default function NoticiasPage({ searchParams }: { searchParams: SearchPar
 }
 
 async function Listado({ searchParams }: { searchParams: SearchParams }) {
-  const filtros = parseFiltrosNoticias(await searchParams);
+  const categorias = await getCatalogo("categorias-noticias");
+  // Una categoría que no está en la lista (enlace viejo o mal copiado) se descarta.
+  const filtros = soloDeLista(parseFiltrosNoticias(await searchParams), "categoria", categorias);
   const { items, total, pagina, paginas, porFormato } = await getPosts(filtros);
   const hayFiltros = Boolean(
     filtros.q || filtros.categoria || filtros.formato || filtros.desde || filtros.hasta,
@@ -53,7 +55,7 @@ async function Listado({ searchParams }: { searchParams: SearchParams }) {
 
   return (
     <TransicionListado>
-      <FiltrosNoticias filtros={filtros} categorias={CATEGORIAS} porFormato={porFormato} />
+      <FiltrosNoticias filtros={filtros} categorias={categorias} porFormato={porFormato} />
       <ZonaResultados>
         <p className="mt-6 text-sm text-tinta/75" aria-live="polite">
           {total === 0

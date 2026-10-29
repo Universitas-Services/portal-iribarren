@@ -13,12 +13,7 @@ import {
 import Link from "next/link";
 import { useActionState, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import {
-  CATEGORIAS_TECNICAS,
-  NOMBRE_TIPO_PARTICIPACION,
-  PARROQUIAS,
-  type TipoParticipacion,
-} from "@/lib/api/types";
+import { NOMBRE_TIPO_PARTICIPACION, type TipoParticipacion } from "@/lib/api/types";
 import { enviarParticipacionAccion, type EstadoFormulario } from "@/lib/auth/acciones";
 import {
   DESCRIPCION_MAX,
@@ -73,6 +68,8 @@ function leerFormulario(form: HTMLFormElement) {
 /** Formulario 3 de la v3: opinión general, opinión sobre noticia o propuesta formal. */
 export function FormParticipacion({
   noticias,
+  parroquias,
+  categoriasTecnicas,
   tipoInicial,
   noticiaInicial,
   puedeProponer,
@@ -81,6 +78,9 @@ export function FormParticipacion({
   autor,
 }: {
   noticias: { slug: string; titulo: string }[];
+  /** Los desplegables vigentes de la alcaldía. */
+  parroquias: string[];
+  categoriasTecnicas: string[];
   tipoInicial: TipoParticipacion;
   noticiaInicial?: string;
   /** Perfil completo: lo exige solo la propuesta formal. Las opiniones no tienen requisito. */
@@ -229,7 +229,7 @@ export function FormParticipacion({
         <CampoSelect
           id="parroquia"
           etiqueta="Parroquia"
-          opciones={PARROQUIAS}
+          opciones={parroquias}
           defaultValue={v.parroquia ?? ""}
           error={errores.parroquia}
         />
@@ -254,7 +254,7 @@ export function FormParticipacion({
       <CampoSelect
         id="categoriaTecnica"
         etiqueta="¿Con qué área del plan se relaciona?"
-        opciones={CATEGORIAS_TECNICAS}
+        opciones={categoriasTecnicas}
         defaultValue={v.categoriaTecnica ?? ""}
         error={errores.categoriaTecnica}
       />

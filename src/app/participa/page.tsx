@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { Suspense } from "react";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
 import { FormParticipacion } from "@/components/cuenta/participacion";
-import { getLatestPosts } from "@/lib/api";
+import { getCatalogo, getLatestPosts } from "@/lib/api";
 import type { TipoParticipacion } from "@/lib/api/types";
 import { getUsuario } from "@/lib/auth/sesion";
 
@@ -59,6 +59,8 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
   return (
     <FormParticipacion
       noticias={noticias}
+      parroquias={await getCatalogo("parroquias")}
+      categoriasTecnicas={await getCatalogo("categorias-tecnicas")}
       tipoInicial={tipo}
       noticiaInicial={noticias.some((n) => n.slug === noticia) ? noticia : undefined}
       puedeProponer={u.puedeProponer}

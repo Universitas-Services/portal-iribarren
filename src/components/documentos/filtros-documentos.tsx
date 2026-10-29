@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useTransicionListado } from "@/components/listado/transicion";
 import {
-  DOC_CATEGORIAS,
   type DocCategory,
   type DocEstado,
   type FiltrosDocumentos,
@@ -33,10 +32,13 @@ const titulo = "font-display text-xs font-bold tracking-wide text-tinta/75 upper
  */
 export function FiltrosDocumentos({
   filtros,
+  categorias: lista,
   porCategoria,
   porEstado,
 }: {
   filtros: FiltrosDocumentos;
+  /** Las categorías vigentes de la alcaldía, en su orden. */
+  categorias: string[];
   porCategoria: PaginaDocumentos["porCategoria"];
   porEstado: PaginaDocumentos["porEstado"];
 }) {
@@ -86,7 +88,7 @@ export function FiltrosDocumentos({
   const activos = [valores.q, valores.categoria, valores.estado].filter(Boolean).length;
   const categorias: { c: DocCategory | ""; label: string; n: number }[] = [
     { c: "", label: "Todas", n: porCategoria.TODAS },
-    ...DOC_CATEGORIAS.map((c) => ({ c, label: c, n: porCategoria[c] })),
+    ...lista.map((c) => ({ c, label: c, n: porCategoria[c] ?? 0 })),
   ];
 
   // En escritorio el panel siempre está abierto: el CSS lo fuerza donde hay ::details-content

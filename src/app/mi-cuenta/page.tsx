@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
+import { getCatalogo } from "@/lib/api";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
 import {
   FormAcreditacion,
@@ -70,7 +71,7 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
         {u.tipo === "NATURAL" ? (
           <>
             <Paso numero={1} paso={u.pasos[0]!} resumen={telefono(u)}>
-              <FormDatosNatural perfil={u.perfil} />
+              <FormDatosNatural perfil={u.perfil} ocupaciones={await getCatalogo("ocupaciones")} />
             </Paso>
             <Paso numero={2} paso={u.pasos[1]!} resumen={u.documentos.IDENTIDAD?.nombre}>
               <FormDocumento
