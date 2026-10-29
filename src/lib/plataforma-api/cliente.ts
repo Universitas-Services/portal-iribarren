@@ -40,6 +40,10 @@ type Opciones = {
    * ahí no se pueden leer las cabeceras de la petición y esas rutas no tienen límite por IP.
    */
   publica?: boolean;
+  /** Cabeceras extra, como `Idempotency-Key` en el envío de una participación. */
+  cabeceras?: Record<string, string>;
+  /** Tiempo de espera en ms (15 s por defecto; los envíos con archivos necesitan más). */
+  tiempo?: number;
 };
 
 export async function pedirApi<T>(ruta: string, o: Opciones = {}): Promise<T> {
@@ -48,6 +52,7 @@ export async function pedirApi<T>(ruta: string, o: Opciones = {}): Promise<T> {
 
   const headers = new Headers({ Accept: "application/json" });
   if (o.token) headers.set("Authorization", `Bearer ${o.token}`);
+  for (const [k, v] of Object.entries(o.cabeceras ?? {})) headers.set(k, v);
   if (o.portal) {
     headers.set("x-client-id", process.env.PORTAL_CLIENT_ID || "portal-iribarren");
     // Solo un BFF puede enviar el secreto del portal; si no está definido, se omite.
@@ -73,7 +78,7 @@ export async function pedirApi<T>(ruta: string, o: Opciones = {}): Promise<T> {
       headers,
       body,
       cache: "no-store",
-      signal: AbortSignal.timeout(15_000),
+      signal: AbortSignal.timeout(o.tiempo ?? 15_000),
     });
   } catch {
     throw new ErrorApi(503, "API_SIN_RESPUESTA", "No pudimos conectar con el servidor.");
@@ -208,3 +213,65 @@ export type ItemCatalogo = { id: string; valor: string; codigo: string | null; o
 /** Renueva los tokens con el refresh token (rota: el anterior deja de valer). */
 export const refrescarTokens = (refreshToken: string) =>
   pedirApi<SesionApi>("/auth/refresh", { cuerpo: { refreshToken } });
+
+/* ---------- Participaciones (guía R11: /portal/participations) ---------- */
+
+/** Acuse de recibo de un envío: el folio y el comprobante para verificarlo. */
+export type ComprobanteApi = {
+  codigoVerificacion: string;
+  hashContenido: string;
+  /** Sello de tiempo: null hasta R5b. */
+  sello: string | null;
+};
+
+export type AcuseApi = {
+  folio: string;
+  estado: string;
+  recibidaEl: string;
+  comprobante: ComprobanteApi;
+};
+
+type ArchivoApi = { nombre: string; mime: string; tamano: number };
+
+/** Lo común a la vista del autor y a la galería. */
+type BaseParticipacionApi = {
+  folio: string;
+  tipo: "OPINION_GENERAL" | "OPINION_NOTICIA" | "PROPUESTA_FORMAL";
+  noticia?: { slug: string; titulo: string };
+  parroquia: string;
+  sector: string;
+  categoriaTecnica: string;
+  descripcion: string;
+  imagenes: ArchivoApi[];
+  soporte?: ArchivoApi;
+  video?: { fuente: "YOUTUBE" | "INSTAGRAM"; url: string };
+};
+
+/** Lo que ve el autor de una de sus participaciones (GET /portal/me/participations/{folio}). */
+export type ParticipacionPropiaApi = BaseParticipacionApi & {
+  ubicacion?: { lat: number; lng: number };
+  mostrarNombre: boolean;
+  autor: string;
+  estado: "PENDIENTE" | "EN_REVISION" | "APROBADA" | "RECHAZADA" | "PUBLICADA";
+  recibidaEl: string;
+  publicadaEl?: string;
+  historial: {
+    estado: ParticipacionPropiaApi["estado"];
+    fecha: string;
+    comentario?: string;
+    motivo?: string;
+  }[];
+  comprobante: ComprobanteApi;
+};
+
+/** La galería pública (GET /portal/participations): sin ubicación, historial ni comprobante. */
+export type ParticipacionPublicaApi = BaseParticipacionApi & {
+  autor: string;
+  publicadaEl: string;
+  totales: { vistas: number; likes: number; dislikes: number };
+};
+
+export type PaginaApi<T> = {
+  data: T[];
+  meta: { page: number; limit: number; total: number; totalPages: number };
+};

@@ -2,8 +2,8 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { TarjetaAporte } from "@/components/participacion/aporte";
-import { propuestasPublicadas, type PropuestaPublica } from "@/lib/auth/servicio";
-import { almacen } from "@/lib/auth/sesion";
+import type { PropuestaPublica } from "@/lib/auth/servicio";
+import { getPropuestasPublicadas } from "@/lib/auth/sesion";
 import { almacenInteracciones, metricasAporte } from "@/lib/interacciones/almacen";
 import { claveAporte, masReacciones, masVistas } from "@/lib/interacciones/interacciones";
 import { PestanasNoticias } from "./pestanas-noticias";
@@ -21,7 +21,7 @@ const LECTOR = {
  */
 export async function LaGenteOpina() {
   await connection();
-  const publicadas = propuestasPublicadas(almacen());
+  const publicadas = (await getPropuestasPublicadas({}, 1, 100)).items;
   if (publicadas.length === 0) return null;
   const alm = almacenInteracciones();
 

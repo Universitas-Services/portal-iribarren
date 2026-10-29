@@ -109,7 +109,17 @@ export type Participacion = {
   autor: string;
   estado: EstadoParticipacion;
   creadaEl: string;
-  historial: { estado: EstadoParticipacion; fecha: string; comentario?: string }[];
+  /** Cuándo se publicó en la galería (con la API). */
+  publicadaEl?: string;
+  historial: {
+    estado: EstadoParticipacion;
+    fecha: string;
+    comentario?: string;
+    /** Código del motivo de rechazo (con la API). */
+    motivo?: string;
+  }[];
+  /** Acuse con código de verificación y huella (con la API, guía R11). */
+  comprobante?: { codigoVerificacion: string; hashContenido: string; sello: string | null };
 };
 
 type TipoToken = "VERIFICAR" | "RESTABLECER";
@@ -694,7 +704,7 @@ const autorVisible = (p: Participacion) => (p.mostrarNombre ? p.autor : AUTOR_AN
  * Lo que puede ver cualquier visitante de una participación publicada: nunca el id de la
  * cuenta ni datos de contacto. Sin nombre autorizado, el autor es «Ciudadano de Iribarren».
  */
-export function vistaPublica(p: Participacion) {
+export function vistaPublica(p: Participacion): PropuestaPublica {
   // La ubicación exacta no se publica: puede ser la casa de la persona.
   const {
     cuentaId: _cuenta,
@@ -711,7 +721,17 @@ export function vistaPublica(p: Participacion) {
   };
 }
 
-export type PropuestaPublica = ReturnType<typeof vistaPublica>;
+/** Una participación en la galería pública: sin cuenta, historial, ubicación ni estado. */
+export type PropuestaPublica = Omit<
+  Participacion,
+  "cuentaId" | "historial" | "mostrarNombre" | "autor" | "ubicacion" | "comprobante"
+> & {
+  /** El nombre, o «Ciudadano de Iribarren» si no autorizó mostrarlo. */
+  autor: string;
+  publicadaEl: string;
+  /** Vistas y reacciones de la API (en cero hasta R12). */
+  totales?: { vistas: number; likes: number; dislikes: number };
+};
 
 /** Galería pública: todo lo PUBLICADA, de lo más reciente a lo más antiguo. */
 export function propuestasPublicadas(alm: Almacen, f: FiltroParticipaciones = {}) {

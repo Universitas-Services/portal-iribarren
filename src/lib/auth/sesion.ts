@@ -4,6 +4,13 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { usaApi } from "@/lib/plataforma-api/cliente";
 import { almacenDemo } from "./fixtures";
+import {
+  galeriaApi,
+  miParticipacionApi,
+  misParticipacionesApi,
+  propuestaPublicaApi,
+  type PaginaGaleria,
+} from "./participaciones-api";
 import { borrarTokens, idSesionApi } from "./sesion-api";
 import { DURACION_SESION_MS, firmarSesion, leerSesion } from "./token-sesion";
 import {
@@ -83,27 +90,52 @@ export async function getPerfil(): Promise<VistaPerfil | null> {
 
 /** Una participación de la cuenta en sesión (nunca la de otra persona). */
 export async function getParticipacion(folio: string) {
-  return participacionPropia(almacen(), await idSesion(), folio);
+  const id = await idSesion();
+  if (usaApi()) {
+    const c = cuentaDeSesion(almacen(), id);
+    return c ? miParticipacionApi(folio, c.id) : undefined;
+  }
+  return participacionPropia(almacen(), id, folio);
 }
 
 /** Participaciones de la cuenta en sesión, filtradas (null sin sesión). */
 export async function getMisParticipaciones(filtros: FiltroParticipaciones) {
   const id = await idSesion();
-  if (!cuentaDeSesion(almacen(), id)) return null;
+  const c = cuentaDeSesion(almacen(), id);
+  if (!c) return null;
+  if (usaApi()) return misParticipacionesApi(filtros, c.id);
   const todas = participacionesDe(almacen(), id);
   return { total: todas.length, items: filtrarParticipaciones(todas, filtros) };
 }
 
+/** Aportes por página de la galería pública (igual que la API). */
+export const POR_PAGINA_GALERIA = 12;
+
 /*
- * Galería pública. Sale del almacén en memoria, que cambia en cada envío: se lee al pedir la
- * página (connection). Con plataforma-api pasa a «use cache» con revalidación por etiqueta.
+ * Galería pública, por páginas. Con plataforma-api, GET /portal/participations (cacheada unos
+ * minutos). Sin ella sale del almacén en memoria, que cambia en cada envío: se lee al pedir la
+ * página (connection).
  */
-export async function getPropuestasPublicadas(filtros: FiltroParticipaciones) {
+export async function getPropuestasPublicadas(
+  filtros: FiltroParticipaciones,
+  pagina = 1,
+  limite = POR_PAGINA_GALERIA,
+): Promise<PaginaGaleria> {
+  if (usaApi()) return galeriaApi(filtros, pagina, limite);
   await connection();
-  return propuestasPublicadas(almacen(), filtros);
+  const todas = propuestasPublicadas(almacen(), filtros);
+  const paginas = Math.max(1, Math.ceil(todas.length / limite));
+  const actual = Math.min(Math.max(1, pagina), paginas);
+  return {
+    items: todas.slice((actual - 1) * limite, actual * limite),
+    total: todas.length,
+    pagina: actual,
+    paginas,
+  };
 }
 
 export async function getPropuestaPublica(folio: string) {
+  if (usaApi()) return propuestaPublicaApi(folio);
   await connection();
   return propuestaPublica(almacen(), folio);
 }

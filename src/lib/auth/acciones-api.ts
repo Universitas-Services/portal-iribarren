@@ -4,6 +4,7 @@ import { RedirectType, redirect } from "next/navigation";
 import {
   ErrorApi,
   pedirApi,
+  type AcuseApi,
   type EnlaceNeutroApi,
   type ItemCatalogo,
   type RegistroApi,
@@ -12,6 +13,7 @@ import {
 import {
   acreditacionApi,
   campoEnConflicto,
+  erroresParticipacion,
   condicionApi,
   documentoApi,
   mensajeDeError,
@@ -395,6 +397,81 @@ export async function aceptarTextosLegalesApi(
  */
 function siHayTextosPendientes(e: unknown) {
   if (e instanceof ErrorApi && e.code === "TEXTOS_LEGALES_PENDIENTES") refresh();
+}
+
+/* ---------- Participaciones (guía R11) ---------- */
+
+/** Lo que ya validó la acción (participacionSchema), listo para la API. */
+export type EnvioParticipacion = {
+  idempotencia: string;
+  tipo: string;
+  noticia?: string;
+  parroquia: string;
+  sector: string;
+  categoriaTecnica: string;
+  descripcion: string;
+  latitud?: number;
+  longitud?: number;
+  video?: { url: string };
+  mostrarNombre: boolean;
+  imagenes: File[];
+  soporte?: File;
+};
+
+/**
+ * El cuerpo multipart de POST /portal/participations. Se arma de cero: el formulario trae
+ * entradas de archivo vacías que la API rechazaría.
+ */
+export function cuerpoParticipacion(d: EnvioParticipacion) {
+  const fd = new FormData();
+  fd.set("tipo", d.tipo);
+  if (d.tipo === "OPINION_NOTICIA" && d.noticia) fd.set("noticia", d.noticia);
+  fd.set("parroquia", d.parroquia);
+  fd.set("sector", d.sector);
+  fd.set("categoriaTecnica", d.categoriaTecnica);
+  fd.set("descripcion", d.descripcion);
+  if (d.latitud !== undefined && d.longitud !== undefined) {
+    fd.set("latitud", String(d.latitud));
+    fd.set("longitud", String(d.longitud));
+  }
+  if (d.video) fd.set("video", d.video.url);
+  fd.set("mostrarNombre", d.mostrarNombre ? "si" : "no");
+  for (const f of d.imagenes) fd.append("imagenes", f, f.name);
+  if (d.soporte) fd.set("soporte", d.soporte, d.soporte.name);
+  return fd;
+}
+
+/**
+ * Envía una participación. La clave de idempotencia va en la cabecera: un doble clic o un
+ * reintento devuelven el mismo acuse, sin crear otro folio. Con éxito, al acuse.
+ */
+export async function enviarParticipacionApi(
+  d: EnvioParticipacion,
+  valores: Record<string, string>,
+): Promise<EstadoFormulario> {
+  const token = await tokenOIngresar("/participa");
+  let acuse: AcuseApi;
+  try {
+    acuse = await pedirApi<AcuseApi>("/portal/participations", {
+      cuerpo: cuerpoParticipacion(d),
+      token,
+      portal: true,
+      cabeceras: { "Idempotency-Key": d.idempotencia },
+      // Hasta 12 MB de archivos: más que el tiempo de una lectura.
+      tiempo: 60_000,
+    });
+  } catch (e) {
+    if (e instanceof ErrorApi && e.status === 401)
+      return ir("/ingresar?volver=/participa&motivo=participar");
+    siHayTextosPendientes(e);
+    const r = erroresParticipacion(e);
+    return {
+      valores,
+      errores: r.errores,
+      mensaje: r.mensaje ? { tipo: "error", texto: r.mensaje } : undefined,
+    };
+  }
+  return ir(`/participa/enviada?folio=${acuse.folio}`);
 }
 
 /* ---------- Baja ---------- */

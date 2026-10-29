@@ -53,6 +53,7 @@ import {
   guardarPerfilApi,
   ingresarApi,
   marcarTourVistoApi,
+  enviarParticipacionApi,
   aceptarTextosLegalesApi,
   reenviarApi,
   recuperarApi,
@@ -632,6 +633,8 @@ export async function enviarParticipacionAccion(
     ],
   ]);
   if (fuera) return fuera;
+  // Con plataforma-api: el envío va directo (la API comprueba la noticia, el perfil y el municipio).
+  if (usaApi()) return enviarParticipacionApi(p.data, valoresDe(datos));
   const { idempotencia, noticia: slug, imagenes, soporte, latitud, longitud, ...resto } = p.data;
   const ubicacion =
     latitud !== undefined && longitud !== undefined ? { lat: latitud, lng: longitud } : undefined;

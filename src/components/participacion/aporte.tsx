@@ -80,7 +80,7 @@ export function FichaAporte({
         {filas.map(([k, v]) => (
           <div key={k}>
             <dt className="text-sm text-tinta/75">{k}</dt>
-            <dd className="font-semibold break-words text-noche">{v}</dd>
+            <dd className="font-semibold [overflow-wrap:anywhere] text-noche">{v}</dd>
           </div>
         ))}
       </dl>

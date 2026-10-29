@@ -2,6 +2,7 @@ import { z } from "zod";
 import { ESTADOS_PARTICIPACION } from "@/lib/api/types";
 import { cambiarEstadoParticipacion } from "@/lib/auth/servicio";
 import { almacen, esDesarrollo } from "@/lib/auth/sesion";
+import { usaApi } from "@/lib/plataforma-api/cliente";
 
 /*
  * Solo en desarrollo: simula al Revisor de plataforma-admin cambiando el estado de una
@@ -25,7 +26,8 @@ const ESTADO_HTTP = {
 } as const;
 
 export async function POST(request: Request, { params }: { params: Promise<{ folio: string }> }) {
-  if (!esDesarrollo) return new Response(null, { status: 404 });
+  // Con plataforma-api los estados los cambia el Revisor en el admin: aquí no hay nada que hacer.
+  if (!esDesarrollo || usaApi()) return new Response(null, { status: 404 });
   const { folio } = await params;
   const cuerpo = cuerpoSchema.safeParse(await request.json().catch(() => null));
   if (!cuerpo.success) return Response.json({ estado: "DATOS_INVALIDOS" }, { status: 400 });

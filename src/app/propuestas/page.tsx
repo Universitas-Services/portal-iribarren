@@ -12,6 +12,7 @@ import { TarjetaAporte } from "@/components/participacion/aporte";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NOMBRE_TIPO_PARTICIPACION, TIPOS_PARTICIPACION } from "@/lib/api/types";
 import { getPropuestasPublicadas } from "@/lib/auth/sesion";
+import { usaApi } from "@/lib/plataforma-api/cliente";
 import { plural } from "@/lib/formato";
 import { metricasAporte } from "@/lib/interacciones/almacen";
 import {
@@ -28,8 +29,6 @@ export const metadata: Metadata = {
 };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
-
-const POR_PAGINA = 12;
 
 /** Los filtros, con los desplegables vigentes de la alcaldía. */
 const camposDe = (parroquias: string[], categoriasTecnicas: string[]): CampoFiltro[] => [
@@ -99,15 +98,15 @@ async function Galeria({ searchParams }: { searchParams: SearchParams }) {
     "categoriaTecnica",
     categoriasTecnicas,
   );
-  const todas = await getPropuestasPublicadas({
-    q: filtros.q,
-    tipo: filtros.tipo,
-    parroquia: filtros.parroquia,
-    categoriaTecnica: filtros.categoriaTecnica,
-  });
-  const paginas = Math.max(1, Math.ceil(todas.length / POR_PAGINA));
-  const pagina = Math.min(filtros.pagina, paginas);
-  const items = todas.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
+  const { items, total, pagina, paginas } = await getPropuestasPublicadas(
+    {
+      q: filtros.q,
+      tipo: filtros.tipo,
+      parroquia: filtros.parroquia,
+      categoriaTecnica: filtros.categoriaTecnica,
+    },
+    filtros.pagina,
+  );
   const hayFiltros = Boolean(
     filtros.q || filtros.tipo || filtros.parroquia || filtros.categoriaTecnica,
   );
@@ -127,10 +126,10 @@ async function Galeria({ searchParams }: { searchParams: SearchParams }) {
       />
       <ZonaResultados>
         <p className="mt-6 text-sm text-tinta/75" aria-live="polite">
-          {todas.length === 0
+          {total === 0
             ? "Sin resultados"
-            : `${plural(todas.length, "aporte publicado", "aportes publicados")}${hayFiltros ? " con estos filtros" : ""}`}
-          <span className="text-tinta/75"> · Aportes de ejemplo</span>
+            : `${plural(total, "aporte publicado", "aportes publicados")}${hayFiltros ? " con estos filtros" : ""}`}
+          {!usaApi() && <span className="text-tinta/75"> · Aportes de ejemplo</span>}
         </p>
 
         {items.length > 0 ? (
