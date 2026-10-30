@@ -217,7 +217,11 @@ export type PostSummary = {
   duracionSeg?: number;
   /** Datos del adjunto para descargarlo desde el listado sin abrir la noticia. */
   adjunto?: Pick<Adjunto, "url" | "pesoBytes" | "paginas">;
+  /** Vistas y reacciones (con plataforma-api, guía R12). */
+  totales?: Totales;
 };
+
+export type Totales = { vistas: number; likes: number; dislikes: number };
 
 /** «Puntos de análisis» de la plantilla de noticias: pares título → explicación. */
 export type PuntosAnalisis = {

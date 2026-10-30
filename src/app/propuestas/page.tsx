@@ -144,7 +144,7 @@ async function Galeria({ searchParams }: { searchParams: SearchParams }) {
                   categoriaTecnica={p.categoriaTecnica}
                   descripcion={p.descripcion}
                   fecha={p.publicadaEl}
-                  metricas={metricasAporte(p.folio)}
+                  metricas={metricasAporte(p.folio, p.totales)}
                   autor={p.autor}
                 />
               </li>

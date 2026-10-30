@@ -395,7 +395,7 @@ export async function aceptarTextosLegalesApi(
  * La API rechazó una escritura porque hay textos legales por aceptar (la caché del portal aún no
  * lo sabía): se vuelve a pintar la página, que ya muestra el modal.
  */
-function siHayTextosPendientes(e: unknown) {
+export function siHayTextosPendientes(e: unknown) {
   if (e instanceof ErrorApi && e.code === "TEXTOS_LEGALES_PENDIENTES") refresh();
 }
 

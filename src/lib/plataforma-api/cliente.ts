@@ -44,6 +44,11 @@ type Opciones = {
   cabeceras?: Record<string, string>;
   /** Tiempo de espera en ms (15 s por defecto; los envíos con archivos necesitan más). */
   tiempo?: number;
+  /**
+   * Cuenta como visitante (vistas de R12): reenvía el navegador del ciudadano. La API identifica
+   * al visitante con su IP y su User-Agent; sin ellos, todos cuentan como uno solo.
+   */
+  visitante?: boolean;
 };
 
 export async function pedirApi<T>(ruta: string, o: Opciones = {}): Promise<T> {
@@ -63,6 +68,10 @@ export async function pedirApi<T>(ruta: string, o: Opciones = {}): Promise<T> {
       const ip = o.publica ? undefined : await ipDelCiudadano();
       if (ip) headers.set("x-client-ip", ip);
     }
+  }
+  if (o.visitante) {
+    const navegador = await navegadorDelCiudadano();
+    if (navegador) headers.set("User-Agent", navegador);
   }
   let body: BodyInit | undefined;
   if (o.cuerpo instanceof FormData) body = o.cuerpo;
@@ -119,6 +128,15 @@ async function ipDelCiudadano(): Promise<string | undefined> {
       h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       undefined
     );
+  } catch {
+    return undefined;
+  }
+}
+
+/** User-Agent de quien hizo la petición al portal; undefined fuera de una petición. */
+async function navegadorDelCiudadano(): Promise<string | undefined> {
+  try {
+    return (await cabecerasEntrantes()).get("user-agent")?.slice(0, 500) || undefined;
   } catch {
     return undefined;
   }
