@@ -108,7 +108,8 @@ export const CATEGORIAS = [
   "Despliegue territorial",
   "Visión de futuro",
 ] as const;
-export type PostCategory = (typeof CATEGORIAS)[number];
+/** Un valor del catálogo de categorías de noticias: lo administra la alcaldía (R16). */
+export type PostCategory = string;
 
 /* ---------- Catálogos de participación y perfil (Propuesta v3, formularios 1 a 3) ---------- */
 
@@ -125,7 +126,8 @@ export const PARROQUIAS = [
   "Buena Vista",
   "Águedo Felipe Alvarado",
 ] as const;
-export type Parroquia = (typeof PARROQUIAS)[number];
+/** Un valor del catálogo de parroquias: lo administra la alcaldía (R16). */
+export type Parroquia = string;
 
 /** Categorías técnicas del plan para clasificar opiniones y propuestas. */
 export const CATEGORIAS_TECNICAS = [
@@ -136,7 +138,8 @@ export const CATEGORIAS_TECNICAS = [
   "Medio Ambiente y Riesgos",
   "Patrimonio y Renovación Urbana",
 ] as const;
-export type CategoriaTecnica = (typeof CATEGORIAS_TECNICAS)[number];
+/** Un valor del catálogo de categorías técnicas: lo administra la alcaldía (R16). */
+export type CategoriaTecnica = string;
 
 export const OCUPACIONES = [
   "Comerciante",
@@ -214,7 +217,11 @@ export type PostSummary = {
   duracionSeg?: number;
   /** Datos del adjunto para descargarlo desde el listado sin abrir la noticia. */
   adjunto?: Pick<Adjunto, "url" | "pesoBytes" | "paginas">;
+  /** Vistas y reacciones (con plataforma-api, guía R12). */
+  totales?: Totales;
 };
+
+export type Totales = { vistas: number; likes: number; dislikes: number };
 
 /** «Puntos de análisis» de la plantilla de noticias: pares título → explicación. */
 export type PuntosAnalisis = {
@@ -266,7 +273,8 @@ export const DOC_CATEGORIAS = [
   "Cartografía",
   "Minutas",
 ] as const;
-export type DocCategory = (typeof DOC_CATEGORIAS)[number];
+/** Un valor del catálogo de categorías de documentos: lo administra la alcaldía (R16). */
+export type DocCategory = string;
 
 /** Estado administrativo del documento: borrador de trabajo o documento oficializado. */
 export const DOC_ESTADOS = ["OFICIAL", "BORRADOR"] as const;

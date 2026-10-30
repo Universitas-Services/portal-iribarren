@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
 import { FichaAporte, InsigniaEstado, LineaTiempoEstados } from "@/components/participacion/aporte";
-import { AUTOR_ANONIMO, tieneSeguimiento } from "@/lib/participacion";
+import { AUTOR_ANONIMO, filasComprobante, tieneSeguimiento } from "@/lib/participacion";
 import { getParticipacion, getUsuario } from "@/lib/auth/sesion";
 import { formatearFechaHora } from "@/lib/formato";
 import { FOLIOS_PRERENDER } from "@/lib/folios";
@@ -119,6 +119,7 @@ async function Contenido({ params }: { params: Params }) {
               "Nombre público",
               p.mostrarNombre ? "Sí, con tu nombre" : `No, como «${AUTOR_ANONIMO}»`,
             ],
+            ...filasComprobante(p.comprobante),
           ]}
           pie="Los aportes quedan registrados tal como se enviaron: no se pueden editar ni eliminar."
         />

@@ -40,6 +40,15 @@ type Opciones = {
    * ahí no se pueden leer las cabeceras de la petición y esas rutas no tienen límite por IP.
    */
   publica?: boolean;
+  /** Cabeceras extra, como `Idempotency-Key` en el envío de una participación. */
+  cabeceras?: Record<string, string>;
+  /** Tiempo de espera en ms (15 s por defecto; los envíos con archivos necesitan más). */
+  tiempo?: number;
+  /**
+   * Cuenta como visitante (vistas de R12): reenvía el navegador del ciudadano. La API identifica
+   * al visitante con su IP y su User-Agent; sin ellos, todos cuentan como uno solo.
+   */
+  visitante?: boolean;
 };
 
 export async function pedirApi<T>(ruta: string, o: Opciones = {}): Promise<T> {
@@ -48,6 +57,7 @@ export async function pedirApi<T>(ruta: string, o: Opciones = {}): Promise<T> {
 
   const headers = new Headers({ Accept: "application/json" });
   if (o.token) headers.set("Authorization", `Bearer ${o.token}`);
+  for (const [k, v] of Object.entries(o.cabeceras ?? {})) headers.set(k, v);
   if (o.portal) {
     headers.set("x-client-id", process.env.PORTAL_CLIENT_ID || "portal-iribarren");
     // Solo un BFF puede enviar el secreto del portal; si no está definido, se omite.
@@ -58,6 +68,10 @@ export async function pedirApi<T>(ruta: string, o: Opciones = {}): Promise<T> {
       const ip = o.publica ? undefined : await ipDelCiudadano();
       if (ip) headers.set("x-client-ip", ip);
     }
+  }
+  if (o.visitante) {
+    const navegador = await navegadorDelCiudadano();
+    if (navegador) headers.set("User-Agent", navegador);
   }
   let body: BodyInit | undefined;
   if (o.cuerpo instanceof FormData) body = o.cuerpo;
@@ -73,7 +87,7 @@ export async function pedirApi<T>(ruta: string, o: Opciones = {}): Promise<T> {
       headers,
       body,
       cache: "no-store",
-      signal: AbortSignal.timeout(15_000),
+      signal: AbortSignal.timeout(o.tiempo ?? 15_000),
     });
   } catch {
     throw new ErrorApi(503, "API_SIN_RESPUESTA", "No pudimos conectar con el servidor.");
@@ -114,6 +128,15 @@ async function ipDelCiudadano(): Promise<string | undefined> {
       h.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       undefined
     );
+  } catch {
+    return undefined;
+  }
+}
+
+/** User-Agent de quien hizo la petición al portal; undefined fuera de una petición. */
+async function navegadorDelCiudadano(): Promise<string | undefined> {
+  try {
+    return (await cabecerasEntrantes()).get("user-agent")?.slice(0, 500) || undefined;
   } catch {
     return undefined;
   }
@@ -178,23 +201,17 @@ export type PerfilApi = {
   ocupacion: string | null;
   perfilEstado: "INCOMPLETO" | "COMPLETO";
   missing: string[];
-  /** Decisión del Revisor sobre la identidad. El portal ya no la usa: no hay perfiles rechazados. */
-  verificacion: "VERIFICADO" | "RECHAZADO" | null;
-  verificacionMotivo: string | null;
   /** Fecha ISO de la solicitud de baja, o null. */
   bajaSolicitada: string | null;
-  /**
-   * Fecha ISO en que terminó o saltó el recorrido guiado; null si nunca (primer ingreso). Pedido
-   * a backend: mientras la API no lo mande, el portal no lanza el recorrido solo.
-   */
+  /** Fecha ISO en que terminó o saltó el recorrido guiado; null si nunca (primer ingreso). */
   tourVistoAt?: string | null;
   /**
-   * Versión aceptada y vigente de cada texto legal (R15, pedido a backend); `aceptada` null si
-   * nunca aceptó una. Mientras la API no lo mande, el portal no pide aceptar de nuevo.
+   * Versión aceptada y vigente de cada texto legal (R15). `aceptada` null si nunca aceptó una;
+   * `vigente` null si aún no hay versión publicada (entonces no hay nada pendiente).
    */
   textosLegales?: {
-    terminos: { aceptada: number | null; vigente: number };
-    politicaDatos: { aceptada: number | null; vigente: number };
+    terminos: { aceptada: number | null; vigente: number | null };
+    politicaDatos: { aceptada: number | null; vigente: number | null };
   };
   identityDocuments: DocumentoApi[];
   organization: {
@@ -214,3 +231,65 @@ export type ItemCatalogo = { id: string; valor: string; codigo: string | null; o
 /** Renueva los tokens con el refresh token (rota: el anterior deja de valer). */
 export const refrescarTokens = (refreshToken: string) =>
   pedirApi<SesionApi>("/auth/refresh", { cuerpo: { refreshToken } });
+
+/* ---------- Participaciones (guía R11: /portal/participations) ---------- */
+
+/** Acuse de recibo de un envío: el folio y el comprobante para verificarlo. */
+export type ComprobanteApi = {
+  codigoVerificacion: string;
+  hashContenido: string;
+  /** Sello de tiempo: null hasta R5b. */
+  sello: string | null;
+};
+
+export type AcuseApi = {
+  folio: string;
+  estado: string;
+  recibidaEl: string;
+  comprobante: ComprobanteApi;
+};
+
+type ArchivoApi = { nombre: string; mime: string; tamano: number };
+
+/** Lo común a la vista del autor y a la galería. */
+type BaseParticipacionApi = {
+  folio: string;
+  tipo: "OPINION_GENERAL" | "OPINION_NOTICIA" | "PROPUESTA_FORMAL";
+  noticia?: { slug: string; titulo: string };
+  parroquia: string;
+  sector: string;
+  categoriaTecnica: string;
+  descripcion: string;
+  imagenes: ArchivoApi[];
+  soporte?: ArchivoApi;
+  video?: { fuente: "YOUTUBE" | "INSTAGRAM"; url: string };
+};
+
+/** Lo que ve el autor de una de sus participaciones (GET /portal/me/participations/{folio}). */
+export type ParticipacionPropiaApi = BaseParticipacionApi & {
+  ubicacion?: { lat: number; lng: number };
+  mostrarNombre: boolean;
+  autor: string;
+  estado: "PENDIENTE" | "EN_REVISION" | "APROBADA" | "RECHAZADA" | "PUBLICADA";
+  recibidaEl: string;
+  publicadaEl?: string;
+  historial: {
+    estado: ParticipacionPropiaApi["estado"];
+    fecha: string;
+    comentario?: string;
+    motivo?: string;
+  }[];
+  comprobante: ComprobanteApi;
+};
+
+/** La galería pública (GET /portal/participations): sin ubicación, historial ni comprobante. */
+export type ParticipacionPublicaApi = BaseParticipacionApi & {
+  autor: string;
+  publicadaEl: string;
+  totales: { vistas: number; likes: number; dislikes: number };
+};
+
+export type PaginaApi<T> = {
+  data: T[];
+  meta: { page: number; limit: number; total: number; totalPages: number };
+};

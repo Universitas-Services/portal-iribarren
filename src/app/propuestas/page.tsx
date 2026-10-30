@@ -2,19 +2,17 @@ import { MessageSquareText, SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { getCatalogo } from "@/lib/api";
+import { soloDeLista } from "@/lib/catalogos";
 import { EncabezadoPagina } from "@/components/layout/encabezado-pagina";
 import { FiltrosUrl, type CampoFiltro } from "@/components/listado/filtros-url";
 import { Paginacion } from "@/components/listado/paginacion";
 import { TransicionListado, ZonaResultados } from "@/components/listado/transicion";
 import { TarjetaAporte } from "@/components/participacion/aporte";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  CATEGORIAS_TECNICAS,
-  NOMBRE_TIPO_PARTICIPACION,
-  PARROQUIAS,
-  TIPOS_PARTICIPACION,
-} from "@/lib/api/types";
+import { NOMBRE_TIPO_PARTICIPACION, TIPOS_PARTICIPACION } from "@/lib/api/types";
 import { getPropuestasPublicadas } from "@/lib/auth/sesion";
+import { usaApi } from "@/lib/plataforma-api/cliente";
 import { plural } from "@/lib/formato";
 import { metricasAporte } from "@/lib/interacciones/almacen";
 import {
@@ -32,9 +30,8 @@ export const metadata: Metadata = {
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-const POR_PAGINA = 12;
-
-const CAMPOS: CampoFiltro[] = [
+/** Los filtros, con los desplegables vigentes de la alcaldía. */
+const camposDe = (parroquias: string[], categoriasTecnicas: string[]): CampoFiltro[] => [
   { tipo: "texto", nombre: "q", etiqueta: "Buscar", placeholder: "Tema, sector o autor" },
   {
     tipo: "selector",
@@ -51,14 +48,14 @@ const CAMPOS: CampoFiltro[] = [
     nombre: "parroquia",
     etiqueta: "Parroquia",
     vacio: "Todas",
-    opciones: PARROQUIAS,
+    opciones: parroquias,
   },
   {
     tipo: "selector",
     nombre: "categoriaTecnica",
     etiqueta: "Categoría técnica",
     vacio: "Todas",
-    opciones: CATEGORIAS_TECNICAS,
+    opciones: categoriasTecnicas,
   },
 ];
 
@@ -92,16 +89,24 @@ export default function PropuestasPage({ searchParams }: { searchParams: SearchP
 }
 
 async function Galeria({ searchParams }: { searchParams: SearchParams }) {
-  const filtros = filtrosParticipacionesSchema.parse(await searchParams);
-  const todas = await getPropuestasPublicadas({
-    q: filtros.q,
-    tipo: filtros.tipo,
-    parroquia: filtros.parroquia,
-    categoriaTecnica: filtros.categoriaTecnica,
-  });
-  const paginas = Math.max(1, Math.ceil(todas.length / POR_PAGINA));
-  const pagina = Math.min(filtros.pagina, paginas);
-  const items = todas.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
+  const [parroquias, categoriasTecnicas] = await Promise.all([
+    getCatalogo("parroquias"),
+    getCatalogo("categorias-tecnicas"),
+  ]);
+  const filtros = soloDeLista(
+    soloDeLista(filtrosParticipacionesSchema.parse(await searchParams), "parroquia", parroquias),
+    "categoriaTecnica",
+    categoriasTecnicas,
+  );
+  const { items, total, pagina, paginas } = await getPropuestasPublicadas(
+    {
+      q: filtros.q,
+      tipo: filtros.tipo,
+      parroquia: filtros.parroquia,
+      categoriaTecnica: filtros.categoriaTecnica,
+    },
+    filtros.pagina,
+  );
   const hayFiltros = Boolean(
     filtros.q || filtros.tipo || filtros.parroquia || filtros.categoriaTecnica,
   );
@@ -110,7 +115,7 @@ async function Galeria({ searchParams }: { searchParams: SearchParams }) {
     <TransicionListado>
       <FiltrosUrl
         ruta="/propuestas"
-        campos={CAMPOS}
+        campos={camposDe(parroquias, categoriasTecnicas)}
         valores={{
           q: filtros.q ?? "",
           tipo: filtros.tipo ? aSlug(filtros.tipo) : "",
@@ -121,10 +126,10 @@ async function Galeria({ searchParams }: { searchParams: SearchParams }) {
       />
       <ZonaResultados>
         <p className="mt-6 text-sm text-tinta/75" aria-live="polite">
-          {todas.length === 0
+          {total === 0
             ? "Sin resultados"
-            : `${plural(todas.length, "aporte publicado", "aportes publicados")}${hayFiltros ? " con estos filtros" : ""}`}
-          <span className="text-tinta/75"> · Aportes de ejemplo</span>
+            : `${plural(total, "aporte publicado", "aportes publicados")}${hayFiltros ? " con estos filtros" : ""}`}
+          {!usaApi() && <span className="text-tinta/75"> · Aportes de ejemplo</span>}
         </p>
 
         {items.length > 0 ? (
@@ -139,7 +144,7 @@ async function Galeria({ searchParams }: { searchParams: SearchParams }) {
                   categoriaTecnica={p.categoriaTecnica}
                   descripcion={p.descripcion}
                   fecha={p.publicadaEl}
-                  metricas={metricasAporte(p.folio)}
+                  metricas={metricasAporte(p.folio, p.totales)}
                   autor={p.autor}
                 />
               </li>

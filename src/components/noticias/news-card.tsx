@@ -18,14 +18,17 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import type { PostCategory, PostSummary } from "@/lib/api/types";
+import type { PostSummary } from "@/lib/api/types";
 import { formatearDuracion, formatearFecha, formatearPeso, plural } from "@/lib/formato";
 
 /** Cuando la noticia no trae imagen, la tarjeta usa un bloque de color con el ícono de su categoría. */
-export const CATEGORIA: Record<
-  PostCategory,
-  { Icon: LucideIcon; fondo: string; icono: string; textoOscuro?: boolean }
-> = {
+type EstiloCategoria = { Icon: LucideIcon; fondo: string; icono: string; textoOscuro?: boolean };
+
+/**
+ * Color e ícono de las categorías de siempre. Una categoría nueva creada por la alcaldía (R16)
+ * usa el estilo de «Análisis institucional».
+ */
+export const CATEGORIA: Record<string, EstiloCategoria> = {
   "Análisis institucional": { Icon: Landmark, fondo: "bg-noche", icono: "text-papel/15" },
   "Doctrina legal": { Icon: Scale, fondo: "bg-rojo-oscuro", icono: "text-papel/20" },
   "Decretos y normativas": { Icon: ScrollText, fondo: "bg-rojo", icono: "text-papel/25" },
@@ -48,8 +51,8 @@ export const CATEGORIA: Record<
 };
 
 /** Estilo de la categoría; si la API trae una que el portal no conoce, el de la primera. */
-export const estiloCategoria = (categoria: string) =>
-  CATEGORIA[categoria as PostCategory] ?? CATEGORIA["Análisis institucional"];
+export const estiloCategoria = (categoria: string): EstiloCategoria =>
+  CATEGORIA[categoria] ?? CATEGORIA["Análisis institucional"]!;
 
 /** Rótulo de las publicaciones de ejemplo de la maqueta (no son noticias reales). */
 export function EtiquetaEjemplo({ claro = false }: { claro?: boolean }) {

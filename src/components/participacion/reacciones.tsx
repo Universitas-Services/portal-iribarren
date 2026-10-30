@@ -37,7 +37,8 @@ export function Reacciones({
   etiqueta: string;
 }) {
   const [resumen, setResumen] = useState<ResumenInteracciones | null>(null);
-  const [aviso, setAviso] = useState<"SIN_SESION" | "PROPIO" | null>(null);
+  const [aviso, setAviso] = useState<"SIN_SESION" | "PROPIO" | "TEXTOS" | null>(null);
+  const [limite, setLimite] = useState<string | null>(null);
   const id = objetivo.tipo === "noticia" ? objetivo.slug : objetivo.folio;
   const [pendiente, iniciar] = useTransition();
   const contada = useRef(false);
@@ -56,11 +57,14 @@ export function Reacciones({
     const anterior = resumen;
     setResumen(aplicar(resumen, reaccion));
     iniciar(async () => {
-      const r = await reaccionarAccion(objetivo, reaccion);
+      const r = await reaccionarAccion(objetivo, reaccion, anterior.mia);
+      setLimite(null);
       if (r.estado === "OK") setResumen(r.resumen);
       else {
         setResumen(anterior);
-        if (r.estado === "SIN_SESION" || r.estado === "PROPIO") setAviso(r.estado);
+        if (r.estado === "SIN_SESION" || r.estado === "PROPIO" || r.estado === "TEXTOS")
+          setAviso(r.estado);
+        if (r.estado === "LIMITE") setLimite(r.mensaje);
       }
     });
   };
@@ -116,6 +120,16 @@ export function Reacciones({
         </button>
       </div>
 
+      {aviso === "TEXTOS" && (
+        <p role="status" className="w-full rounded-2xl bg-superficie p-4 text-sm text-tinta">
+          Se actualizaron los términos de uso o la política de datos: acéptalos para reaccionar.
+        </p>
+      )}
+      {limite && (
+        <p role="status" className="w-full rounded-2xl bg-superficie p-4 text-sm text-tinta">
+          {limite}
+        </p>
+      )}
       {aviso === "PROPIO" && (
         <p role="status" className="w-full rounded-2xl bg-superficie p-4 text-sm text-tinta">
           No puedes reaccionar a tu propio aporte.

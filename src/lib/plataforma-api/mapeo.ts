@@ -1,6 +1,17 @@
-import { type Cuenta, type DocumentoCargado, type TipoDocumento } from "@/lib/auth/servicio";
+import {
+  type Cuenta,
+  type DocumentoCargado,
+  type Participacion,
+  type PropuestaPublica,
+  type TipoDocumento,
+} from "@/lib/auth/servicio";
 import type { ACREDITACION_REPRESENTANTE, CONDICIONES_REPRESENTANTE } from "@/lib/api/types";
-import { ErrorApi, type PerfilApi } from "./cliente";
+import {
+  ErrorApi,
+  type ParticipacionPropiaApi,
+  type ParticipacionPublicaApi,
+  type PerfilApi,
+} from "./cliente";
 
 /*
  * Traducción entre los datos del portal y los de plataforma-api. Funciones puras: se prueban
@@ -74,8 +85,8 @@ function documento(d: PerfilApi["identityDocuments"][number]): DocumentoCargado 
 
 /**
  * Cuenta del portal armada desde GET /portal/me/profile. La contraseña no viaja (hash vacío): la
- * valida la API. COMPLETO equivale a VERIFICADO en el portal. No hay perfiles rechazados (28-10-2026):
- * si la API todavía manda `verificacion: "RECHAZADO"`, no se toma en cuenta. La baja solicitada también viene de la API.
+ * valida la API. COMPLETO equivale a VERIFICADO en el portal (no hay perfiles rechazados, D15). La
+ * baja solicitada también viene de la API.
  */
 export function cuentaDePerfil(p: PerfilApi): Cuenta {
   const documentos: Cuenta["documentos"] = {};
@@ -98,6 +109,11 @@ export function cuentaDePerfil(p: PerfilApi): Cuenta {
     textosAceptados: p.textosLegales && {
       TERMINOS: String(p.textosLegales.terminos.aceptada ?? ""),
       POLITICA_DATOS: String(p.textosLegales.politicaDatos.aceptada ?? ""),
+    },
+    // Lo vigente según la API, al instante (el texto del portal se cachea unos minutos).
+    textosVigentes: p.textosLegales && {
+      TERMINOS: String(p.textosLegales.terminos.vigente ?? ""),
+      POLITICA_DATOS: String(p.textosLegales.politicaDatos.vigente ?? ""),
     },
   };
   if (p.tipoPerfil === "ORGANIZACION") {
@@ -154,8 +170,16 @@ export function mensajeDeError(e: unknown): string {
       return "La contraseña actual no es correcta.";
     case "ACCOUNT_DISABLED":
       return "Tu cuenta está suspendida. Escribe a soporte si crees que es un error.";
-    case "TOO_MANY_REQUESTS":
-      return "Hiciste demasiados intentos seguidos. Espera un momento y vuelve a intentarlo.";
+    case "TOO_MANY_REQUESTS": {
+      const s = (e.details as { retryAfterSeconds?: number } | undefined)?.retryAfterSeconds;
+      return s
+        ? `Hiciste demasiados envíos seguidos. Intenta de nuevo en ${Math.max(1, Math.ceil(s / 60))} min.`
+        : "Hiciste demasiados intentos seguidos. Espera un momento y vuelve a intentarlo.";
+    }
+    case "PERFIL_INCOMPLETO":
+      return faltaEnPerfil(e);
+    case "FUERA_DEL_MUNICIPIO":
+      return "El punto queda fuera del Municipio Iribarren. Marca un lugar dentro del municipio.";
     case "FILE_TOO_LARGE":
       return "El archivo supera los 2 MB.";
     case "INVALID_FILE":
@@ -183,3 +207,128 @@ export function mensajeDeError(e: unknown): string {
 /** Campo del formulario al que apunta un IDENTITY_CONFLICT (correo, cédula o RIF). */
 export const campoEnConflicto = (e: ErrorApi) =>
   (e.details as { field?: string } | undefined)?.field;
+
+/* ---------- Participaciones (guía R11) ---------- */
+
+/** Una de las participaciones del autor, tal como la usa el portal. */
+export function participacionDeApi(p: ParticipacionPropiaApi, cuentaId: string): Participacion {
+  return {
+    folio: p.folio,
+    cuentaId,
+    tipo: p.tipo,
+    noticia: p.noticia,
+    parroquia: p.parroquia,
+    sector: p.sector,
+    ubicacion: p.ubicacion,
+    categoriaTecnica: p.categoriaTecnica,
+    descripcion: p.descripcion,
+    imagenes: p.imagenes,
+    video: p.video,
+    soporte: p.soporte,
+    mostrarNombre: p.mostrarNombre,
+    autor: p.autor,
+    estado: p.estado,
+    creadaEl: p.recibidaEl,
+    publicadaEl: p.publicadaEl,
+    historial: p.historial,
+    comprobante: p.comprobante,
+  };
+}
+
+/** Una participación de la galería pública. */
+export function propuestaDeApi(p: ParticipacionPublicaApi): PropuestaPublica {
+  return {
+    folio: p.folio,
+    tipo: p.tipo,
+    noticia: p.noticia,
+    parroquia: p.parroquia,
+    sector: p.sector,
+    categoriaTecnica: p.categoriaTecnica,
+    descripcion: p.descripcion,
+    imagenes: p.imagenes,
+    video: p.video,
+    soporte: p.soporte,
+    autor: p.autor,
+    estado: "PUBLICADA",
+    creadaEl: p.publicadaEl,
+    publicadaEl: p.publicadaEl,
+    totales: p.totales,
+  };
+}
+
+/** Lo que falta del perfil (`details.missing` de PERFIL_INCOMPLETO), en palabras. */
+const FALTA_PERFIL: Record<string, string> = {
+  cedula: "la cédula",
+  nombres: "los nombres",
+  apellidos: "los apellidos",
+  telefono: "el teléfono de contacto",
+  documentoIdentidad: "el documento de identidad",
+  telefonoInstitucional: "el teléfono institucional",
+  condicion: "la condición del representante",
+  tieneAcreditacion: "la acreditación",
+  archivoAcreditacion: "el documento de acreditación",
+  archivoRepresentacion: "el documento de representación",
+};
+
+function faltaEnPerfil(e: ErrorApi) {
+  const falta = ((e.details as { missing?: string[] } | undefined)?.missing ?? [])
+    .map((k) => FALTA_PERFIL[k])
+    .filter(Boolean);
+  return falta.length
+    ? `Para enviar una propuesta formal completa tu perfil: falta ${falta.join(", ")}.`
+    : "Para enviar una propuesta formal, completa tu perfil en Mi cuenta.";
+}
+
+/** Los campos del formulario de participación que la API puede señalar. */
+const CAMPOS_PARTICIPACION = [
+  "tipo",
+  "noticia",
+  "parroquia",
+  "sector",
+  "categoriaTecnica",
+  "ubicacion",
+  "descripcion",
+  "video",
+  "mostrarNombre",
+  "imagenes",
+  "soporte",
+];
+
+/**
+ * Los errores de POST /portal/participations, por campo cuando la API dice cuál; si no, un
+ * mensaje general. Así el formulario marca el campo como con la validación del portal.
+ */
+export function erroresParticipacion(e: unknown): {
+  errores?: Record<string, string>;
+  mensaje?: string;
+} {
+  if (!(e instanceof ErrorApi)) return { mensaje: mensajeDeError(e) };
+  const d = e.details as Record<string, unknown> | string[] | undefined;
+  switch (e.code) {
+    case "VALIDATION_ERROR": {
+      if (d && !Array.isArray(d)) {
+        const errores: Record<string, string> = {};
+        for (const [k, v] of Object.entries(d))
+          if (CAMPOS_PARTICIPACION.includes(k) && typeof v === "string") errores[k] = v;
+        if (Object.keys(errores).length) return { errores };
+      }
+      return { mensaje: mensajeDeError(e) };
+    }
+    case "INVALID_CATALOG_VALUE": {
+      const campo = (d as { field?: string } | undefined)?.field;
+      return campo && CAMPOS_PARTICIPACION.includes(campo)
+        ? { errores: { [campo]: "Elige una opción de la lista." } }
+        : { mensaje: mensajeDeError(e) };
+    }
+    case "FUERA_DEL_MUNICIPIO":
+      return { errores: { ubicacion: mensajeDeError(e) } };
+    case "INVALID_FILE":
+    case "FILE_TOO_LARGE": {
+      // La API no dice qué archivo: los mensajes de las fotos hablan de «imagen».
+      const campo = /imagen/i.test(e.message) ? "imagenes" : "soporte";
+      return { errores: { [campo]: mensajeDeError(e) } };
+    }
+    default:
+      return { mensaje: mensajeDeError(e) };
+  }
+}

@@ -12,7 +12,6 @@ import {
   type EstadoFormulario,
 } from "@/lib/auth/acciones";
 import { correoSchema, nombrePersonaSchema } from "@/lib/validation/common";
-import { TIPOS_ENTIDAD } from "@/lib/validation/schemas";
 import type { TextoLegal, TipoTextoLegal } from "@/lib/api/types";
 import { ModalTextoLegal } from "./texto-legal";
 import { CampoSelect } from "./piezas";
@@ -173,7 +172,14 @@ export function FormRegistroNatural({ textos }: { textos: TextosRegistro }) {
 }
 
 /** Registro de organización (v3: la cuenta usa el correo institucional, sin cédula). */
-export function FormRegistroOrganizacion({ textos }: { textos: TextosRegistro }) {
+export function FormRegistroOrganizacion({
+  textos,
+  tiposEntidad,
+}: {
+  textos: TextosRegistro;
+  /** Los tipos de entidad vigentes de la alcaldía. */
+  tiposEntidad: string[];
+}) {
   const [estado, accion] = useActionState(registrarOrganizacionAccion, inicial);
   const v = estado.valores ?? {};
   return (
@@ -182,7 +188,7 @@ export function FormRegistroOrganizacion({ textos }: { textos: TextosRegistro })
       <CampoSelect
         id="tipoEntidad"
         etiqueta="Tipo de entidad u organización"
-        opciones={TIPOS_ENTIDAD}
+        opciones={tiposEntidad}
         defaultValue={v.tipoEntidad}
         error={estado.errores?.tipoEntidad}
       />

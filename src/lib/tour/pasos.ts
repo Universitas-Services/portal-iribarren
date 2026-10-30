@@ -5,7 +5,13 @@
  * muestra centrado. Son instrucciones de uso del portal, no textos oficiales.
  */
 
-export type PasoTour = { objetivo?: string[]; titulo: string; texto: string };
+export type PasoTour = {
+  objetivo?: string[];
+  titulo: string;
+  texto: string;
+  /** Sección que se abre antes (páginas que muestran una a la vez por el #id, como Conoce). */
+  seccion?: string;
+};
 
 const MENU_MOVIL = '[data-tour="menu-movil"]';
 
@@ -81,6 +87,7 @@ const PAGINAS: Record<string, (conSesion: boolean) => PasoTour[]> = {
       texto: "Salta directo a la sección que te interesa: qué es el PDUL, sus fases, objetivos…",
     },
     {
+      seccion: "procedimiento",
       objetivo: ['[aria-labelledby="procedimiento-titulo"]'],
       titulo: "Cómo se elabora",
       texto: "Las fases del plan y en qué consiste cada una.",
@@ -93,7 +100,8 @@ const PAGINAS: Record<string, (conSesion: boolean) => PasoTour[]> = {
   ],
   "/noticias": () => [
     {
-      objetivo: ["#filtros-noticias"],
+      // El buscador y las pestañas de formato, juntos.
+      objetivo: ['#filtros-noticias, [aria-label="Mostrar por formato"]'],
       titulo: "Busca y filtra",
       texto: "Encuentra noticias por texto, categoría, fecha o formato.",
     },

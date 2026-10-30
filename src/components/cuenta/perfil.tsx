@@ -3,11 +3,8 @@
 import { MonitorSmartphone, UserX } from "lucide-react";
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
-import {
-  ACREDITACION_REPRESENTANTE,
-  CONDICIONES_REPRESENTANTE,
-  OCUPACIONES,
-} from "@/lib/api/types";
+import { conActual } from "@/lib/catalogos";
+import { ACREDITACION_REPRESENTANTE, CONDICIONES_REPRESENTANTE } from "@/lib/api/types";
 import {
   cargarDocumentoAccion,
   cerrarTodasLasSesionesAccion,
@@ -104,7 +101,14 @@ export function FormNombres({ nombres, apellidos }: { nombres?: string; apellido
 }
 
 /** Persona natural, paso 1: teléfono y ocupación. */
-export function FormDatosNatural({ perfil }: { perfil: Perfil }) {
+export function FormDatosNatural({
+  perfil,
+  ocupaciones,
+}: {
+  perfil: Perfil;
+  /** Las ocupaciones vigentes de la alcaldía. */
+  ocupaciones: string[];
+}) {
   const [estado, accion] = useActionState(guardarDatosNaturalAccion, inicial);
   const v = estado.valores ?? {};
   return (
@@ -120,7 +124,7 @@ export function FormDatosNatural({ perfil }: { perfil: Perfil }) {
       <CampoSelect
         id="ocupacion"
         etiqueta="Ocupación (opcional)"
-        opciones={OCUPACIONES}
+        opciones={conActual(ocupaciones, perfil.ocupacion)}
         vacio="Prefiero no indicarla"
         permitirVacio
         defaultValue={v.ocupacion ?? perfil.ocupacion ?? ""}

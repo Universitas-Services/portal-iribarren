@@ -2,10 +2,12 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { TarjetaAporte } from "@/components/participacion/aporte";
-import { propuestasPublicadas, type PropuestaPublica } from "@/lib/auth/servicio";
-import { almacen } from "@/lib/auth/sesion";
+import type { PropuestaPublica } from "@/lib/auth/servicio";
+import { getPropuestasPublicadas } from "@/lib/auth/sesion";
 import { almacenInteracciones, metricasAporte } from "@/lib/interacciones/almacen";
+import { rankingAportesApi } from "@/lib/interacciones/api";
 import { claveAporte, masReacciones, masVistas } from "@/lib/interacciones/interacciones";
+import { ErrorApi, usaApi } from "@/lib/plataforma-api/cliente";
 import { PestanasNoticias } from "./pestanas-noticias";
 
 const POR_PESTANA = 6;
@@ -14,31 +16,57 @@ const LECTOR = {
   fecha: (p: PropuestaPublica) => p.publicadaEl,
 };
 
+type Pestanas = { vistas: PropuestaPublica[]; reacciones: PropuestaPublica[] };
+
+/**
+ * Las dos pestañas. Con plataforma-api, los rankings de la API (guía R12), cacheados unos
+ * minutos. Sin ella, el almacén simulado, que cambia con cada visita: se lee al pedir la página.
+ */
+async function pestanas(): Promise<Pestanas | null> {
+  if (usaApi()) {
+    try {
+      const [vistas, reacciones] = await Promise.all([
+        rankingAportesApi("vistas", POR_PESTANA),
+        rankingAportesApi("reacciones", POR_PESTANA),
+      ]);
+      return { vistas, reacciones };
+    } catch (e) {
+      // Si la API no responde, el Inicio sigue sin esta sección.
+      if (e instanceof ErrorApi && e.status >= 500) return null;
+      throw e;
+    }
+  }
+  await connection();
+  const publicadas = (await getPropuestasPublicadas({}, 1, 100)).items;
+  const alm = almacenInteracciones();
+  return {
+    vistas: masVistas(alm, publicadas, LECTOR, POR_PESTANA),
+    reacciones: masReacciones(alm, publicadas, LECTOR, POR_PESTANA),
+  };
+}
+
 /**
  * «La gente opina»: propuestas y opiniones de la ciudadanía que la alcaldía publicó, ordenadas
- * por vistas o por cantidad de reacciones. Los contadores cambian con cada visita: se leen al
- * pedir la página. Sin aportes publicados no se muestra.
+ * por vistas o por cantidad de reacciones. Sin aportes publicados no se muestra.
  */
 export async function LaGenteOpina() {
-  await connection();
-  const publicadas = propuestasPublicadas(almacen());
-  if (publicadas.length === 0) return null;
-  const alm = almacenInteracciones();
+  const p = await pestanas();
+  if (!p || p.vistas.length === 0) return null;
 
   const tarjetas = (aportes: PropuestaPublica[]) => (
     <>
-      {aportes.map((p) => (
-        <li key={p.folio} className="w-[85%] shrink-0 snap-start sm:w-[46%] lg:w-[31%]">
+      {aportes.map((a) => (
+        <li key={a.folio} className="w-[85%] shrink-0 snap-start sm:w-[46%] lg:w-[31%]">
           <TarjetaAporte
-            href={`/propuestas/${p.folio}`}
-            folio={p.folio}
-            tipo={p.tipo}
-            parroquia={p.parroquia}
-            categoriaTecnica={p.categoriaTecnica}
-            descripcion={p.descripcion}
-            fecha={p.publicadaEl}
-            autor={p.autor}
-            metricas={metricasAporte(p.folio)}
+            href={`/propuestas/${a.folio}`}
+            folio={a.folio}
+            tipo={a.tipo}
+            parroquia={a.parroquia}
+            categoriaTecnica={a.categoriaTecnica}
+            descripcion={a.descripcion}
+            fecha={a.publicadaEl}
+            autor={a.autor}
+            metricas={metricasAporte(a.folio, a.totales)}
           />
         </li>
       ))}
@@ -74,16 +102,8 @@ export async function LaGenteOpina() {
       <PestanasNoticias
         etiqueta="Ordenar aportes"
         pestanas={[
-          {
-            id: "vistas",
-            etiqueta: "Más vistas",
-            contenido: tarjetas(masVistas(alm, publicadas, LECTOR, POR_PESTANA)),
-          },
-          {
-            id: "reacciones",
-            etiqueta: "Más reacciones",
-            contenido: tarjetas(masReacciones(alm, publicadas, LECTOR, POR_PESTANA)),
-          },
+          { id: "vistas", etiqueta: "Más vistas", contenido: tarjetas(p.vistas) },
+          { id: "reacciones", etiqueta: "Más reacciones", contenido: tarjetas(p.reacciones) },
         ]}
       />
     </section>

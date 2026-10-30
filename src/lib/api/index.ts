@@ -12,6 +12,8 @@ import { banners, documentos, posts, processStatus } from "@/lib/mocks/data";
 import { textoLegalSimulado } from "@/lib/mocks/textos-legales";
 import { paraPortada, relacionadas, consultarNoticias } from "@/lib/noticias/consultas";
 import { ErrorApi, pedirApi, urlApi, usaApi } from "@/lib/plataforma-api/cliente";
+import { TIPOS_ENTIDAD } from "@/lib/validation/schemas";
+import { CATEGORIAS, CATEGORIAS_TECNICAS, DOC_CATEGORIAS, OCUPACIONES, PARROQUIAS } from "./types";
 import type {
   Banner,
   Documento,
@@ -117,6 +119,51 @@ export async function getProcess(): Promise<ProcessStatus> {
   return processStatus;
 }
 
+/* ---------- Desplegables (catálogos de la alcaldía, R16) ---------- */
+
+/** Nombre de cada catálogo en la URL de plataforma-api (/portal/catalogs/:tipo). */
+export type TipoCatalogo =
+  | "parroquias"
+  | "categorias-tecnicas"
+  | "categorias-noticias"
+  | "categorias-documentos"
+  | "ocupaciones"
+  | "tipos-entidad";
+
+/** Las listas de siempre: sin la API, o si no responde, el portal sigue ofreciéndolas. */
+const CATALOGO_RESPALDO: Record<TipoCatalogo, readonly string[]> = {
+  parroquias: PARROQUIAS,
+  "categorias-tecnicas": CATEGORIAS_TECNICAS,
+  "categorias-noticias": CATEGORIAS,
+  "categorias-documentos": DOC_CATEGORIAS,
+  ocupaciones: OCUPACIONES,
+  "tipos-entidad": TIPOS_ENTIDAD,
+};
+
+/**
+ * Los valores activos de un desplegable, en su orden. Los administra la alcaldía desde el panel
+ * (Configuración); con plataforma-api, GET /portal/catalogs/:tipo. Vida corta para que un
+ * cambio se vea pronto; si la API falla, las listas de siempre.
+ */
+export async function getCatalogo(tipo: TipoCatalogo): Promise<string[]> {
+  "use cache";
+  if (usaApi()) {
+    try {
+      const r = await pedirApi<{ data: { valor: string }[] }>(`/portal/catalogs/${tipo}`, {
+        portal: true,
+        publica: true,
+      });
+      cacheLife("minutes");
+      if (r.data.length) return r.data.map((i) => i.valor);
+    } catch (e) {
+      if (!(e instanceof ErrorApi) || (e.status !== 404 && !apiCaida(e, `el catálogo ${tipo}`)))
+        throw e;
+      cacheLife("minutes");
+    }
+  } else cacheLife("hours");
+  return [...CATALOGO_RESPALDO[tipo]];
+}
+
 /**
  * Marco legal de Conoce el PDUL. Con plataforma-api, GET /portal/legal-framework (guía R9): ya
  * viene en su orden, hasta 10, y con el botón solo si su noticia o documento sigue publicado.
@@ -199,15 +246,13 @@ type TextoLegalApi = {
   nota?: string | null;
 };
 
-/** GET /portal/legal-texts/{tipo}: la versión vigente. Se cachea; la API caída da null. */
-async function textoLegalApi(tipo: TipoTextoLegal): Promise<TextoLegal | null> {
-  "use cache";
+/** GET /portal/legal-texts/{tipo}: la versión vigente, o null (404: sin versión publicada). */
+async function pedirTextoLegal(tipo: TipoTextoLegal): Promise<TextoLegal | null> {
   try {
     const t = await pedirApi<TextoLegalApi>(`/portal/legal-texts/${tipo}`, {
       portal: true,
       publica: true,
     });
-    cacheLife("hours");
     return {
       tipo,
       version: String(t.version),
@@ -216,19 +261,29 @@ async function textoLegalApi(tipo: TipoTextoLegal): Promise<TextoLegal | null> {
       nota: t.nota ?? undefined,
     };
   } catch (e) {
-    // La API aún no tiene la ruta (404) o no responde: el portal enlaza a la página del texto.
+    // Sin versión publicada (404) o la API no responde: el portal enlaza a la página del texto.
     if (!(e instanceof ErrorApi) || (e.status !== 404 && !apiCaida(e, "textos legales"))) throw e;
-    cacheLife("minutes");
     return null;
   }
+}
+
+/** La misma lectura, cacheada unos minutos: una versión nueva se ve pronto. */
+async function textoLegalApi(tipo: TipoTextoLegal): Promise<TextoLegal | null> {
+  "use cache";
+  cacheLife("minutes");
+  return pedirTextoLegal(tipo);
 }
 
 /**
  * Términos de uso o política de datos vigentes, o null si no se pudieron leer. Sin la API, el
  * contenido provisional (en memoria: la ruta de desarrollo puede publicar una versión nueva).
  */
-export async function getTextoLegal(tipo: TipoTextoLegal): Promise<TextoLegal | null> {
-  if (usaApi()) return textoLegalApi(tipo);
+export async function getTextoLegal(
+  tipo: TipoTextoLegal,
+  { fresco = false }: { fresco?: boolean } = {},
+): Promise<TextoLegal | null> {
+  // `fresco`: sin caché, cuando el perfil dice que hay una versión más nueva que la cacheada.
+  if (usaApi()) return fresco ? pedirTextoLegal(tipo) : textoLegalApi(tipo);
   return textoLegalSimulado(tipo);
 }
 

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { FormRegistroNatural, FormRegistroOrganizacion } from "@/components/cuenta/formularios";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
-import { getTextoLegal } from "@/lib/api";
+import { getCatalogo, getTextoLegal } from "@/lib/api";
 import { soloInvitados } from "@/lib/auth/sesion";
 
 export const metadata: Metadata = {
@@ -82,7 +82,10 @@ async function Paso({ searchParams }: { searchParams: SearchParams }) {
         {tipo === "natural" ? (
           <FormRegistroNatural textos={await textosRegistro()} />
         ) : (
-          <FormRegistroOrganizacion textos={await textosRegistro()} />
+          <FormRegistroOrganizacion
+            textos={await textosRegistro()}
+            tiposEntidad={await getCatalogo("tipos-entidad")}
+          />
         )}
         <p className="mt-6 text-center text-sm text-tinta">
           ¿Ya tienes cuenta?{" "}

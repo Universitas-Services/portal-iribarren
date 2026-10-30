@@ -9,8 +9,9 @@ import { urlDocumentos } from "@/components/documentos/urls";
 import { EncabezadoPagina } from "@/components/layout/encabezado-pagina";
 import { Paginacion } from "@/components/listado/paginacion";
 import { TransicionListado, ZonaResultados } from "@/components/listado/transicion";
-import { getDocumentos } from "@/lib/api";
+import { getCatalogo, getDocumentos } from "@/lib/api";
 import { plural } from "@/lib/formato";
+import { soloDeLista } from "@/lib/catalogos";
 import { parseFiltrosDocumentos } from "@/lib/validation/schemas";
 import { BannerCampana } from "@/components/campana/banner-campana";
 
@@ -40,7 +41,8 @@ export default function DocumentosPage({ searchParams }: { searchParams: SearchP
 }
 
 async function Repositorio({ searchParams }: { searchParams: SearchParams }) {
-  const filtros = parseFiltrosDocumentos(await searchParams);
+  const categorias = await getCatalogo("categorias-documentos");
+  const filtros = soloDeLista(parseFiltrosDocumentos(await searchParams), "categoria", categorias);
   const { items, total, pagina, paginas, porCategoria, porEstado } = await getDocumentos(filtros);
   const hayFiltros = Boolean(filtros.q || filtros.categoria || filtros.estado);
 
@@ -48,7 +50,12 @@ async function Repositorio({ searchParams }: { searchParams: SearchParams }) {
     <TransicionListado>
       <div className="grid gap-6 lg:grid-cols-[17rem_1fr] lg:items-start">
         <aside className="lg:sticky lg:top-24">
-          <FiltrosDocumentos filtros={filtros} porCategoria={porCategoria} porEstado={porEstado} />
+          <FiltrosDocumentos
+            filtros={filtros}
+            categorias={categorias}
+            porCategoria={porCategoria}
+            porEstado={porEstado}
+          />
         </aside>
 
         <ZonaResultados>

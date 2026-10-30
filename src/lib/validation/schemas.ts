@@ -1,12 +1,7 @@
 import { z } from "zod";
 import {
   ACREDITACION_REPRESENTANTE,
-  CATEGORIAS,
-  CATEGORIAS_TECNICAS,
   CONDICIONES_REPRESENTANTE,
-  DOC_CATEGORIAS,
-  OCUPACIONES,
-  PARROQUIAS,
   ESTADOS_PARTICIPACION,
   TIPOS_PARTICIPACION,
   type DocEstado,
@@ -26,6 +21,15 @@ import {
   telefonoSchema,
 } from "./common";
 import { dentroDeIribarren } from "@/lib/ubicacion";
+
+/*
+ * Un valor de un desplegable. Las listas las administra la alcaldía (R16) y se leen de la API:
+ * aquí solo se exige que venga algo; la acción comprueba que esté en la lista vigente.
+ */
+const valorCatalogo = (error: string) => z.string({ error }).trim().min(1, error).max(120);
+
+/** Filtro de la URL con un valor de catálogo: si no existe, simplemente no hay resultados. */
+const valorFiltro = z.string().trim().max(120).optional();
 
 export const TIPOS_PERFIL = ["NATURAL", "ORGANIZACION"] as const;
 
@@ -74,7 +78,7 @@ export const registroNaturalSchema = z
  */
 export const registroOrganizacionSchema = z
   .object({
-    tipoEntidad: z.enum(TIPOS_ENTIDAD, { error: "Selecciona el tipo de entidad." }),
+    tipoEntidad: valorCatalogo("Selecciona el tipo de entidad."),
     razonSocial: z
       .string()
       .trim()
@@ -129,7 +133,7 @@ export const datosNaturalSchema = z.object({
   telefono: telefonoSchema,
   ocupacion: z.preprocess(
     (v) => (v === "" ? undefined : v),
-    opcion(OCUPACIONES, "Elige una ocupación de la lista.").optional(),
+    valorCatalogo("Elige una ocupación de la lista.").optional(),
   ),
 });
 
@@ -194,13 +198,13 @@ export const participacionSchema = z
   .object({
     tipo: z.enum(TIPOS_PARTICIPACION, { error: "Elige el tipo de participación." }),
     noticia: z.string().trim().optional(),
-    parroquia: opcion(PARROQUIAS, "Selecciona la parroquia."),
+    parroquia: valorCatalogo("Selecciona la parroquia."),
     sector: z
       .string()
       .trim()
       .min(3, "Indica la comunidad, barrio, urbanización o sector.")
       .max(150, "El sector no puede superar 150 caracteres."),
-    categoriaTecnica: opcion(CATEGORIAS_TECNICAS, "Selecciona la categoría técnica."),
+    categoriaTecnica: valorCatalogo("Selecciona la categoría técnica."),
     /** Punto en el mapa (Leaflet + OSM o enlace de Google Maps): obligatorio en la propuesta formal. */
     latitud: coordenada(-90, 90),
     longitud: coordenada(-180, 180),
@@ -287,7 +291,7 @@ export const formatoAUrl = (f: PostFormat) =>
 export const filtrosNoticiasSchema = z
   .object({
     q: z.preprocess(primero, z.string().trim().max(100).optional()).catch(undefined),
-    categoria: z.preprocess(primero, z.enum(CATEGORIAS).optional()).catch(undefined),
+    categoria: z.preprocess(primero, valorFiltro).catch(undefined),
     formato: z
       .preprocess(
         primero,
@@ -325,7 +329,7 @@ export const filtrosDocumentosSchema = z.object({
     .preprocess(primero, z.string().trim().max(100).optional())
     .transform((q) => q || undefined)
     .catch(undefined),
-  categoria: z.preprocess(primero, z.enum(DOC_CATEGORIAS).optional()).catch(undefined),
+  categoria: z.preprocess(primero, valorFiltro).catch(undefined),
   estado: z
     .preprocess(
       primero,
@@ -358,8 +362,8 @@ const desdeSlug = <T extends readonly string[]>(valores: T) =>
 export const filtrosParticipacionesSchema = z.object({
   estado: z.preprocess(primero, desdeSlug(ESTADOS_PARTICIPACION).optional()).catch(undefined),
   tipo: z.preprocess(primero, desdeSlug(TIPOS_PARTICIPACION).optional()).catch(undefined),
-  parroquia: z.preprocess(primero, z.enum(PARROQUIAS).optional()).catch(undefined),
-  categoriaTecnica: z.preprocess(primero, z.enum(CATEGORIAS_TECNICAS).optional()).catch(undefined),
+  parroquia: z.preprocess(primero, valorFiltro).catch(undefined),
+  categoriaTecnica: z.preprocess(primero, valorFiltro).catch(undefined),
   folio: z
     .preprocess(
       primero,

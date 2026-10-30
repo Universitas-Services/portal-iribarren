@@ -1,3 +1,4 @@
+import { soloDeLista } from "@/lib/catalogos";
 import { describe, expect, it } from "vitest";
 import type { Post } from "@/lib/api/types";
 import { parseFiltrosNoticias } from "@/lib/validation/schemas";
@@ -123,7 +124,8 @@ describe("parseFiltrosNoticias", () => {
       }),
     ).toEqual({
       q: undefined,
-      categoria: undefined,
+      // La categoría se compara con la lista vigente en la página (soloDeLista).
+      categoria: "Deportes",
       desde: undefined,
       hasta: undefined,
       pagina: 1,
@@ -206,12 +208,13 @@ describe("portada del Inicio", () => {
     expect(r).not.toHaveProperty("puntos");
   });
 
-  it("acepta las categorías de la Propuesta v4 y descarta las anteriores", () => {
-    expect(parseFiltrosNoticias({ categoria: "Doctrina legal" }).categoria).toBe("Doctrina legal");
-    expect(parseFiltrosNoticias({ categoria: "Visión de futuro" }).categoria).toBe(
-      "Visión de futuro",
-    );
-    expect(parseFiltrosNoticias({ categoria: "Retiros y VUF" }).categoria).toBeUndefined();
+  it("una categoría fuera de la lista vigente se descarta del filtro", () => {
+    const vigentes = ["Doctrina legal", "Visión de futuro"];
+    const de = (categoria: string) =>
+      soloDeLista(parseFiltrosNoticias({ categoria }), "categoria", vigentes).categoria;
+    expect(de("Doctrina legal")).toBe("Doctrina legal");
+    expect(de("visión de futuro")).toBe("visión de futuro");
+    expect(de("Retiros y VUF")).toBeUndefined();
   });
 
   it("las publicaciones de ejemplo nunca llegan a la portada", () => {

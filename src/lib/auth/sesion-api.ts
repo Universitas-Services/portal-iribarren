@@ -18,7 +18,7 @@ import type { Almacen } from "./servicio";
  * Sesión del portal contra plataforma-api (cuando API_URL está definida). La cookie guarda los
  * tokens cifrados; Proxy los renueva antes de cada página. La cuenta se lee de la API y se copia
  * en el almacén del portal con el mismo id, así «Mi cuenta», las participaciones y los permisos
- * siguen funcionando igual. Lo que la API aún no ofrece (participaciones) sigue simulado.
+ * siguen funcionando igual. Las participaciones se leen de la API (guía R11, participaciones-api.ts).
  */
 
 const opciones = {

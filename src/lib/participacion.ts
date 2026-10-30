@@ -59,3 +59,18 @@ export const RECIBIDA = {
   ayuda: "La opinión llegó al equipo de la alcaldía, que la revisa y puede publicarla.",
   clase: "bg-superficie text-noche ring-linea",
 };
+
+/**
+ * Las filas del acuse de recibo (guía R11): el código para verificarlo y la huella SHA-256 del
+ * contenido. Solo con plataforma-api; en la simulación no hay comprobante.
+ */
+export const filasComprobante = (c?: {
+  codigoVerificacion: string;
+  hashContenido: string;
+}): [string, string][] =>
+  c
+    ? [
+        ["Código de verificación", c.codigoVerificacion],
+        ["Huella del contenido (SHA-256)", c.hashContenido],
+      ]
+    : [];
