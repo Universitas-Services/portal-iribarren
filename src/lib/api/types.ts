@@ -1,6 +1,8 @@
 /** Tipos que hoy llenan los datos de ejemplo y mañana la API (vía BFF). */
 
 /** Estado de cada fase tal como lo comunica la Alcaldía. */
+import type { ActoresInicio, EncabezadoInicio } from "@/lib/sitio";
+
 export const ESTADOS_FASE = [
   "COMPLETADO",
   "EN_CURSO",
@@ -321,6 +323,9 @@ export type PaginaDocumentos = Pagina<Documento> & {
  */
 export type InicioPortal = {
   mensajeAlcalde: { slug: string; titulo: string; resumen: string; cuerpo: string } | null;
+  /** Encabezado y Registro de actores (R17); sin ellos, los valores de lib/sitio.ts. */
+  encabezado?: EncabezadoInicio | null;
+  actores?: ActoresInicio | null;
 };
 
 /**

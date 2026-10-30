@@ -93,7 +93,8 @@ export function FormNombres({ nombres, apellidos }: { nombres?: string; apellido
         />
       </div>
       <p className="text-sm text-tinta/80">
-        Escríbelos como aparecen en tu cédula. Para corregir la cédula, escribe a soporte.
+        Escríbelos como aparecen en tu cédula. Para corregir la cédula, escribe a la alcaldía (su
+        contacto está al pie de la página).
       </p>
       <BotonEnviar enviando="Guardando…">Guardar nombres</BotonEnviar>
     </form>

@@ -108,18 +108,35 @@ export function CreditoCarrusel() {
       )}
       <p>
         Foto:{" "}
-        <a href={foto.fuente} rel="noopener noreferrer" target="_blank" className="underline">
-          {foto.autor}
-        </a>{" "}
-        ·{" "}
-        <a
-          href={foto.licencia.url}
-          rel="noopener noreferrer license"
-          target="_blank"
-          className="underline"
-        >
-          {foto.licencia.nombre}
-        </a>
+        {foto.autor ? (
+          foto.fuente ? (
+            <a href={foto.fuente} rel="noopener noreferrer" target="_blank" className="underline">
+              {foto.autor}
+            </a>
+          ) : (
+            foto.autor
+          )
+        ) : (
+          "Alcaldía de Iribarren"
+        )}
+        {foto.licencia && (
+          <>
+            {" "}
+            ·{" "}
+            {foto.licencia.url ? (
+              <a
+                href={foto.licencia.url}
+                rel="noopener noreferrer license"
+                target="_blank"
+                className="underline"
+              >
+                {foto.licencia.nombre}
+              </a>
+            ) : (
+              foto.licencia.nombre
+            )}
+          </>
+        )}
       </p>
     </div>
   );

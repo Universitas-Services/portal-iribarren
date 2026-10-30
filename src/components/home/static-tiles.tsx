@@ -1,3 +1,4 @@
+import { iniciales, SITIO_INICIAL, type DatosSitio } from "@/lib/sitio";
 import {
   ArrowRight,
   FileText,
@@ -8,7 +9,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { getHome } from "@/lib/api";
+import { getHome, getSitio } from "@/lib/api";
 import { EnlaceCampana, SelloCampana } from "@/components/campana/banner-campana";
 import { Tile } from "./tile";
 
@@ -116,9 +117,12 @@ export function AccessTile({ className = "" }: { className?: string }) {
 export function MayorTile({
   className = "",
   mensaje,
+  alcalde = SITIO_INICIAL.alcalde,
 }: {
   className?: string;
   mensaje?: { slug: string; titulo: string; resumen: string } | null;
+  /** Nombre, cargo y foto: los edita la alcaldía en Datos del sitio (R17). */
+  alcalde?: DatosSitio["alcalde"];
 }) {
   return (
     <Tile
@@ -152,16 +156,26 @@ export function MayorTile({
         </p>
       )}
       <div className="mt-auto flex items-center gap-3 pt-6">
-        <span
-          aria-hidden="true"
-          className="grid size-11 place-items-center rounded-full bg-rojo font-display font-extrabold"
-        >
-          YA
-        </span>
+        {alcalde.foto ? (
+          // eslint-disable-next-line @next/next/no-img-element -- foto subida desde el admin
+          <img
+            src={alcalde.foto.src}
+            alt=""
+            className="size-11 shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            className="grid size-11 shrink-0 place-items-center rounded-full bg-rojo font-display font-extrabold"
+          >
+            {iniciales(alcalde.nombre)}
+          </span>
+        )}
         <p className="leading-tight">
-          <span className="block font-display font-bold">Yanys Agüero</span>
+          <span className="block font-display font-bold">{alcalde.nombre}</span>
           <span className="text-sm text-papel/75">
-            Alcalde de Iribarren{mensaje ? "" : " · texto provisional"}
+            {alcalde.cargo}
+            {mensaje ? "" : " · texto provisional"}
           </span>
         </p>
       </div>
@@ -207,6 +221,6 @@ export function CampanaTile({ className = "" }: { className?: string }) {
 
 /** El mensaje del alcalde leído del Inicio elegido por la alcaldía. */
 export async function MensajeAlcaldeTile({ className = "" }: { className?: string }) {
-  const { mensajeAlcalde } = await getHome();
-  return <MayorTile className={className} mensaje={mensajeAlcalde} />;
+  const [{ mensajeAlcalde }, sitio] = await Promise.all([getHome(), getSitio()]);
+  return <MayorTile className={className} mensaje={mensajeAlcalde} alcalde={sitio.alcalde} />;
 }

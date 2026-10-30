@@ -169,7 +169,7 @@ export function mensajeDeError(e: unknown): string {
     case "INVALID_PASSWORD":
       return "La contraseña actual no es correcta.";
     case "ACCOUNT_DISABLED":
-      return "Tu cuenta está suspendida. Escribe a soporte si crees que es un error.";
+      return "Tu cuenta está suspendida. Si crees que es un error, escribe a la alcaldía (su contacto está al pie de la página).";
     case "TOO_MANY_REQUESTS": {
       const s = (e.details as { retryAfterSeconds?: number } | undefined)?.retryAfterSeconds;
       return s

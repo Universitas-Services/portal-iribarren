@@ -111,8 +111,9 @@ async function catalogo(tipo: string) {
 }
 
 const CAMPO_CONFLICTO: Record<string, string> = {
-  cedula: "Esta cédula ya está registrada con otro correo. Si es tuya, escribe a soporte.",
-  rif: "Este RIF ya está registrado con otro correo. Si es de tu organización, escribe a soporte.",
+  cedula:
+    "Esta cédula ya está registrada con otro correo. Si es tuya, escribe a la alcaldía (su contacto está al pie de la página).",
+  rif: "Este RIF ya está registrado con otro correo. Si es de tu organización, escribe a la alcaldía (su contacto está al pie de la página).",
 };
 
 export async function registrarApi(

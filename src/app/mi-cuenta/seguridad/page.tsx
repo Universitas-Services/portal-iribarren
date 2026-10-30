@@ -65,8 +65,8 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
         </h2>
         <p className="mt-3 font-semibold break-words text-noche">{u.correo}</p>
         <p className="mt-1 text-sm text-tinta/80">
-          Con él inicias sesión y recibes las respuestas a tus aportes. Para cambiarlo, escribe a
-          soporte.
+          Con él inicias sesión y recibes las respuestas a tus aportes. Para cambiarlo, escribe a la
+          alcaldía (su contacto está al pie de la página).
         </p>
       </section>
 

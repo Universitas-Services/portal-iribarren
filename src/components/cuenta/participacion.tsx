@@ -11,7 +11,7 @@ import {
   Printer,
 } from "lucide-react";
 import Link from "next/link";
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { NOMBRE_TIPO_PARTICIPACION, type TipoParticipacion } from "@/lib/api/types";
 import { enviarParticipacionAccion, type EstadoFormulario } from "@/lib/auth/acciones";
@@ -109,7 +109,12 @@ export function FormParticipacion({
   }
 
   const errores = { ...estado.errores, ...locales };
-  const mostrado: EstadoFormulario = Object.keys(locales).length ? { errores: locales } : estado;
+  // Memorizado: el resumen toma el foco cuando cambia este objeto, y uno nuevo en cada render
+  // devolvía el foco arriba con cada tecla y no dejaba corregir el campo.
+  const mostrado: EstadoFormulario = useMemo(
+    () => (Object.keys(locales).length ? { errores: locales } : estado),
+    [locales, estado],
+  );
   const largo = descripcion.trim().length;
 
   function revisar() {
