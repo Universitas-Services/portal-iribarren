@@ -1,3 +1,4 @@
+import { usaApi } from "@/lib/plataforma-api/cliente";
 import { FileSearch } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -63,7 +64,9 @@ async function Repositorio({ searchParams }: { searchParams: SearchParams }) {
             {total === 0
               ? "Sin resultados"
               : `${plural(total, "documento", "documentos")}${hayFiltros ? " con estos filtros" : ""}`}
-            <span className="text-tinta/75 lg:text-papel/75"> · Documentos de ejemplo</span>
+            {!usaApi() && (
+              <span className="text-tinta/75 lg:text-papel/75"> · Documentos de ejemplo</span>
+            )}
           </p>
 
           {items.length > 0 ? (

@@ -45,13 +45,24 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
         <h2 className="font-display text-2xl font-extrabold text-noche">
           No encontramos ese folio
         </h2>
-        <p className="mt-2 text-tinta">Solo puedes ver los aportes enviados desde tu cuenta.</p>
-        <Link
-          href="/participa"
-          className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-rojo px-6 font-display font-bold text-papel hover:bg-rojo-oscuro"
-        >
-          Ir a Participa
-        </Link>
+        <p className="mt-2 text-tinta">
+          Solo puedes ver los aportes enviados desde tu cuenta. Si acabas de enviar uno, búscalo en
+          Mis participaciones.
+        </p>
+        <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+          <Link
+            href="/mi-cuenta/participaciones"
+            className="inline-flex min-h-12 items-center justify-center rounded-xl bg-rojo px-6 font-display font-bold text-papel hover:bg-rojo-oscuro"
+          >
+            Ver mis participaciones
+          </Link>
+          <Link
+            href="/participa"
+            className="inline-flex min-h-12 items-center justify-center rounded-xl px-6 font-display font-bold text-noche ring-1 ring-linea hover:bg-superficie"
+          >
+            Ir a Participa
+          </Link>
+        </div>
       </div>
     );
   }

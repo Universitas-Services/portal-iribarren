@@ -49,7 +49,8 @@ export const esDesarrollo = process.env.NODE_ENV !== "production";
  * correo, los enlaces que llegarían por correo se muestran en pantalla y aparece la cinta
  * «Entorno de demostración». En desarrollo no se activa, para que las E2E recorran el flujo real.
  */
-export const esDemo = process.env.DEMO === "1";
+// Con plataforma-api los datos son reales: nunca es demostración, aunque quede DEMO=1.
+export const esDemo = process.env.DEMO === "1" && !usaApi();
 
 /** Secreto de la firma de sesión. En Netlify: variable SESION_SECRETO. */
 function secreto() {

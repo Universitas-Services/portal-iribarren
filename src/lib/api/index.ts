@@ -12,6 +12,7 @@ import { banners, documentos, posts, processStatus } from "@/lib/mocks/data";
 import { textoLegalSimulado } from "@/lib/mocks/textos-legales";
 import { paraPortada, relacionadas, consultarNoticias } from "@/lib/noticias/consultas";
 import { ErrorApi, pedirApi, urlApi, usaApi } from "@/lib/plataforma-api/cliente";
+import { SITIO_INICIAL, type DatosSitio } from "@/lib/sitio";
 import { TIPOS_ENTIDAD } from "@/lib/validation/schemas";
 import { CATEGORIAS, CATEGORIAS_TECNICAS, DOC_CATEGORIAS, OCUPACIONES, PARROQUIAS } from "./types";
 import type {
@@ -206,6 +207,25 @@ export async function getHome(): Promise<InicioPortal> {
   }
   await simularRed(1);
   return { mensajeAlcalde: null };
+}
+
+/**
+ * Datos del sitio (R17): alcalde, contacto, redes y enlaces del pie de página. Con plataforma-api,
+ * GET /portal/site; si no responde o aún no hay datos, los valores de siempre (el pie y la
+ * tarjeta del alcalde nunca quedan vacíos). Se cachea unos minutos.
+ */
+export async function getSitio(): Promise<DatosSitio> {
+  "use cache";
+  cacheLife("minutes");
+  if (!usaApi()) return SITIO_INICIAL;
+  try {
+    const r = await pedirApi<Partial<DatosSitio>>("/portal/site", { portal: true, publica: true });
+    return { ...SITIO_INICIAL, ...r };
+  } catch (e) {
+    if (e instanceof ErrorApi && (e.status === 404 || apiCaida(e, "los datos del sitio")))
+      return SITIO_INICIAL;
+    throw e;
+  }
 }
 
 /**

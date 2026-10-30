@@ -157,7 +157,7 @@ async function finalizarRegistro(
       valores: valoresDe(datos),
       mensaje: {
         tipo: "error",
-        texto: `Esta ${campo} ya está registrada con otro correo. Si es tuya, escribe a soporte para recuperar el acceso.`,
+        texto: `Esta ${campo} ya está registrada con otro correo. Si es tuya, escribe a la alcaldía (su contacto está al pie de la página) para recuperar el acceso.`,
       },
     };
   }
