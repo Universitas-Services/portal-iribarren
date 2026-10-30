@@ -70,7 +70,7 @@ const cuentas: Omit<Cuenta, "hash">[] = [
     nombres: "Rosa",
     apellidos: "Giménez",
     verificado: true,
-    // Perfil a medias: guardó el teléfono, pero aún no sube el documento de identidad.
+    // Perfil completo, sin verificar: opina, pero aún no sube su cédula para proponer.
     perfil: { telefono: "04161234567", ocupacion: "Comerciante" },
     documentos: {},
     estadoVerificacion: "PENDIENTE",
@@ -254,6 +254,9 @@ export function almacenDemo(): Almacen {
   for (const c of cuentas)
     alm.cuentas.set(c.id, {
       ...c,
+      // Copias: cargar un documento no debe tocar los datos de ejemplo de otro almacén.
+      perfil: { ...c.perfil },
+      documentos: { ...c.documentos },
       hash,
       tourVistoAt: "2026-09-01T12:00:00.000Z",
       // Aceptaron las versiones vigentes de los textos legales (las de los datos de ejemplo).

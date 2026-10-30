@@ -137,7 +137,7 @@ const PAGINAS: Record<string, (conSesion: boolean) => PasoTour[]> = {
       objetivo: ['[data-tour="tipo"]'],
       titulo: "Elige qué enviar",
       texto:
-        "Una opinión solo pide tu sesión. La propuesta formal pide además el perfil completo y un documento de soporte.",
+        "Una opinión solo pide tu sesión. La propuesta formal pide además el perfil completo, tus documentos cargados en Mi cuenta y un documento de soporte.",
     },
     {
       objetivo: ['[data-tour="nombre-publico"]'],
@@ -155,7 +155,8 @@ const PAGINAS: Record<string, (conSesion: boolean) => PasoTour[]> = {
     {
       objetivo: ['[data-tour="progreso"]'],
       titulo: "Tu perfil",
-      texto: "Para opinar no hace falta. Complétalo para poder enviar propuestas formales.",
+      texto:
+        "Para opinar no hace falta. Para enviar propuestas formales, complétalo y carga tus documentos en la verificación, más abajo.",
     },
     {
       objetivo: ['nav[aria-label="Secciones de mi cuenta"]'],

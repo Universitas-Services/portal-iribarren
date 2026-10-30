@@ -33,8 +33,8 @@ export type Cuenta = {
   /** Solo metadatos: el archivo va a Storage en plataforma-api. */
   documentos: Partial<Record<TipoDocumento, DocumentoCargado>>;
   /**
-   * VERIFICADO en cuanto el perfil queda completo (decisión del cliente). El Revisor no verifica
-   * perfiles: coteja los documentos de identidad del autor al evaluar cada participación.
+   * VERIFICADO en cuanto carga sus documentos (R18: la verificación va aparte del perfil). El
+   * Revisor no verifica perfiles: coteja los documentos del autor al evaluar cada participación.
    */
   estadoVerificacion: EstadoVerificacion;
   /** Fecha ISO en que pidió la baja de la cuenta. */
@@ -85,7 +85,7 @@ export type Perfil = {
   apellidosRepresentante?: string;
   cedulaRepresentante?: string;
   telefonoInstitucional?: string;
-  /** «Sí», «No» o «No aplica»: si es «Sí», hace falta el documento REPRESENTACION. */
+  /** «Sí», «No» o «No aplica»: si es «Sí», la verificación pide el documento REPRESENTACION. */
   acreditacion?: string;
 };
 
@@ -281,7 +281,7 @@ export function correoDeToken(alm: Almacen, token: string) {
 export type ResultadoIngreso =
   | { estado: "CREDENCIALES" }
   | { estado: "NO_VERIFICADO"; correo: string }
-  | { estado: "OK"; sesion: string; siguiente: "PERFIL" | "LISTO" };
+  | { estado: "OK"; sesion: string };
 
 export function iniciarSesion(alm: Almacen, correo: string, contrasena: string): ResultadoIngreso {
   const c = porCorreo(alm, correo);
@@ -290,8 +290,7 @@ export function iniciarSesion(alm: Almacen, correo: string, contrasena: string):
   if (!c.verificado) return { estado: "NO_VERIFICADO", correo: c.correo };
   const sesion = nuevoId();
   alm.sesiones.set(sesion, c.id);
-  const siguiente = perfilCompleto(c) ? "LISTO" : "PERFIL";
-  return { estado: "OK", sesion, siguiente };
+  return { estado: "OK", sesion };
 }
 
 export const cuentaDeSesion = (alm: Almacen, sesion?: string) =>
@@ -369,20 +368,19 @@ export function cambiarContrasena(
 /* ---------- Perfil ---------- */
 
 export type PasoPerfil = {
-  clave: "DATOS" | "IDENTIDAD" | "REPRESENTANTE" | "ACREDITACION" | "ENTIDAD";
+  clave: "DATOS" | "REPRESENTANTE" | "ACREDITACION";
   titulo: string;
   hecho: boolean;
 };
 
-/** Pasos de «Terminación del perfil» según el tipo de cuenta (v3, formularios 1 y 2). */
+/**
+ * Pasos de «Terminación del perfil» según el tipo de cuenta: solo datos (R18). Los documentos
+ * van aparte, en la verificación para propuestas formales.
+ */
 export function pasosPerfil(c: Cuenta): PasoPerfil[] {
   const p = c.perfil;
-  const d = c.documentos;
   if (c.tipo === "NATURAL") {
-    return [
-      { clave: "DATOS", titulo: "Teléfono de contacto", hecho: !!p.telefono },
-      { clave: "IDENTIDAD", titulo: "Documento de identidad", hecho: !!d.IDENTIDAD },
-    ];
+    return [{ clave: "DATOS", titulo: "Teléfono de contacto", hecho: !!p.telefono }];
   }
   return [
     {
@@ -395,23 +393,45 @@ export function pasosPerfil(c: Cuenta): PasoPerfil[] {
         p.telefonoInstitucional
       ),
     },
-    {
-      clave: "ACREDITACION",
-      titulo: "Acreditación de la representación",
-      hecho: !!p.acreditacion && (p.acreditacion !== "Sí" || !!d.REPRESENTACION),
-    },
+    { clave: "ACREDITACION", titulo: "Acreditación de la representación", hecho: !!p.acreditacion },
+  ];
+}
+
+export type PasoVerificacion = { clave: TipoDocumento; titulo: string; hecho: boolean };
+
+/**
+ * Documentos de la verificación para propuestas formales (opcional): la cédula de la persona, o
+ * el documento de la organización y, si dijo tener acreditación, el de la representación.
+ */
+export function pasosVerificacion(c: Cuenta): PasoVerificacion[] {
+  const d = c.documentos;
+  if (c.tipo === "NATURAL") {
+    return [{ clave: "IDENTIDAD", titulo: "Documento de identidad", hecho: !!d.IDENTIDAD }];
+  }
+  return [
     { clave: "ENTIDAD", titulo: "Documento de la organización", hecho: !!d.ENTIDAD },
+    ...(c.perfil.acreditacion === "Sí"
+      ? [
+          {
+            clave: "REPRESENTACION" as const,
+            titulo: "Documento que acredita la representación",
+            hecho: !!d.REPRESENTACION,
+          },
+        ]
+      : []),
   ];
 }
 
 export const perfilCompleto = (c: Cuenta) => pasosPerfil(c).every((p) => p.hecho);
 
+export const documentosCompletos = (c: Cuenta) => pasosVerificacion(c).every((p) => p.hecho);
+
 /**
- * Solo la propuesta formal exige el perfil completo; las opiniones (general o sobre una noticia)
- * solo piden la sesión (decisión del cliente, 28-10-2026).
+ * Solo la propuesta formal tiene requisitos: el perfil completo y los documentos cargados. Las
+ * opiniones (general o sobre una noticia) solo piden la sesión (decisión del cliente).
  */
 export const puedeEnviarTipo = (c: Cuenta, tipo: TipoParticipacion) =>
-  tipo !== "PROPUESTA_FORMAL" || perfilCompleto(c);
+  tipo !== "PROPUESTA_FORMAL" || (perfilCompleto(c) && documentosCompletos(c));
 
 /** Lo que falta para completar el perfil, en palabras para la persona. */
 export const faltantesPerfil = (c: Cuenta) =>
@@ -419,17 +439,42 @@ export const faltantesPerfil = (c: Cuenta) =>
     .filter((p) => !p.hecho)
     .map((p) => p.titulo);
 
+/** Los documentos que faltan para la verificación. */
+export const faltantesVerificacion = (c: Cuenta) =>
+  pasosVerificacion(c)
+    .filter((p) => !p.hecho)
+    .map((p) => p.titulo);
+
+/** Qué tiene completo la cuenta, para el aviso después de guardar. */
+export type EstadoPerfil = { perfil: boolean; verificacion: boolean };
+
+export const estadoPerfil = (c: Cuenta): EstadoPerfil => ({
+  perfil: perfilCompleto(c),
+  verificacion: documentosCompletos(c),
+});
+
 /**
- * La verificación es automática: un perfil completo queda VERIFICADO (y sigue así aunque se
- * reemplace un documento).
+ * A dónde vuelve «Mi cuenta» tras guardar: con el aviso de que ya puede proponer si con esto
+ * quedaron el perfil y los documentos, o de que el perfil quedó completo.
+ */
+export function destinoTrasGuardar(antes: EstadoPerfil, despues?: EstadoPerfil) {
+  if (despues?.perfil && despues.verificacion && !(antes.perfil && antes.verificacion))
+    return "/mi-cuenta?guardado=verificado";
+  if (despues?.perfil && !antes.perfil) return "/mi-cuenta?guardado=completo";
+  return "/mi-cuenta?guardado=1";
+}
+
+/**
+ * La verificación es automática: con los documentos cargados la cuenta queda VERIFICADO (y sigue
+ * así aunque reemplace uno).
  */
 function sincronizarVerificacion(c: Cuenta) {
-  c.estadoVerificacion = perfilCompleto(c) ? "VERIFICADO" : "PENDIENTE";
+  c.estadoVerificacion = documentosCompletos(c) ? "VERIFICADO" : "PENDIENTE";
 }
 
 export type ResultadoPerfil = "OK" | "SIN_SESION";
 
-/** Guarda datos del perfil; si con ellos queda completo, la cuenta pasa a VERIFICADO. */
+/** Guarda datos del perfil (la acreditación «Sí» puede dejar pendiente la verificación). */
 export function guardarPerfil(
   alm: Almacen,
   sesion: string | undefined,
@@ -460,7 +505,7 @@ export function actualizarNombres(
   return "OK";
 }
 
-/** Sube un documento o lo reemplaza con una versión nueva; si completa el perfil, lo verifica. */
+/** Sube un documento o lo reemplaza con una versión nueva; si son todos, verifica la cuenta. */
 export function cargarDocumento(
   alm: Almacen,
   sesion: string | undefined,
@@ -499,9 +544,14 @@ export function resumenCuenta(c: Cuenta) {
     tipo: c.tipo,
     correo: c.correo,
     perfilCompleto: perfilCompleto(c),
+    /** Cargó los documentos de la verificación (insignia «Verificado»). */
+    documentosCompletos: documentosCompletos(c),
     /** Puede enviar una propuesta formal; las opiniones no tienen requisito. */
-    puedeProponer: perfilCompleto(c),
+    puedeProponer: puedeEnviarTipo(c, "PROPUESTA_FORMAL"),
+    /** Lo que falta del perfil (datos). */
     faltantes: faltantesPerfil(c),
+    /** Los documentos que faltan para la verificación. */
+    faltantesVerificacion: faltantesVerificacion(c),
     estadoVerificacion: c.estadoVerificacion,
     /** Primer ingreso: el recorrido guiado se lanza solo. */
     tourPendiente: c.tourVistoAt === undefined,
@@ -544,6 +594,7 @@ export function vistaPerfil(c: Cuenta) {
     perfil: c.perfil,
     documentos: c.documentos,
     pasos: pasosPerfil(c),
+    pasosVerificacion: pasosVerificacion(c),
     bajaSolicitada: c.bajaSolicitada,
   };
 }

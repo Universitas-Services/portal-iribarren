@@ -13,7 +13,7 @@ import {
   FormRepresentante,
 } from "@/components/cuenta/perfil";
 import { Progreso } from "@/components/cuenta/piezas";
-import type { PasoPerfil, VistaPerfil } from "@/lib/auth/servicio";
+import type { VistaPerfil } from "@/lib/auth/servicio";
 import { getPerfil } from "@/lib/auth/sesion";
 
 export const metadata: Metadata = { title: "Mi cuenta", robots: { index: false } };
@@ -49,8 +49,8 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
           </p>
           <h2 className="mt-1 font-display text-2xl font-extrabold text-noche">Hola, {u.corto}</h2>
         </div>
-        {/* Insignia del perfil completo: se verifica solo al completarse. */}
-        {u.perfilCompleto && (
+        {/* Insignia de la verificación: se verifica sola al cargar los documentos. */}
+        {u.documentosCompletos && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-exito/10 px-3 py-1 text-sm font-semibold text-exito-oscuro ring-1 ring-exito/30 ring-inset">
             <ShieldCheck size={15} aria-hidden="true" />
             <span className="sr-only">Estado de verificación: </span>
@@ -69,19 +69,9 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
 
       <div className="mt-8 space-y-4">
         {u.tipo === "NATURAL" ? (
-          <>
-            <Paso numero={1} paso={u.pasos[0]!} resumen={telefono(u)}>
-              <FormDatosNatural perfil={u.perfil} ocupaciones={await getCatalogo("ocupaciones")} />
-            </Paso>
-            <Paso numero={2} paso={u.pasos[1]!} resumen={u.documentos.IDENTIDAD?.nombre}>
-              <FormDocumento
-                documento="IDENTIDAD"
-                etiqueta="Foto o PDF de tu cédula"
-                ayuda="Ambas caras si es posible, legible y vigente. PDF, JPG o PNG de hasta 2 MB."
-                actual={u.documentos.IDENTIDAD}
-              />
-            </Paso>
-          </>
+          <Paso numero={1} paso={u.pasos[0]!} resumen={telefono(u)}>
+            <FormDatosNatural perfil={u.perfil} ocupaciones={await getCatalogo("ocupaciones")} />
+          </Paso>
         ) : (
           <>
             <Paso
@@ -101,19 +91,13 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
                 u.perfil.acreditacion && `Documento de acreditación: ${u.perfil.acreditacion}`
               }
             >
-              <FormAcreditacion perfil={u.perfil} actual={u.documentos.REPRESENTACION} />
-            </Paso>
-            <Paso numero={3} paso={u.pasos[2]!} resumen={u.documentos.ENTIDAD?.nombre}>
-              <FormDocumento
-                documento="ENTIDAD"
-                etiqueta="Acta constitutiva, registro del consejo comunal o carta aval"
-                ayuda="El documento que acredita la existencia de la organización. PDF, JPG o PNG de hasta 2 MB."
-                actual={u.documentos.ENTIDAD}
-              />
+              <FormAcreditacion perfil={u.perfil} />
             </Paso>
           </>
         )}
       </div>
+
+      <Verificacion u={u} />
 
       <ul className="mt-8 grid gap-3 sm:grid-cols-2">
         <li>
@@ -156,7 +140,8 @@ const telefono = (u: VistaPerfil) =>
 
 /** Aviso tras guardar (llega en la URL desde la acción). */
 function Aviso({ guardado }: { guardado: unknown }) {
-  if (guardado === "completo") {
+  if (guardado === "completo" || guardado === "verificado") {
+    const verificado = guardado === "verificado";
     return (
       <div
         role="status"
@@ -166,12 +151,14 @@ function Aviso({ guardado }: { guardado: unknown }) {
           <CircleCheck size={22} aria-hidden="true" className="mt-0.5 shrink-0 text-exito-oscuro" />
           <span>
             <strong className="font-semibold">
-              Tu perfil está completo y verificado, ya puedes enviar propuestas formales.
+              {verificado
+                ? "Tu cuenta está verificada: ya puedes enviar propuestas formales."
+                : "Tu perfil está completo: ya puedes participar."}
             </strong>
           </span>
         </p>
         <Link
-          href="/participa"
+          href={verificado ? "/participa?tipo=propuesta" : "/participa"}
           className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-rojo px-5 font-display font-bold text-papel hover:bg-rojo-oscuro"
         >
           <MessageSquareText size={18} aria-hidden="true" />
@@ -235,6 +222,88 @@ function Datos({ u }: { u: VistaPerfil }) {
   );
 }
 
+/**
+ * Verificación para propuestas formales (opcional, R18): los documentos según el tipo de cuenta.
+ * Para opinar no hace falta.
+ */
+function Verificacion({ u }: { u: VistaPerfil }) {
+  const que =
+    u.tipo === "NATURAL"
+      ? "cargar tu cédula"
+      : u.perfil.acreditacion === "Sí"
+        ? "cargar el documento de la organización y el que acredita tu representación"
+        : "cargar el documento de la organización";
+  return (
+    <section
+      id="verificacion"
+      aria-labelledby="verificacion-titulo"
+      className="mt-10 scroll-mt-24 border-t border-linea pt-8"
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 id="verificacion-titulo" className="font-display text-xl font-extrabold text-noche">
+          Verificación para propuestas formales
+        </h3>
+        <span className="rounded-full bg-superficie px-2.5 py-0.5 text-sm font-semibold text-tinta/80">
+          Opcional
+        </span>
+      </div>
+      <p className="mt-2 text-tinta/85">
+        Si quieres hacer propuestas formales, necesitas una verificación extra: {que}. Para opinar
+        no hace falta.
+      </p>
+      {u.documentosCompletos && !u.perfilCompleto && (
+        <p className="mt-2 text-sm font-semibold text-noche">
+          Tus documentos están cargados. Completa tu perfil para enviar propuestas formales.
+        </p>
+      )}
+      <div className="mt-5 space-y-4">
+        {u.tipo === "NATURAL" ? (
+          <Paso numero={1} paso={u.pasosVerificacion[0]!} resumen={u.documentos.IDENTIDAD?.nombre}>
+            <FormDocumento
+              documento="IDENTIDAD"
+              etiqueta="Foto o PDF de tu cédula"
+              ayuda="Ambas caras si es posible, legible y vigente. PDF, JPG o PNG de hasta 2 MB."
+              actual={u.documentos.IDENTIDAD}
+            />
+          </Paso>
+        ) : (
+          u.pasosVerificacion.map((paso, i) =>
+            paso.clave === "ENTIDAD" ? (
+              <Paso
+                key={paso.clave}
+                numero={i + 1}
+                paso={paso}
+                resumen={u.documentos.ENTIDAD?.nombre}
+              >
+                <FormDocumento
+                  documento="ENTIDAD"
+                  etiqueta="Acta constitutiva, registro del consejo comunal o carta aval"
+                  ayuda="El documento que acredita la existencia de la organización. PDF, JPG o PNG de hasta 2 MB."
+                  actual={u.documentos.ENTIDAD}
+                />
+              </Paso>
+            ) : (
+              <Paso
+                key={paso.clave}
+                numero={i + 1}
+                paso={paso}
+                resumen={u.documentos.REPRESENTACION?.nombre}
+              >
+                <FormDocumento
+                  documento="REPRESENTACION"
+                  etiqueta="Documento que acredita tu condición"
+                  ayuda="Acta de asamblea, carta aval o poder. PDF, JPG o PNG de hasta 2 MB."
+                  actual={u.documentos.REPRESENTACION}
+                />
+              </Paso>
+            ),
+          )
+        )}
+      </div>
+    </section>
+  );
+}
+
 /** Un paso del perfil. Pendiente: abierto. Hecho: plegado con su resumen y opción de editar. */
 function Paso({
   numero,
@@ -243,7 +312,7 @@ function Paso({
   children,
 }: {
   numero: number;
-  paso: PasoPerfil;
+  paso: { titulo: string; hecho: boolean };
   resumen?: string;
   children: ReactNode;
 }) {

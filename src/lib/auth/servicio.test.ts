@@ -9,6 +9,8 @@ import {
   cerrarTodasLasSesiones,
   correoDeToken,
   cuentaDeSesion,
+  destinoTrasGuardar,
+  documentosCompletos,
   enviarParticipacion,
   filtrarParticipaciones,
   estadoRestablecer,
@@ -106,15 +108,10 @@ describe("inicio de sesión", () => {
     expect(iniciarSesion(alm, "ana@ejemplo.com", "mala").estado).toBe("CREDENCIALES");
   });
 
-  it("indica el siguiente paso según el perfil", () => {
+  it("entra con el perfil completo o incompleto (el destino es Participa)", () => {
     const alm = almacenDemo();
-    expect(iniciarSesion(alm, "ana@ejemplo.com", CONTRASENA_DEMO)).toMatchObject({
-      estado: "OK",
-      siguiente: "LISTO",
-    });
-    expect(iniciarSesion(alm, "contacto@cardones.org", CONTRASENA_DEMO)).toMatchObject({
-      siguiente: "PERFIL",
-    });
+    expect(iniciarSesion(alm, "ana@ejemplo.com", CONTRASENA_DEMO).estado).toBe("OK");
+    expect(iniciarSesion(alm, "contacto@cardones.org", CONTRASENA_DEMO).estado).toBe("OK");
   });
 });
 
@@ -195,33 +192,49 @@ describe("cuenta: contraseña y nombres", () => {
 });
 
 describe("perfil", () => {
-  it("se completa al guardar el teléfono y el documento, y queda verificado solo", () => {
+  it("se completa con el teléfono, sin documentos; los documentos verifican la cuenta", () => {
     const alm = almacenDemo();
     const s = sesionDe(alm, "jose@ejemplo.com");
     const c = () => cuentaDeSesion(alm, s)!;
     expect(perfilCompleto(c())).toBe(false);
     expect(guardarPerfil(alm, s, { telefono: "04141112233" })).toBe("OK");
-    expect(perfilCompleto(c())).toBe(false);
-    expect(c().estadoVerificacion).toBe("PENDIENTE");
-    expect(cargarDocumento(alm, s, "IDENTIDAD", pdf)).toBe("OK");
     expect(perfilCompleto(c())).toBe(true);
+    expect(c().estadoVerificacion).toBe("PENDIENTE");
+    expect(resumenCuenta(c()).puedeProponer).toBe(false);
+    expect(resumenCuenta(c()).faltantesVerificacion).toEqual(["Documento de identidad"]);
+    expect(cargarDocumento(alm, s, "IDENTIDAD", pdf)).toBe("OK");
     expect(c().estadoVerificacion).toBe("VERIFICADO");
+    expect(resumenCuenta(c()).puedeProponer).toBe(true);
   });
 
-  it("también se verifica si el último paso es el teléfono", () => {
+  it("los documentos se cargan aunque falte el perfil, pero proponer pide las dos cosas", () => {
     const alm = almacenDemo();
     const s = sesionDe(alm, "jose@ejemplo.com");
+    const c = () => cuentaDeSesion(alm, s)!;
     cargarDocumento(alm, s, "IDENTIDAD", pdf);
-    expect(cuentaDeSesion(alm, s)!.estadoVerificacion).toBe("PENDIENTE");
+    expect(c().estadoVerificacion).toBe("VERIFICADO");
+    expect(perfilCompleto(c())).toBe(false);
+    expect(resumenCuenta(c()).puedeProponer).toBe(false);
     guardarPerfil(alm, s, { telefono: "04141112233" });
-    expect(cuentaDeSesion(alm, s)!.estadoVerificacion).toBe("VERIFICADO");
+    expect(resumenCuenta(c()).puedeProponer).toBe(true);
   });
 
-  it("un perfil a medias sigue PENDIENTE y puede editar sus datos", () => {
+  it("el aviso tras guardar dice si quedó el perfil o si ya puede proponer", () => {
+    const nada = { perfil: false, verificacion: false };
+    const perfil = { perfil: true, verificacion: false };
+    const todo = { perfil: true, verificacion: true };
+    expect(destinoTrasGuardar(nada, perfil)).toBe("/mi-cuenta?guardado=completo");
+    expect(destinoTrasGuardar(perfil, todo)).toBe("/mi-cuenta?guardado=verificado");
+    expect(destinoTrasGuardar(nada, todo)).toBe("/mi-cuenta?guardado=verificado");
+    expect(destinoTrasGuardar(todo, todo)).toBe("/mi-cuenta?guardado=1");
+    expect(destinoTrasGuardar(perfil, perfil)).toBe("/mi-cuenta?guardado=1");
+  });
+
+  it("un perfil completo sin documentos puede editar sus datos y sigue PENDIENTE", () => {
     const alm = almacenDemo();
     const s = sesionDe(alm, "rosa@ejemplo.com");
     const c = cuentaDeSesion(alm, s)!;
-    expect(perfilCompleto(c)).toBe(false);
+    expect(perfilCompleto(c)).toBe(true);
     expect(guardarPerfil(alm, s, { telefono: "04140000000" })).toBe("OK");
     expect(c.estadoVerificacion).toBe("PENDIENTE");
     expect(actualizarNombres(alm, s, "Rosa", "Pérez")).toBe("OK");
@@ -229,7 +242,7 @@ describe("perfil", () => {
     expect(c.estadoVerificacion).toBe("VERIFICADO");
   });
 
-  it("reemplazar un documento sube la versión y el perfil sigue verificado", () => {
+  it("reemplazar un documento sube la versión y la cuenta sigue verificada", () => {
     const alm = almacenDemo();
     const s = sesionDe(alm, "ana@ejemplo.com");
     cargarDocumento(alm, s, "IDENTIDAD", pdf);
@@ -238,22 +251,31 @@ describe("perfil", () => {
     expect(c.estadoVerificacion).toBe("VERIFICADO");
   });
 
-  it("la organización necesita representante, acreditación y documento de la entidad", () => {
+  it("la organización completa el perfil con datos; la representación se pide si dijo «Sí»", () => {
     const alm = almacenDemo();
     const s = sesionDe(alm, "contacto@cardones.org");
-    guardarPerfil(alm, s, {
+    const c = () => cuentaDeSesion(alm, s)!;
+    const representante = {
       condicion: "Vocero o vocera oficial",
       nombresRepresentante: "José",
       apellidosRepresentante: "Colmenárez",
       cedulaRepresentante: "V-11222333",
       telefonoInstitucional: "02512345678",
-      acreditacion: "Sí",
-    });
+    };
+    guardarPerfil(alm, s, { ...representante, acreditacion: "No" });
+    expect(perfilCompleto(c())).toBe(true);
     cargarDocumento(alm, s, "ENTIDAD", pdf);
-    expect(perfilCompleto(cuentaDeSesion(alm, s)!)).toBe(false);
+    expect(documentosCompletos(c())).toBe(true);
+    expect(c().estadoVerificacion).toBe("VERIFICADO");
+
+    // Con «Sí», falta el documento que acredita la representación.
+    guardarPerfil(alm, s, { acreditacion: "Sí" });
+    expect(perfilCompleto(c())).toBe(true);
+    expect(documentosCompletos(c())).toBe(false);
+    expect(c().estadoVerificacion).toBe("PENDIENTE");
     cargarDocumento(alm, s, "REPRESENTACION", pdf);
-    expect(perfilCompleto(cuentaDeSesion(alm, s)!)).toBe(true);
-    expect(cuentaDeSesion(alm, s)!.estadoVerificacion).toBe("VERIFICADO");
+    expect(c().estadoVerificacion).toBe("VERIFICADO");
+    expect(resumenCuenta(c()).puedeProponer).toBe(true);
   });
 });
 
@@ -302,6 +324,11 @@ describe("participación", () => {
     const s = sesionDe(alm, "jose@ejemplo.com");
     expect(
       enviarParticipacion(alm, s, "k-propuesta", { ...datos, tipo: "PROPUESTA_FORMAL" }),
+    ).toEqual({ estado: "PERFIL_INCOMPLETO" });
+    // Con el perfil completo pero sin documentos, tampoco.
+    const rosa = sesionDe(alm, "rosa@ejemplo.com");
+    expect(
+      enviarParticipacion(alm, rosa, "k-rosa", { ...datos, tipo: "PROPUESTA_FORMAL" }),
     ).toEqual({ estado: "PERFIL_INCOMPLETO" });
     expect(enviarParticipacion(alm, s, "k-general", datos).estado).toBe("OK");
     expect(

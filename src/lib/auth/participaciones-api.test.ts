@@ -102,7 +102,10 @@ describe("envío de una participación", () => {
     );
     expect(err("INVALID_FILE", undefined, "Solo se aceptan PDF").errores).toHaveProperty("soporte");
     expect(err("PERFIL_INCOMPLETO", { missing: ["telefono", "documentoIdentidad"] }).mensaje).toBe(
-      "Para enviar una propuesta formal completa tu perfil: falta el teléfono de contacto, el documento de identidad.",
+      "Para enviar una propuesta formal completa tu perfil y tus documentos en Mi cuenta: falta el teléfono de contacto, el documento de identidad.",
+    );
+    expect(err("DOCUMENTOS_PENDIENTES", { missing: ["archivoAcreditacion"] }).mensaje).toMatch(
+      /falta el documento de la organización/,
     );
   });
 });

@@ -22,7 +22,12 @@ import {
 } from "@/lib/plataforma-api/mapeo";
 import type { TipoTextoLegal } from "@/lib/api/types";
 import type { EstadoFormulario } from "./acciones";
-import { perfilCompleto, type TipoDocumento } from "./servicio";
+import {
+  destinoTrasGuardar,
+  estadoPerfil,
+  type EstadoPerfil,
+  type TipoDocumento,
+} from "./servicio";
 import { almacen, guardarAviso } from "./sesion";
 import {
   borrarTokens,
@@ -61,9 +66,8 @@ export async function ingresarApi(
   contrasena: string,
   volver: string,
 ): Promise<EstadoFormulario> {
-  let r: SesionApi;
   try {
-    r = await login(correo, contrasena);
+    await login(correo, contrasena);
   } catch (e) {
     if (e instanceof ErrorApi && e.code === "EMAIL_NOT_VERIFIED")
       return {
@@ -76,7 +80,8 @@ export async function ingresarApi(
       };
     return error(mensajeDeError(e), { correo });
   }
-  return ir(r.user.perfilEstado === "COMPLETO" ? volver : "/mi-cuenta");
+  // Participa es lo que pide tener cuenta (R18), con el perfil completo o no.
+  return ir(volver);
 }
 
 export async function cerrarSesionApi() {
@@ -168,7 +173,7 @@ export async function registrarApi(
   } catch {
     return ir("/ingresar");
   }
-  return ir("/mi-cuenta");
+  return ir("/participa");
 }
 
 /** Reenvía el enlace de verificación. Neutro: no dice si la cuenta existe. */
@@ -274,14 +279,10 @@ export async function cambiarContrasenaApi(
 
 /* ---------- Perfil ---------- */
 
-/** Tras guardar vuelve a «Mi cuenta»; si el perfil quedó completo, con el aviso para participar. */
-async function trasGuardarApi(estabaCompleto: boolean): Promise<never> {
+/** Tras guardar vuelve a «Mi cuenta», con el aviso de lo que quedó completo. */
+async function trasGuardarApi(antes: EstadoPerfil): Promise<never> {
   const c = await sincronizarCuentaApi(almacen());
-  return ir(
-    !estabaCompleto && c && perfilCompleto(c)
-      ? "/mi-cuenta?guardado=completo"
-      : "/mi-cuenta?guardado=1",
-  );
+  return ir(destinoTrasGuardar(antes, c && estadoPerfil(c)));
 }
 
 type DatosPerfil = {
@@ -321,12 +322,9 @@ async function subir(token: string, tipo: TipoDocumento, archivo: File) {
   await pedirApi("/portal/me/documents", { cuerpo: fd, token, portal: true });
 }
 
-/**
- * Guarda datos del perfil y, si viene, un documento (en ese orden: la acreditación «Sí» exige
- * el documento, y así la API recalcula el estado con los dos).
- */
+/** Guarda datos del perfil y, si viene, un documento (en ese orden). */
 export async function guardarPerfilApi(
-  estabaCompleto: boolean,
+  antes: EstadoPerfil,
   datos: DatosPerfil,
   valores: Record<string, string>,
   documento?: { tipo: TipoDocumento; archivo: File },
@@ -341,7 +339,7 @@ export async function guardarPerfilApi(
     siHayTextosPendientes(e);
     return error(mensajeDeError(e), valores);
   }
-  return trasGuardarApi(estabaCompleto);
+  return trasGuardarApi(antes);
 }
 
 /* ---------- Recorrido guiado ---------- */

@@ -11,17 +11,17 @@ test.describe("protección de rutas e historial", () => {
   test("tras iniciar sesión, «atrás» no vuelve al formulario de ingreso", async ({ page }) => {
     await page.goto("/noticias");
     await ingresar(page, "ana@ejemplo.com");
-    await expect(page).toHaveURL(/\/mi-cuenta$/);
+    await expect(page).toHaveURL(/\/participa$/);
     await page.goBack();
     await expect(page).toHaveURL(/\/noticias$/);
     await expect(page.getByRole("button", { name: "Iniciar sesión" })).toHaveCount(0);
   });
 
-  test("con la sesión abierta, ingreso y registro llevan a la cuenta", async ({ page }) => {
+  test("con la sesión abierta, ingreso y registro llevan a Participa", async ({ page }) => {
     await ingresar(page, "ana@ejemplo.com");
     for (const ruta of ["/ingresar", "/registro", "/registro?tipo=natural", "/recuperar"]) {
       await page.goto(ruta);
-      await expect(page).toHaveURL(/\/mi-cuenta(\/seguridad)?$/);
+      await expect(page).toHaveURL(/\/(participa|mi-cuenta\/seguridad)$/);
     }
     await page.goto("/ingresar?volver=/mi-cuenta/participaciones");
     await expect(page).toHaveURL(/\/mi-cuenta\/participaciones$/);
@@ -95,7 +95,7 @@ test.describe("cuenta del ciudadano", () => {
     await page.getByRole("button", { name: "Iniciar sesión" }).click();
     await expect(page.getByText("El correo o la contraseña no son correctos.")).toBeVisible();
     await ingresar(page, c.correo, nueva);
-    await expect(page).toHaveURL(/\/mi-cuenta/);
+    await expect(page).toHaveURL(/\/participa$/);
 
     // Y corrige sus nombres desde Perfil.
     await page.goto("/mi-cuenta");
@@ -108,6 +108,8 @@ test.describe("cuenta del ciudadano", () => {
 
   test("las pestañas de Mi cuenta marcan la sección actual", async ({ page }) => {
     await ingresar(page, "ana@ejemplo.com");
+    // El ingreso lleva a Participa (R18): las pestañas están en Mi cuenta.
+    await page.goto("/mi-cuenta");
     const pestanas = page.getByRole("navigation", { name: "Secciones de mi cuenta" });
     for (const [nombre, ruta] of [
       ["Seguridad", /\/mi-cuenta\/seguridad$/],

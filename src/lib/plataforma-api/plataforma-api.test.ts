@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { perfilCompleto, resumenCuenta } from "@/lib/auth/servicio";
+import { documentosCompletos, perfilCompleto, resumenCuenta } from "@/lib/auth/servicio";
 import { ErrorApi, pedirApi, type PerfilApi } from "./cliente";
 import { cuentaDePerfil, mensajeDeError, telefonoApi, valorDeCatalogo } from "./mapeo";
 import { abrirSello, sellar, tokensDeRespuesta } from "./sello";
@@ -169,11 +169,18 @@ describe("traducción de datos", () => {
     });
     expect(c.documentos.ENTIDAD).toBeDefined();
     expect(c.documentos.REPRESENTACION).toBeUndefined();
-    expect(perfilCompleto(c)).toBe(false);
-    expect(resumenCuenta(c).nombre).toBe("Consejo Comunal Los Cardones");
+    // R18: el perfil son los datos; con «Sí» falta el documento de la representación.
+    expect(perfilCompleto(c)).toBe(true);
+    expect(documentosCompletos(c)).toBe(false);
+    expect(c.estadoVerificacion).toBe("PENDIENTE");
+    expect(resumenCuenta(c)).toMatchObject({
+      nombre: "Consejo Comunal Los Cardones",
+      puedeProponer: false,
+      faltantesVerificacion: ["Documento que acredita la representación"],
+    });
   });
 
-  it("toma el rechazo de la identidad y la baja solicitada de la API", () => {
+  it("toma la verificación y la baja solicitada de la API", () => {
     const perfil: PerfilApi = {
       id: "u3",
       email: "rosa@correo.test",
@@ -192,6 +199,13 @@ describe("traducción de datos", () => {
     const c = cuentaDePerfil(perfil);
     expect(c.estadoVerificacion).toBe("VERIFICADO");
     expect(c.bajaSolicitada).toBe("2026-10-27T13:00:00.000Z");
+    // Si la API ya informa `documentosEstado` (R18), manda ese.
+    expect(cuentaDePerfil({ ...perfil, documentosEstado: "PENDIENTE" }).estadoVerificacion).toBe(
+      "PENDIENTE",
+    );
+    expect(cuentaDePerfil({ ...perfil, identityDocuments: [] }).estadoVerificacion).toBe(
+      "PENDIENTE",
+    );
     // Sin `textosLegales` (la API aún no lo manda) no se pide aceptar nada de nuevo.
     expect(c.textosAceptados).toBeUndefined();
     expect(

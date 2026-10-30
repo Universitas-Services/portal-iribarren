@@ -74,6 +74,7 @@ export function FormParticipacion({
   noticiaInicial,
   puedeProponer,
   faltantes,
+  pidioPropuesta,
   idempotencia,
   autor,
 }: {
@@ -83,19 +84,25 @@ export function FormParticipacion({
   categoriasTecnicas: string[];
   tipoInicial: TipoParticipacion;
   noticiaInicial?: string;
-  /** Perfil completo: lo exige solo la propuesta formal. Las opiniones no tienen requisito. */
+  /**
+   * Perfil completo y documentos cargados: lo exige solo la propuesta formal. Sin eso, su opción
+   * queda deshabilitada. Las opiniones no tienen requisito.
+   */
   puedeProponer: boolean;
+  /** Lo que falta para proponer: datos del perfil y documentos de la verificación. */
   faltantes: string[];
+  /** Llegó pidiendo una propuesta formal sin poder enviarla: se explica qué falta. */
+  pidioPropuesta?: boolean;
   idempotencia: string;
   autor: string;
 }) {
   const [estado, accion] = useActionState(enviarParticipacionAccion, inicial);
   const form = useRef<HTMLFormElement>(null);
   const v = estado.valores ?? {};
-  const [tipo, setTipo] = useState<TipoParticipacion>(
-    (v.tipo as TipoParticipacion | undefined) ?? tipoInicial,
-  );
-  const bloqueado = tipo === "PROPUESTA_FORMAL" && !puedeProponer;
+  const [tipo, setTipo] = useState<TipoParticipacion>(() => {
+    const t = (v.tipo as TipoParticipacion | undefined) ?? tipoInicial;
+    return t === "PROPUESTA_FORMAL" && !puedeProponer ? "OPINION_GENERAL" : t;
+  });
   const [descripcion, setDescripcion] = useState(v.descripcion ?? "");
   const [locales, setLocales] = useState<Record<string, string>>({});
   const [resumen, setResumen] = useState<Record<string, string> | null>(null);
@@ -155,12 +162,13 @@ export function FormParticipacion({
     <form ref={form} action={accion} noValidate className="space-y-6">
       <input type="hidden" name="idempotencia" value={idempotencia} />
 
-      {bloqueado && (
+      {pidioPropuesta && !puedeProponer && (
         <div className="flex items-start gap-3 rounded-2xl bg-amarillo/15 p-5 text-noche ring-1 ring-amarillo/60 ring-inset">
           <Lock size={20} aria-hidden="true" className="mt-0.5 shrink-0" />
           <div>
             <p className="font-semibold">
-              Para enviar una propuesta formal, primero completa tu perfil.
+              Para enviar una propuesta formal, primero completa tu perfil y la verificación con
+              documentos. Mientras tanto, puedes enviar una opinión.
             </p>
             {faltantes.length > 0 && (
               <ul className="mt-2 list-disc pl-5 text-sm">
@@ -170,10 +178,10 @@ export function FormParticipacion({
               </ul>
             )}
             <Link
-              href="/mi-cuenta"
+              href="/mi-cuenta#verificacion"
               className="mt-3 inline-block font-semibold text-rojo underline underline-offset-2"
             >
-              Completar mi perfil
+              Ir a Mi cuenta
             </Link>
           </div>
         </div>
@@ -189,7 +197,7 @@ export function FormParticipacion({
           {TIPOS.map((t) => (
             <label
               key={t.valor}
-              className="flex cursor-pointer flex-col gap-2 rounded-2xl border-2 border-linea p-4 transition-colors hover:border-noche/30 has-[:checked]:border-rojo has-[:checked]:bg-rojo/5 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-rojo has-[:focus-visible]:ring-offset-2"
+              className="flex cursor-pointer flex-col gap-2 rounded-2xl border-2 border-linea p-4 transition-colors hover:border-noche/30 has-[:checked]:border-rojo has-[:checked]:bg-rojo/5 has-[:disabled]:cursor-not-allowed has-[:disabled]:border-linea has-[:disabled]:bg-superficie has-[:disabled]:opacity-70 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-rojo has-[:focus-visible]:ring-offset-2"
             >
               <span className="flex items-center justify-between">
                 <t.Icon size={22} aria-hidden="true" className="text-rojo" />
@@ -200,6 +208,7 @@ export function FormParticipacion({
                   aria-label={t.titulo}
                   aria-describedby={`tipo-${t.valor}`}
                   checked={tipo === t.valor}
+                  disabled={t.valor === "PROPUESTA_FORMAL" && !puedeProponer}
                   onChange={() => setTipo(t.valor)}
                   className="size-4 accent-rojo"
                 />
@@ -208,9 +217,18 @@ export function FormParticipacion({
               <span id={`tipo-${t.valor}`} className="text-sm leading-snug text-tinta/80">
                 {t.texto}
                 {t.valor === "PROPUESTA_FORMAL" && !puedeProponer && (
-                  <span className="mt-1 flex items-center gap-1 font-semibold text-noche">
-                    <Lock size={13} aria-hidden="true" />
-                    Requiere el perfil completo.
+                  <span className="mt-1 flex items-start gap-1 font-semibold text-noche">
+                    <Lock size={13} aria-hidden="true" className="mt-1 shrink-0" />
+                    <span>
+                      Requiere el perfil completo y la verificación con documentos en{" "}
+                      <Link
+                        href="/mi-cuenta#verificacion"
+                        className="text-rojo underline underline-offset-2"
+                      >
+                        Mi cuenta
+                      </Link>
+                      .
+                    </span>
                   </span>
                 )}
               </span>
@@ -380,19 +398,11 @@ export function FormParticipacion({
         <button
           type="button"
           onClick={revisar}
-          disabled={bloqueado}
-          aria-describedby={bloqueado ? "envio-bloqueado" : undefined}
           className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-rojo px-6 font-display font-bold text-papel transition-[background-color,transform] duration-150 hover:bg-rojo-oscuro active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-plata disabled:active:scale-100"
         >
           <ClipboardCheck size={18} aria-hidden="true" />
           Revisar y enviar
         </button>
-        {bloqueado && (
-          <p id="envio-bloqueado" className="mt-2 text-center text-sm text-tinta/80">
-            La propuesta formal se habilita cuando completes tu perfil. Una opinión la puedes enviar
-            ya.
-          </p>
-        )}
       </div>
 
       <Dialogo

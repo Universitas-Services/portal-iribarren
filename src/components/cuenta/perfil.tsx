@@ -200,14 +200,11 @@ export function FormRepresentante({ perfil }: { perfil: Perfil }) {
   );
 }
 
-/** Organización, paso 2: ¿tiene un documento que acredite su condición? */
-export function FormAcreditacion({
-  perfil,
-  actual,
-}: {
-  perfil: Perfil;
-  actual?: DocumentoCargado;
-}) {
+/**
+ * Organización, paso 2: ¿tiene un documento que acredite su condición? Solo la respuesta: si es
+ * «Sí», el documento se carga en la verificación para propuestas formales.
+ */
+export function FormAcreditacion({ perfil }: { perfil: Perfil }) {
   const [estado, accion] = useActionState(guardarAcreditacionAccion, inicial);
   const [respuesta, setRespuesta] = useState(
     estado.valores?.acreditacion ?? perfil.acreditacion ?? "",
@@ -245,14 +242,9 @@ export function FormAcreditacion({
         )}
       </fieldset>
       {respuesta === "Sí" && (
-        <CampoArchivo
-          id="archivo"
-          etiqueta="Documento que acredita tu condición"
-          ayuda="Acta de asamblea, carta aval o poder. PDF, JPG o PNG de hasta 2 MB."
-          requerido={!actual}
-          actual={actual}
-          error={estado.errores?.archivo}
-        />
+        <p className="text-sm text-tinta/80">
+          Para enviar propuestas formales, lo cargarás en la verificación, más abajo.
+        </p>
       )}
       <BotonEnviar enviando="Guardando…">Guardar acreditación</BotonEnviar>
     </form>

@@ -1,4 +1,5 @@
 import {
+  documentosCompletos,
   type Cuenta,
   type DocumentoCargado,
   type Participacion,
@@ -85,10 +86,19 @@ function documento(d: PerfilApi["identityDocuments"][number]): DocumentoCargado 
 
 /**
  * Cuenta del portal armada desde GET /portal/me/profile. La contraseña no viaja (hash vacío): la
- * valida la API. COMPLETO equivale a VERIFICADO en el portal (no hay perfiles rechazados, D15). La
- * baja solicitada también viene de la API.
+ * valida la API. VERIFICADO = documentos de la verificación cargados (R18; no hay rechazos, D15):
+ * `documentosEstado` si la API lo envía, si no se calcula con los documentos. La baja solicitada
+ * también viene de la API.
  */
 export function cuentaDePerfil(p: PerfilApi): Cuenta {
+  const c = cuentaSinVerificacion(p);
+  const verificada = p.documentosEstado
+    ? p.documentosEstado === "COMPLETO"
+    : documentosCompletos(c);
+  return { ...c, estadoVerificacion: verificada ? "VERIFICADO" : "PENDIENTE" };
+}
+
+function cuentaSinVerificacion(p: PerfilApi): Cuenta {
   const documentos: Cuenta["documentos"] = {};
   for (const d of [...p.identityDocuments, ...(p.organization?.documents ?? [])]) {
     const tipo = DOCUMENTO_PORTAL[d.tipo as keyof typeof DOCUMENTO_PORTAL];
@@ -101,8 +111,7 @@ export function cuentaDePerfil(p: PerfilApi): Cuenta {
     hash: "",
     verificado: true,
     documentos,
-    estadoVerificacion:
-      p.perfilEstado === "COMPLETO" ? ("VERIFICADO" as const) : ("PENDIENTE" as const),
+    estadoVerificacion: "PENDIENTE" as const,
     bajaSolicitada: p.bajaSolicitada ?? undefined,
     // Sin el campo (la API aún no lo tiene) se toma como visto: así no se lanza en cada ingreso.
     tourVistoAt: p.tourVistoAt === null ? undefined : (p.tourVistoAt ?? ""),
@@ -177,6 +186,7 @@ export function mensajeDeError(e: unknown): string {
         : "Hiciste demasiados intentos seguidos. Espera un momento y vuelve a intentarlo.";
     }
     case "PERFIL_INCOMPLETO":
+    case "DOCUMENTOS_PENDIENTES":
       return faltaEnPerfil(e);
     case "FUERA_DEL_MUNICIPIO":
       return "El punto queda fuera del Municipio Iribarren. Marca un lugar dentro del municipio.";
@@ -256,7 +266,10 @@ export function propuestaDeApi(p: ParticipacionPublicaApi): PropuestaPublica {
   };
 }
 
-/** Lo que falta del perfil (`details.missing` de PERFIL_INCOMPLETO), en palabras. */
+/**
+ * Lo que falta para proponer (`details.missing` de PERFIL_INCOMPLETO o DOCUMENTOS_PENDIENTES), en
+ * palabras.
+ */
 const FALTA_PERFIL: Record<string, string> = {
   cedula: "la cédula",
   nombres: "los nombres",
@@ -266,8 +279,8 @@ const FALTA_PERFIL: Record<string, string> = {
   telefonoInstitucional: "el teléfono institucional",
   condicion: "la condición del representante",
   tieneAcreditacion: "la acreditación",
-  archivoAcreditacion: "el documento de acreditación",
-  archivoRepresentacion: "el documento de representación",
+  archivoAcreditacion: "el documento de la organización",
+  archivoRepresentacion: "el documento que acredita la representación",
 };
 
 function faltaEnPerfil(e: ErrorApi) {
@@ -275,8 +288,8 @@ function faltaEnPerfil(e: ErrorApi) {
     .map((k) => FALTA_PERFIL[k])
     .filter(Boolean);
   return falta.length
-    ? `Para enviar una propuesta formal completa tu perfil: falta ${falta.join(", ")}.`
-    : "Para enviar una propuesta formal, completa tu perfil en Mi cuenta.";
+    ? `Para enviar una propuesta formal completa tu perfil y tus documentos en Mi cuenta: falta ${falta.join(", ")}.`
+    : "Para enviar una propuesta formal, completa tu perfil y carga tus documentos en Mi cuenta.";
 }
 
 /** Los campos del formulario de participación que la API puede señalar. */

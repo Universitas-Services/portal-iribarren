@@ -54,7 +54,7 @@ async function Resultado({ searchParams }: { searchParams: SearchParams }) {
       color: "bg-exito/10 text-exito-oscuro",
       titulo: "¡Listo! Tu correo está verificado",
       texto:
-        "Ya puedes iniciar sesión y opinar. Para enviar propuestas formales, completa tu perfil.",
+        "Ya puedes iniciar sesión y opinar. Para enviar propuestas formales, completa tu perfil y carga tus documentos en Mi cuenta.",
     },
     VENCIDO: {
       Icon: Clock,
