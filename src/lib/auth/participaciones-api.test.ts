@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { filasComprobante } from "@/lib/participacion";
 import { ErrorApi, type ParticipacionPropiaApi } from "@/lib/plataforma-api/cliente";
 import {
   erroresParticipacion,
@@ -131,6 +132,17 @@ describe("vistas de la API", () => {
     const p = participacionDeApi(propia, "cuenta-1");
     expect(p).toMatchObject({ cuentaId: "cuenta-1", creadaEl: propia.recibidaEl });
     expect(p.comprobante?.codigoVerificacion).toBe("YYDK-FJK9");
+  });
+
+  it("en «Mis participaciones» el comprobante va sin la huella SHA-256", () => {
+    const c = participacionDeApi(propia, "cuenta-1").comprobante;
+    expect(filasComprobante(c).map(([k]) => k)).toEqual([
+      "Código de verificación",
+      "Huella del contenido (SHA-256)",
+    ]);
+    expect(filasComprobante(c, { sinHuella: true })).toEqual([
+      ["Código de verificación", "YYDK-FJK9"],
+    ]);
   });
 
   it("la pública trae el autor visible y los totales", () => {

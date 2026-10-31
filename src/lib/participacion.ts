@@ -84,15 +84,18 @@ export const RECIBIDA = {
 
 /**
  * Las filas del acuse de recibo (guía R11): el código para verificarlo y la huella SHA-256 del
- * contenido. Solo con plataforma-api; en la simulación no hay comprobante.
+ * contenido. Solo con plataforma-api; en la simulación no hay comprobante. `sinHuella` deja solo
+ * el código (en «Mis participaciones» la huella no se muestra).
  */
-export const filasComprobante = (c?: {
-  codigoVerificacion: string;
-  hashContenido: string;
-}): [string, string][] =>
+export const filasComprobante = (
+  c?: { codigoVerificacion: string; hashContenido: string },
+  { sinHuella = false } = {},
+): [string, string][] =>
   c
     ? [
         ["Código de verificación", c.codigoVerificacion],
-        ["Huella del contenido (SHA-256)", c.hashContenido],
+        ...(sinHuella
+          ? []
+          : ([["Huella del contenido (SHA-256)", c.hashContenido]] as [string, string][])),
       ]
     : [];

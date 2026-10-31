@@ -123,7 +123,7 @@ async function Contenido({ params }: { params: Params }) {
               "Nombre público",
               p.mostrarNombre ? "Sí, con tu nombre" : `No, como «${AUTOR_ANONIMO}»`,
             ],
-            ...filasComprobante(p.comprobante),
+            ...filasComprobante(p.comprobante, { sinHuella: true }),
           ]}
           pie="Los aportes quedan registrados tal como se enviaron: no se pueden editar ni eliminar."
         />
