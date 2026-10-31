@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat, Roboto } from "next/font/google";
+import localFont from "next/font/local";
 import { Suspense } from "react";
 import { AceptacionSesion } from "@/components/cuenta/aceptacion-sesion";
 import { AgenteIus } from "@/components/layout/agente-ius";
@@ -15,19 +15,26 @@ import { INACTIVIDAD_MS } from "@/lib/plataforma-api/renovacion";
 import { SCRIPT_TEMA } from "@/lib/tema";
 import "./globals.css";
 
-const montserrat = Montserrat({
+/*
+ * Montserrat para títulos y Roboto para el texto. Van en el repositorio (./fuentes, alfabeto
+ * latino, versiones variables de Google Fonts, licencia OFL 1.1): con next/font/google el build
+ * dependía de lo que respondiera Google y fallaba cuando servía los archivos con otra forma de
+ * dirección (31-10-2026).
+ */
+const montserrat = localFont({
+  src: [
+    { path: "./fuentes/montserrat-latin.woff2", weight: "600 800", style: "normal" },
+    // La cursiva destaca «Pensando en grande» en el titular del inicio.
+    { path: "./fuentes/montserrat-italic-latin.woff2", weight: "600 800", style: "italic" },
+  ],
   variable: "--font-montserrat",
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  // La cursiva destaca «Pensando en grande» en el titular del inicio.
-  style: ["normal", "italic"],
   display: "swap",
 });
 
-const roboto = Roboto({
+const roboto = localFont({
+  src: "./fuentes/roboto-latin.woff2",
+  weight: "400 700",
   variable: "--font-roboto",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
   display: "swap",
 });
 
