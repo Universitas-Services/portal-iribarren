@@ -1,12 +1,9 @@
-import { urlAdjuntoPublicoApi } from "@/lib/auth/participaciones-api";
+import {
+  aUrlFirmada,
+  respuestaDeError,
+  urlAdjuntoPublicoApi,
+} from "@/lib/auth/participaciones-api";
 import { usaApi } from "@/lib/plataforma-api/cliente";
-
-/** Redirige a la URL firmada sin dejarla en caché ni filtrar la página de origen. */
-const aUrlFirmada = (url: string) =>
-  new Response(null, {
-    status: 302,
-    headers: { Location: url, "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" },
-  });
 
 /**
  * Abre una foto de un aporte publicado (R19): pide a plataforma-api la URL firmada de 5 minutos y
@@ -22,7 +19,7 @@ export async function GET(
   try {
     const url = await urlAdjuntoPublicoApi(folio, id);
     return url ? aUrlFirmada(url) : new Response("No encontrado", { status: 404 });
-  } catch {
-    return new Response("No se pudo abrir el archivo. Intenta de nuevo.", { status: 502 });
+  } catch (e) {
+    return respuestaDeError(e);
   }
 }

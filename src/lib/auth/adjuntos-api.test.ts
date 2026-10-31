@@ -13,6 +13,10 @@ import { propuestaPublica } from "./servicio";
 vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({ refresh: vi.fn(), cacheLife: vi.fn() }));
 vi.mock("./sesion-api", () => ({ tokensDeCookie: async () => null }));
+// La petición del ciudadano al portal (Netlify pone su IP en esta cabecera).
+vi.mock("next/headers", () => ({
+  headers: async () => new Headers({ "x-nf-client-connection-ip": "190.1.2.3" }),
+}));
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -73,9 +77,12 @@ describe("rutas que abren el archivo", () => {
 
   it("la pública redirige a la URL firmada sin dejarla en caché", async () => {
     vi.stubEnv("API_URL", "https://api.ejemplo.test/api/v1");
+    vi.stubEnv("PORTAL_CLIENT_SECRET", "secreto-de-prueba");
     let pedida = "";
-    vi.stubGlobal("fetch", async (url: string) => {
+    let ip: string | null = null;
+    vi.stubGlobal("fetch", async (url: string, init: RequestInit) => {
       pedida = url;
+      ip = new Headers(init.headers).get("x-client-ip");
       return Response.json({ url: "https://api.ejemplo.test/api/v1/files/tok", expiraEl: "x" });
     });
     const { GET } = await import("@/app/propuestas/[folio]/archivo/[id]/route");
@@ -90,6 +97,23 @@ describe("rutas que abren el archivo", () => {
     expect(r.headers.get("Location")).toBe("https://api.ejemplo.test/api/v1/files/tok");
     expect(r.headers.get("Cache-Control")).toBe("no-store");
     expect(r.headers.get("Referrer-Policy")).toBe("no-referrer");
+    // La API limita por IP del ciudadano: va la suya, no la del servidor del portal.
+    expect(ip).toBe("190.1.2.3");
+  });
+
+  it("si la API limita al ciudadano, 429 con el tiempo de espera", async () => {
+    vi.stubEnv("API_URL", "https://api.ejemplo.test/api/v1");
+    vi.stubGlobal("fetch", async () =>
+      Response.json(
+        { code: "TOO_MANY_REQUESTS", message: "x", details: { retryAfterSeconds: 120 } },
+        { status: 429 },
+      ),
+    );
+    const { GET } = await import("@/app/propuestas/[folio]/archivo/[id]/route");
+    const r = await GET(new Request("http://x"), ctx("IRI-2026-0045", "f1"));
+    expect(r.status).toBe(429);
+    expect(r.headers.get("Retry-After")).toBe("120");
+    expect(r.headers.get("Cache-Control")).toBe("no-store");
   });
 
   it("un archivo que la API no da (soporte, no publicado) es 404", async () => {

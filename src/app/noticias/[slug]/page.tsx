@@ -96,7 +96,7 @@ export default async function NoticiaPage({ params }: { params: Params }) {
       <article className="relative z-10 mx-auto -mt-16 max-w-4xl space-y-8 px-4 sm:px-6 lg:-mt-20 lg:px-8">
         {medio}
 
-        <div className="rounded-tarjeta bg-papel p-6 shadow-tarjeta sm:p-10">
+        <div className="rounded-tarjeta bg-tarjeta p-6 shadow-tarjeta sm:p-10">
           <CuerpoNoticia html={post.cuerpo} />
           {post.puntos && post.puntos.items.length > 0 && <BloquePuntos puntos={post.puntos} />}
           {post.boton && <BotonNoticia boton={post.boton} />}
@@ -132,7 +132,7 @@ export default async function NoticiaPage({ params }: { params: Params }) {
           </p>
           <Link
             href={`/participa?tipo=opinion-noticia&noticia=${post.slug}`}
-            className="group relative mt-6 inline-flex min-h-12 items-center gap-2 rounded-xl bg-papel px-5 font-display font-bold text-rojo transition-transform duration-150 active:scale-[0.97]"
+            className="group relative mt-6 inline-flex min-h-12 items-center gap-2 rounded-xl bg-tarjeta px-5 font-display font-bold text-enlace transition-transform duration-150 active:scale-[0.97]"
           >
             Opinar sobre esta noticia
             <ArrowRight
@@ -151,12 +151,12 @@ export default async function NoticiaPage({ params }: { params: Params }) {
         className="mx-auto max-w-7xl px-4 pt-20 pb-24 sm:px-6 lg:px-8 lg:pt-28"
       >
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <h2 id="mas-noticias" className="font-display text-3xl font-extrabold text-noche">
+          <h2 id="mas-noticias" className="font-display text-3xl font-extrabold text-fuerte">
             Más noticias
           </h2>
           <Link
             href="/noticias"
-            className="inline-flex items-center gap-1.5 font-display font-bold text-rojo hover:underline"
+            className="inline-flex items-center gap-1.5 font-display font-bold text-enlace hover:underline"
           >
             Ver todas
             <ArrowRight size={18} aria-hidden="true" />

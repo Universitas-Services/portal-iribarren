@@ -51,12 +51,12 @@ export const ESTADO_PARTICIPACION: Record<
   PENDIENTE: {
     texto: "Pendiente",
     ayuda: "Recibida; espera que un revisor la tome.",
-    clase: "bg-superficie text-noche ring-linea",
+    clase: "bg-superficie text-fuerte ring-linea",
   },
   EN_REVISION: {
     texto: "En revisión",
     ayuda: "Un revisor la está evaluando.",
-    clase: "bg-amarillo/20 text-noche ring-amarillo/60",
+    clase: "bg-amarillo/20 text-fuerte ring-amarillo/60",
   },
   APROBADA: {
     texto: "Verificada",
@@ -66,7 +66,7 @@ export const ESTADO_PARTICIPACION: Record<
   RECHAZADA: {
     texto: "Rechazada",
     ayuda: "No se incorpora; el revisor explica el motivo.",
-    clase: "bg-rojo/8 text-rojo ring-rojo/30",
+    clase: "bg-rojo/8 text-enlace ring-rojo/30",
   },
   PUBLICADA: {
     texto: "Publicada",
@@ -79,7 +79,7 @@ export const ESTADO_PARTICIPACION: Record<
 export const RECIBIDA = {
   texto: "Recibida",
   ayuda: "La opinión llegó al equipo de la alcaldía, que la revisa y puede publicarla.",
-  clase: "bg-superficie text-noche ring-linea",
+  clase: "bg-superficie text-fuerte ring-linea",
 };
 
 /**

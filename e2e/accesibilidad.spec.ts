@@ -14,6 +14,12 @@ const ETIQUETAS_WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 // (`animation-timeline: view()`) dejan semitransparente lo que aún no se ha desplazado.
 test.use({ reducedMotion: "reduce" });
 
+// Con TEMA=oscuro la misma auditoría (contraste incluido) corre en el modo oscuro.
+if (process.env.TEMA === "oscuro")
+  test.beforeEach(async ({ context }) => {
+    await context.addInitScript(() => localStorage.setItem("tema", "oscuro"));
+  });
+
 async function auditar(page: Page) {
   // Espera a que el contenido en streaming reemplace a los skeletons.
   await page.waitForLoadState("networkidle");

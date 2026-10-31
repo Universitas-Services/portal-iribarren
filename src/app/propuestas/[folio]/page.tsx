@@ -43,7 +43,7 @@ export default function PropuestaPage({ params }: { params: Params }) {
         titulo="Aporte ciudadano"
       />
       <div className="relative z-10 mx-auto -mt-16 max-w-3xl px-4 pb-24 sm:px-6 lg:-mt-20">
-        <div className="rounded-tarjeta bg-papel p-6 shadow-tarjeta sm:p-10">
+        <div className="rounded-tarjeta bg-tarjeta p-6 shadow-tarjeta sm:p-10">
           <Suspense
             fallback={
               <div aria-hidden="true" className="space-y-4">
@@ -67,7 +67,7 @@ async function Contenido({ params }: { params: Params }) {
   if (!p) {
     return (
       <div className="text-center">
-        <h2 className="font-display text-2xl font-extrabold text-noche">
+        <h2 className="font-display text-2xl font-extrabold text-fuerte">
           Este aporte no está publicado
         </h2>
         <p className="mt-2 text-tinta">
@@ -88,13 +88,13 @@ async function Contenido({ params }: { params: Params }) {
       <p className="text-sm font-semibold tracking-wide text-tinta/80 uppercase">
         {NOMBRE_TIPO_PARTICIPACION[p.tipo]} · {p.parroquia}
       </p>
-      <h2 className="mt-1 font-display text-3xl font-extrabold text-noche tabular-nums">
+      <h2 className="mt-1 font-display text-3xl font-extrabold text-fuerte tabular-nums">
         {p.folio}
       </h2>
       <p className="mt-2 text-tinta">
         {p.autor && (
           <>
-            Por <strong className="text-noche">{p.autor}</strong> ·{" "}
+            Por <strong className="text-fuerte">{p.autor}</strong> ·{" "}
           </>
         )}
         Publicado el <time dateTime={p.publicadaEl}>{formatearFechaHora(p.publicadaEl)}</time>
@@ -115,7 +115,7 @@ async function Contenido({ params }: { params: Params }) {
       <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/propuestas"
-          className="inline-flex min-h-11 items-center gap-2 font-display font-bold text-rojo hover:underline"
+          className="inline-flex min-h-11 items-center gap-2 font-display font-bold text-enlace hover:underline"
         >
           <ArrowLeft size={18} aria-hidden="true" />
           Volver a propuestas y opiniones

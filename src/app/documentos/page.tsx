@@ -78,11 +78,11 @@ async function Repositorio({ searchParams }: { searchParams: SearchParams }) {
               ))}
             </ul>
           ) : (
-            <div className="mt-4 flex flex-col items-center rounded-tarjeta bg-papel px-6 py-16 text-center shadow-tarjeta">
-              <span className="grid size-16 place-items-center rounded-full bg-rojo/10 text-rojo">
+            <div className="mt-4 flex flex-col items-center rounded-tarjeta bg-tarjeta px-6 py-16 text-center shadow-tarjeta">
+              <span className="grid size-16 place-items-center rounded-full bg-rojo/10 text-enlace">
                 <FileSearch size={30} aria-hidden="true" />
               </span>
-              <h2 className="mt-5 font-display text-2xl font-extrabold text-noche">
+              <h2 className="mt-5 font-display text-2xl font-extrabold text-fuerte">
                 No hay documentos con esos filtros
               </h2>
               <p className="mt-2 max-w-md leading-relaxed text-tinta">

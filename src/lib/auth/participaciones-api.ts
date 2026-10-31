@@ -139,12 +139,14 @@ type UrlFirmada = { url: string; expiraEl: string };
 /**
  * URL firmada (5 minutos) de una foto de un aporte publicado. Pública: la API solo la da si el
  * aporte está PUBLICADA y el archivo es una foto. Sin caché: la URL vence.
+ * La API la limita por IP (300 cada 15 minutos): va con la del ciudadano (x-client-ip), no
+ * como `publica`, o todas las visitas contarían contra el servidor del portal.
  */
 export async function urlAdjuntoPublicoApi(folio: string, id: string) {
   try {
     const r = await pedirApi<UrlFirmada>(
       `/portal/participations/${encodeURIComponent(folio.toUpperCase())}/files/${encodeURIComponent(id)}/url`,
-      { portal: true, publica: true },
+      { portal: true },
     );
     return r.url;
   } catch (e) {
@@ -167,4 +169,28 @@ export async function urlAdjuntoPropioApi(folio: string, id: string, descargar: 
     if (noHay(e)) return undefined;
     throw e;
   }
+}
+
+/* ---------- Respuestas de las rutas que abren un adjunto ---------- */
+
+/** Redirige a la URL firmada sin dejarla en caché ni filtrar la página de origen. */
+export const aUrlFirmada = (url: string) =>
+  new Response(null, {
+    status: 302,
+    headers: { Location: url, "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" },
+  });
+
+/**
+ * Un error al pedir la URL: si la API limitó al ciudadano (429), se le dice cuándo reintentar;
+ * cualquier otro, 502.
+ */
+export function respuestaDeError(e: unknown) {
+  if (e instanceof ErrorApi && e.status === 429) {
+    const s = (e.details as { retryAfterSeconds?: number } | undefined)?.retryAfterSeconds;
+    return new Response("Demasiadas solicitudes. Intenta de nuevo en un momento.", {
+      status: 429,
+      headers: { "Cache-Control": "no-store", ...(s ? { "Retry-After": String(s) } : {}) },
+    });
+  }
+  return new Response("No se pudo abrir el archivo. Intenta de nuevo.", { status: 502 });
 }

@@ -33,8 +33,8 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
   return (
     <>
       {sp.motivo === "participar" && (
-        <p className="mb-6 flex items-start gap-3 rounded-2xl bg-superficie p-4 text-sm leading-relaxed text-noche">
-          <Lock size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
+        <p className="mb-6 flex items-start gap-3 rounded-2xl bg-superficie p-4 text-sm leading-relaxed text-fuerte">
+          <Lock size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-enlace" />
           <span>
             <strong className="font-semibold">Para participar necesitas una cuenta.</strong> Así
             cada aporte recibe un folio, queda a tu nombre y te avisamos de su respuesta.
@@ -44,7 +44,7 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
       {sp.aviso === "contrasena" && (
         <p
           role="status"
-          className="mb-6 flex items-start gap-3 rounded-2xl bg-exito/10 p-4 text-sm text-noche ring-1 ring-exito/30 ring-inset"
+          className="mb-6 flex items-start gap-3 rounded-2xl bg-exito/10 p-4 text-sm text-fuerte ring-1 ring-exito/30 ring-inset"
         >
           <CircleCheck size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-exito-oscuro" />
           Tu contraseña se cambió. Inicia sesión con la nueva.
@@ -53,9 +53,9 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
       {sp.aviso === "inactividad" && (
         <p
           role="status"
-          className="mb-6 flex items-start gap-3 rounded-2xl bg-superficie p-4 text-sm leading-relaxed text-noche"
+          className="mb-6 flex items-start gap-3 rounded-2xl bg-superficie p-4 text-sm leading-relaxed text-fuerte"
         >
-          <Clock size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
+          <Clock size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-enlace" />
           Cerramos tu sesión porque pasaron {INACTIVIDAD_MS / 60_000} minutos sin actividad. Vuelve
           a ingresar para continuar.
         </p>
@@ -63,7 +63,7 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
       {sp.aviso === "sesiones" && (
         <p
           role="status"
-          className="mb-6 flex items-start gap-3 rounded-2xl bg-exito/10 p-4 text-sm text-noche ring-1 ring-exito/30 ring-inset"
+          className="mb-6 flex items-start gap-3 rounded-2xl bg-exito/10 p-4 text-sm text-fuerte ring-1 ring-exito/30 ring-inset"
         >
           <CircleCheck size={20} aria-hidden="true" className="mt-0.5 shrink-0 text-exito-oscuro" />
           Cerramos tu sesión en todos tus dispositivos. Vuelve a ingresar.
@@ -72,7 +72,7 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
       <FormIngreso volver={volver} />
       <p className="mt-8 border-t border-linea pt-6 text-center text-sm text-tinta">
         ¿No tienes cuenta?{" "}
-        <Link href="/registro" className="font-semibold text-rojo hover:underline">
+        <Link href="/registro" className="font-semibold text-enlace hover:underline">
           Regístrate
         </Link>
       </p>

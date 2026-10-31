@@ -24,7 +24,7 @@ export default function RecuperarPage() {
       <FormRecuperar />
       <p className="mt-8 border-t border-linea pt-6 text-center text-sm text-tinta">
         ¿La recordaste?{" "}
-        <Link href="/ingresar" className="font-semibold text-rojo hover:underline">
+        <Link href="/ingresar" className="font-semibold text-enlace hover:underline">
           Inicia sesión
         </Link>
       </p>

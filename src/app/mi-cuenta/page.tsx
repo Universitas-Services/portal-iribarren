@@ -47,7 +47,7 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
           <p className="text-sm text-tinta/75">
             {u.tipo === "NATURAL" ? "Persona natural" : "Organización"} · {u.correo}
           </p>
-          <h2 className="mt-1 font-display text-2xl font-extrabold text-noche">Hola, {u.corto}</h2>
+          <h2 className="mt-1 font-display text-2xl font-extrabold text-fuerte">Hola, {u.corto}</h2>
         </div>
         {/* Insignia de la verificación: se verifica sola al cargar los documentos. */}
         {u.documentosCompletos && (
@@ -103,18 +103,18 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
         <li>
           <Link
             href="/participa"
-            className="flex min-h-14 items-center gap-3 rounded-2xl border border-linea px-4 font-display font-bold text-noche transition-colors hover:border-rojo hover:text-rojo"
+            className="flex min-h-14 items-center gap-3 rounded-2xl border border-linea px-4 font-display font-bold text-fuerte transition-colors hover:border-rojo hover:text-enlace"
           >
-            <MessageSquareText size={20} aria-hidden="true" className="text-rojo" />
+            <MessageSquareText size={20} aria-hidden="true" className="text-enlace" />
             Participar
           </Link>
         </li>
         <li>
           <Link
             href="/mi-cuenta/participaciones"
-            className="flex min-h-14 items-center gap-3 rounded-2xl border border-linea px-4 font-display font-bold text-noche transition-colors hover:border-rojo hover:text-rojo"
+            className="flex min-h-14 items-center gap-3 rounded-2xl border border-linea px-4 font-display font-bold text-fuerte transition-colors hover:border-rojo hover:text-enlace"
           >
-            <ClipboardList size={20} aria-hidden="true" className="text-rojo" />
+            <ClipboardList size={20} aria-hidden="true" className="text-enlace" />
             Mis participaciones
           </Link>
         </li>
@@ -124,7 +124,7 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
         La contraseña, el cierre de sesión y la baja de la cuenta están en{" "}
         <Link
           href="/mi-cuenta/seguridad"
-          className="font-semibold text-rojo underline underline-offset-2"
+          className="font-semibold text-enlace underline underline-offset-2"
         >
           Seguridad
         </Link>
@@ -147,7 +147,7 @@ function Aviso({ guardado }: { guardado: unknown }) {
         role="status"
         className="mt-6 flex flex-col gap-4 rounded-2xl bg-exito/10 p-5 ring-1 ring-exito/30 ring-inset sm:flex-row sm:items-center"
       >
-        <p className="flex flex-1 items-start gap-3 text-noche">
+        <p className="flex flex-1 items-start gap-3 text-fuerte">
           <CircleCheck size={22} aria-hidden="true" className="mt-0.5 shrink-0 text-exito-oscuro" />
           <span>
             <strong className="font-semibold">
@@ -172,7 +172,7 @@ function Aviso({ guardado }: { guardado: unknown }) {
   return (
     <p
       role="status"
-      className="mt-6 flex items-center gap-3 rounded-2xl bg-exito/10 p-4 text-sm text-noche ring-1 ring-exito/30 ring-inset"
+      className="mt-6 flex items-center gap-3 rounded-2xl bg-exito/10 p-4 text-sm text-fuerte ring-1 ring-exito/30 ring-inset"
     >
       <CircleCheck size={20} aria-hidden="true" className="shrink-0 text-exito-oscuro" />
       {texto}
@@ -202,7 +202,7 @@ function Datos({ u }: { u: VistaPerfil }) {
       {filas.map(([k, v]) => (
         <div key={k}>
           <dt className="text-sm text-tinta/75">{k}</dt>
-          <dd className="font-semibold break-words text-noche">{v}</dd>
+          <dd className="font-semibold break-words text-fuerte">{v}</dd>
         </div>
       ))}
     </dl>
@@ -210,10 +210,10 @@ function Datos({ u }: { u: VistaPerfil }) {
   if (u.tipo !== "NATURAL") return <div className="mt-6">{lista}</div>;
 
   return (
-    <details className="group mt-6 rounded-2xl border border-linea open:border-noche/20">
+    <details className="group mt-6 rounded-2xl border border-linea open:border-fuerte/20">
       <summary className="flex cursor-pointer list-none items-start gap-3 p-4 [&::-webkit-details-marker]:hidden">
         <div className="min-w-0 flex-1">{lista}</div>
-        <span className="text-sm font-semibold text-rojo group-open:hidden">Editar</span>
+        <span className="text-sm font-semibold text-enlace group-open:hidden">Editar</span>
       </summary>
       <div className="border-t border-linea p-4 sm:p-5">
         <FormNombres nombres={u.nombres} apellidos={u.apellidos} />
@@ -240,7 +240,7 @@ function Verificacion({ u }: { u: VistaPerfil }) {
       className="mt-10 scroll-mt-24 border-t border-linea pt-8"
     >
       <div className="flex flex-wrap items-center gap-2">
-        <h3 id="verificacion-titulo" className="font-display text-xl font-extrabold text-noche">
+        <h3 id="verificacion-titulo" className="font-display text-xl font-extrabold text-fuerte">
           Verificación para propuestas formales
         </h3>
         <span className="rounded-full bg-superficie px-2.5 py-0.5 text-sm font-semibold text-tinta/80">
@@ -252,7 +252,7 @@ function Verificacion({ u }: { u: VistaPerfil }) {
         no hace falta.
       </p>
       {u.documentosCompletos && !u.perfilCompleto && (
-        <p className="mt-2 text-sm font-semibold text-noche">
+        <p className="mt-2 text-sm font-semibold text-fuerte">
           Tus documentos están cargados. Completa tu perfil para enviar propuestas formales.
         </p>
       )}
@@ -326,7 +326,7 @@ function Paso({
         {paso.hecho ? <CircleCheck size={18} aria-hidden="true" /> : numero}
       </span>
       <span className="min-w-0">
-        <span className="block font-display font-extrabold text-noche">{paso.titulo}</span>
+        <span className="block font-display font-extrabold text-fuerte">{paso.titulo}</span>
         {paso.hecho && resumen && (
           <span className="block truncate text-sm text-tinta/80">{resumen}</span>
         )}
@@ -337,12 +337,12 @@ function Paso({
   return (
     <details
       open={!paso.hecho}
-      className="group rounded-2xl border border-linea open:border-noche/20"
+      className="group rounded-2xl border border-linea open:border-fuerte/20"
     >
       <summary className="flex min-h-16 cursor-pointer list-none items-center gap-3 p-4 [&::-webkit-details-marker]:hidden">
         {cabecera}
         {paso.hecho && (
-          <span className="text-sm font-semibold text-rojo group-open:hidden">Editar</span>
+          <span className="text-sm font-semibold text-enlace group-open:hidden">Editar</span>
         )}
       </summary>
       <div className="border-t border-linea p-4 sm:p-5">{children}</div>
