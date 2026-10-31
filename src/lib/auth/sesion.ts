@@ -204,11 +204,11 @@ export async function refrescarSesion(actual?: string) {
 
 /**
  * Páginas de invitado (ingreso, registro, recuperación): con la sesión abierta no se muestran y
- * llevan a la cuenta. En el render, `redirect()` reemplaza la entrada del historial.
+ * llevan a Participa. En el render, `redirect()` reemplaza la entrada del historial.
  */
-export async function soloInvitados(destino = "/mi-cuenta") {
+export async function soloInvitados(destino = "/participa") {
   if (!(await getUsuario())) return;
-  const seguro = destino.startsWith("/") && !destino.startsWith("//") ? destino : "/mi-cuenta";
+  const seguro = destino.startsWith("/") && !destino.startsWith("//") ? destino : "/participa";
   redirect(seguro);
 }
 

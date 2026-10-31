@@ -54,8 +54,8 @@ const PESTANAS: {
 ];
 
 const campo =
-  "h-12 w-full rounded-xl border border-linea bg-papel px-4 text-noche transition-colors outline-none placeholder:text-tinta/70 focus-visible:border-rojo";
-const etiqueta = "mb-1.5 block font-display text-sm font-bold text-noche";
+  "h-12 w-full rounded-xl border border-linea bg-tarjeta px-4 text-fuerte transition-colors outline-none placeholder:text-tinta/70 focus-visible:border-rojo";
+const etiqueta = "mb-1.5 block font-display text-sm font-bold text-fuerte";
 
 /**
  * Filtros del listado. Sin JavaScript funcionan como un formulario GET normal; con JavaScript
@@ -126,7 +126,7 @@ export function FiltrosNoticias({
           e.preventDefault();
           navegar(valores);
         }}
-        className="rounded-tarjeta bg-papel p-5 shadow-tarjeta sm:p-6"
+        className="rounded-tarjeta bg-tarjeta p-5 shadow-tarjeta sm:p-6"
       >
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-[2fr_1.2fr_1.6fr]">
           <div className="col-span-2 lg:col-span-1">
@@ -206,7 +206,7 @@ export function FiltrosNoticias({
                 onClick={() =>
                   cambiar(a.clave === "fecha" ? { desde: "", hasta: "" } : { [a.clave]: "" })
                 }
-                className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-rojo/10 px-3 font-display text-sm font-bold text-rojo-oscuro transition-colors hover:bg-rojo/15"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-rojo/10 px-3 font-display text-sm font-bold text-enlace-fuerte transition-colors hover:bg-rojo/15"
               >
                 {a.texto}
                 <X size={14} aria-hidden="true" />
@@ -216,7 +216,7 @@ export function FiltrosNoticias({
             <button
               type="button"
               onClick={() => cambiar({ q: "", categoria: "", formato: "", desde: "", hasta: "" })}
-              className="min-h-9 px-2 text-sm font-semibold text-tinta underline-offset-4 hover:text-rojo hover:underline"
+              className="min-h-9 px-2 text-sm font-semibold text-tinta underline-offset-4 hover:text-enlace hover:underline"
             >
               Limpiar todo
             </button>
@@ -250,10 +250,10 @@ export function FiltrosNoticias({
               }}
               className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 font-display text-sm font-bold transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.96] ${
                 activa
-                  ? "border-noche bg-noche text-papel"
+                  ? "border-fuerte bg-noche text-papel"
                   : n === 0
-                    ? "border-dashed border-plata bg-papel text-tinta/80 hover:border-noche/40"
-                    : "border-linea bg-papel text-noche hover:border-noche/40"
+                    ? "border-dashed border-plata bg-tarjeta text-tinta/80 hover:border-fuerte/40"
+                    : "border-linea bg-tarjeta text-fuerte hover:border-fuerte/40"
               }`}
             >
               <Icon size={16} aria-hidden="true" />

@@ -80,12 +80,12 @@ function Seccion({ id, titulo, children }: { id: string; titulo: string; childre
       id={id}
       data-seccion
       aria-labelledby={`${id}-titulo`}
-      className="revelar scroll-mt-36 rounded-tarjeta bg-papel p-6 shadow-tarjeta sm:p-10 lg:scroll-mt-28"
+      className="revelar scroll-mt-36 rounded-tarjeta bg-tarjeta p-6 shadow-tarjeta sm:p-10 lg:scroll-mt-28"
     >
       <h2
         id={`${id}-titulo`}
         tabIndex={-1}
-        className="font-display text-2xl font-extrabold text-noche outline-none sm:text-3xl"
+        className="font-display text-2xl font-extrabold text-fuerte outline-none sm:text-3xl"
       >
         {titulo}
       </h2>
@@ -121,7 +121,7 @@ export default function ConocePage() {
                 <div key={texto} className="rounded-2xl bg-superficie p-5">
                   <dt className="sr-only">{texto}</dt>
                   <dd>
-                    <span className="block font-display text-4xl font-extrabold text-rojo">
+                    <span className="block font-display text-4xl font-extrabold text-enlace">
                       {n}
                     </span>
                     <span className="mt-1 block text-sm text-tinta">{texto}</span>
@@ -137,11 +137,11 @@ export default function ConocePage() {
                 <li key={c.titulo} className="flex flex-col rounded-2xl border border-linea p-5">
                   <span
                     aria-hidden="true"
-                    className="font-display text-5xl leading-none font-extrabold text-rojo/20"
+                    className="font-display text-5xl leading-none font-extrabold text-enlace/20"
                   >
                     {i + 1}
                   </span>
-                  <h3 className="mt-3 font-display text-lg font-extrabold text-noche">
+                  <h3 className="mt-3 font-display text-lg font-extrabold text-fuerte">
                     {c.titulo}
                   </h3>
                   <p className="mt-2 leading-relaxed text-tinta">{c.texto}</p>
@@ -150,7 +150,7 @@ export default function ConocePage() {
                       {c.lista.map((l) => (
                         <li
                           key={l}
-                          className="rounded-full bg-superficie px-3 py-1 text-sm font-semibold text-noche"
+                          className="rounded-full bg-superficie px-3 py-1 text-sm font-semibold text-fuerte"
                         >
                           {l}
                         </li>
@@ -177,7 +177,7 @@ export default function ConocePage() {
                         aria-hidden="true"
                         className="absolute top-1.5 -left-[2.05rem] size-3.5 rounded-full bg-rojo ring-4 ring-papel"
                       />
-                      <p className="font-display font-extrabold text-noche">{fecha}</p>
+                      <p className="font-display font-extrabold text-fuerte">{fecha}</p>
                       <p className="mt-0.5 text-sm leading-relaxed text-tinta">{texto}</p>
                     </li>
                   ))}
@@ -214,9 +214,9 @@ export default function ConocePage() {
                   duracion={f.duracion}
                   abiertaAlInicio={i === 0}
                 >
-                  <p className="font-display text-sm font-bold text-noche">¿En qué consiste?</p>
+                  <p className="font-display text-sm font-bold text-fuerte">¿En qué consiste?</p>
                   <p className="mt-1 leading-relaxed text-tinta">{f.consiste}</p>
-                  <p className="mt-5 font-display text-sm font-bold text-noche">
+                  <p className="mt-5 font-display text-sm font-bold text-fuerte">
                     Hitos y entregables clave
                   </p>
                   <ul className="mt-2 space-y-3">
@@ -227,13 +227,13 @@ export default function ConocePage() {
                           className="mt-2.5 size-1.5 shrink-0 rounded-full bg-rojo"
                         />
                         <div className="min-w-0 leading-relaxed text-tinta">
-                          <strong className="font-semibold text-noche">{h.titulo}</strong>
+                          <strong className="font-semibold text-fuerte">{h.titulo}</strong>
                           {h.texto && <>: {h.texto}</>}
                           {h.subhitos && (
                             <div className="mt-3 grid gap-3 sm:grid-cols-2">
                               {h.subhitos.map((s) => (
                                 <div key={s.titulo} className="rounded-2xl bg-superficie p-4">
-                                  <p className="font-display font-extrabold text-rojo">
+                                  <p className="font-display font-extrabold text-enlace">
                                     {s.titulo}
                                   </p>
                                   <p className="mt-1 text-sm leading-relaxed">{s.texto}</p>
@@ -250,7 +250,7 @@ export default function ConocePage() {
             </ol>
 
             <div className="mt-8 rounded-2xl bg-superficie p-5 sm:p-6">
-              <h3 className="font-display text-lg font-extrabold text-noche">
+              <h3 className="font-display text-lg font-extrabold text-fuerte">
                 ¿En qué va el proceso?
               </h3>
               <p className="mt-1 mb-5 text-sm text-tinta">
@@ -272,14 +272,14 @@ export default function ConocePage() {
                     className={`rounded-2xl border border-linea p-5 ${i === OBJETIVOS.length - 1 ? "sm:col-span-2" : ""}`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-naranja/15 text-rojo-oscuro">
+                      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-naranja/15 text-enlace-fuerte">
                         <Icon size={22} aria-hidden="true" />
                       </span>
                       <span className="font-display text-sm font-bold text-tinta/70">
                         Objetivo {i + 1}
                       </span>
                     </div>
-                    <h3 className="mt-4 font-display text-lg font-extrabold text-noche">
+                    <h3 className="mt-4 font-display text-lg font-extrabold text-fuerte">
                       {titulo}
                     </h3>
                     <p className="mt-1.5 leading-relaxed text-tinta">{texto}</p>
@@ -299,10 +299,10 @@ export default function ConocePage() {
                 const Icon = ICONO_INSTANCIA[clave];
                 return (
                   <li key={clave} className="flex flex-col rounded-2xl border border-linea p-5">
-                    <span className="grid size-11 place-items-center rounded-full bg-naranja/15 text-rojo-oscuro">
+                    <span className="grid size-11 place-items-center rounded-full bg-naranja/15 text-enlace-fuerte">
                       <Icon size={22} aria-hidden="true" />
                     </span>
-                    <h3 className="mt-4 font-display text-lg font-extrabold text-noche">
+                    <h3 className="mt-4 font-display text-lg font-extrabold text-fuerte">
                       {titulo}
                     </h3>
                     {competencias.length ? (
@@ -333,8 +333,8 @@ export default function ConocePage() {
             <ul className="mt-5 grid gap-3 sm:grid-cols-2">
               {FUERA_DE_ALCANCE.map((t) => (
                 <li key={t} className="flex items-center gap-3 rounded-xl bg-superficie px-4 py-3">
-                  <Ban size={18} aria-hidden="true" className="shrink-0 text-rojo" />
-                  <span className="text-noche">{t}</span>
+                  <Ban size={18} aria-hidden="true" className="shrink-0 text-enlace" />
+                  <span className="text-fuerte">{t}</span>
                 </li>
               ))}
             </ul>
@@ -370,7 +370,7 @@ function BotonLlamado({ href, texto }: { href: string; texto: string }) {
   return (
     <Link
       href={href}
-      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-papel px-5 font-display font-bold text-rojo transition-transform duration-150 active:scale-[0.97]"
+      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-tarjeta px-5 font-display font-bold text-enlace transition-transform duration-150 active:scale-[0.97]"
     >
       {texto}
       <ArrowRight size={18} aria-hidden="true" />
@@ -408,12 +408,12 @@ async function ListaMarcoLegal() {
             {i + 1}
           </span>
           <div className="rounded-2xl border border-linea p-5">
-            <h3 className="font-display text-lg font-extrabold text-noche">{titulo}</h3>
+            <h3 className="font-display text-lg font-extrabold text-fuerte">{titulo}</h3>
             <p className="mt-1.5 leading-relaxed whitespace-pre-line text-tinta">{descripcion}</p>
             {boton && (
               <Link
                 href={boton.href}
-                className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-rojo/10 px-4 font-display text-sm font-bold text-rojo-oscuro transition-colors hover:bg-rojo/15"
+                className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-rojo/10 px-4 font-display text-sm font-bold text-enlace-fuerte transition-colors hover:bg-rojo/15"
               >
                 {boton.texto}
                 <ArrowRight size={16} aria-hidden="true" />

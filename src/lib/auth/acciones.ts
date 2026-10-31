@@ -37,7 +37,9 @@ import {
   guardarPerfil,
   marcarTourVisto,
   aceptarTextosLegales,
-  perfilCompleto,
+  destinoTrasGuardar,
+  estadoPerfil,
+  type EstadoPerfil,
   solicitarBaja,
   iniciarSesion,
   recuperar,
@@ -161,14 +163,14 @@ async function finalizarRegistro(
       },
     };
   }
-  // Demostración: sin correo real, la cuenta queda verificada y se entra directo a completar el
-  // perfil. Si el correo ya existía (respuesta neutra), se sigue como siempre.
+  // Demostración: sin correo real, la cuenta queda verificada y se entra directo a Participa. Si
+  // el correo ya existía (respuesta neutra), se sigue como siempre.
   if (esDemo && r.estado === "ENVIADO" && r.tokenDesarrollo) {
     verificarCorreo(almacen(), r.tokenDesarrollo);
     const ingreso = iniciarSesion(almacen(), correo, contrasena);
     if (ingreso.estado === "OK") {
       await abrirSesion(ingreso.sesion);
-      ir("/mi-cuenta");
+      ir("/participa");
     }
   }
   await guardarAviso({ correo, enlaceDesarrollo: enlace("/verificar", r.tokenDesarrollo) });
@@ -310,7 +312,7 @@ export async function ingresarAccion(
     return ingresarApi(
       p.data.correo,
       p.data.contrasena,
-      destinoSeguro(fd.get("volver"), "/mi-cuenta"),
+      destinoSeguro(fd.get("volver"), "/participa"),
     );
   const r = iniciarSesion(almacen(), p.data.correo, p.data.contrasena);
   if (r.estado === "CREDENCIALES") {
@@ -330,9 +332,8 @@ export async function ingresarAccion(
     };
   }
   await abrirSesion(r.sesion);
-  const volver = destinoSeguro(fd.get("volver"), "/mi-cuenta");
-  if (r.siguiente === "PERFIL") ir("/mi-cuenta");
-  ir(volver);
+  // Participa es lo que pide tener cuenta; «volver» lleva de regreso a la página privada.
+  ir(destinoSeguro(fd.get("volver"), "/participa"));
 }
 
 export async function cerrarSesionAccion() {
@@ -396,23 +397,19 @@ export async function restablecerAccion(
 
 const metadatos = (f: File) => ({ nombre: f.name, mime: f.type, tamano: f.size });
 
-/** Tras guardar vuelve a «Mi cuenta»; si el perfil quedó completo, con el aviso para participar. */
-async function trasGuardar(estabaCompleto: boolean): Promise<never> {
+/** Tras guardar vuelve a «Mi cuenta», con el aviso de lo que quedó completo. */
+async function trasGuardar(antes: EstadoPerfil): Promise<never> {
   // La cookie lleva la cuenta firmada: se actualiza para que otra instancia no la vea vieja.
   await refrescarSesion();
   const c = cuentaDeSesion(almacen(), await idSesion());
-  ir(
-    !estabaCompleto && c && perfilCompleto(c)
-      ? "/mi-cuenta?guardado=completo"
-      : "/mi-cuenta?guardado=1",
-  );
+  ir(destinoTrasGuardar(antes, c && estadoPerfil(c)));
 }
 
 async function cuentaActual() {
   const sesion = await idSesion();
   const c = cuentaDeSesion(almacen(), sesion);
   if (!c) ir("/ingresar?volver=/mi-cuenta");
-  return { sesion, completo: perfilCompleto(c) };
+  return { sesion, antes: estadoPerfil(c) };
 }
 
 export async function guardarDatosNaturalAccion(
@@ -421,7 +418,7 @@ export async function guardarDatosNaturalAccion(
 ): Promise<EstadoFormulario> {
   const bloqueo = await bloqueoPorTextos();
   if (bloqueo) return bloqueo;
-  const { sesion, completo } = await cuentaActual();
+  const { sesion, antes } = await cuentaActual();
   const datos = leer(fd);
   const p = datosNaturalSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
@@ -435,12 +432,12 @@ export async function guardarDatosNaturalAccion(
   }
   if (usaApi())
     return guardarPerfilApi(
-      completo,
+      antes,
       { ...p.data, ocupacion: p.data.ocupacion ?? "" },
       valoresDe(datos),
     );
   guardarPerfil(almacen(), sesion, p.data);
-  return trasGuardar(completo);
+  return trasGuardar(antes);
 }
 
 export async function guardarRepresentanteAccion(
@@ -449,50 +446,32 @@ export async function guardarRepresentanteAccion(
 ): Promise<EstadoFormulario> {
   const bloqueo = await bloqueoPorTextos();
   if (bloqueo) return bloqueo;
-  const { sesion, completo } = await cuentaActual();
+  const { sesion, antes } = await cuentaActual();
   const datos = leer(fd);
   const p = representanteSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
-  if (usaApi()) return guardarPerfilApi(completo, p.data, valoresDe(datos));
+  if (usaApi()) return guardarPerfilApi(antes, p.data, valoresDe(datos));
   guardarPerfil(almacen(), sesion, p.data);
-  return trasGuardar(completo);
+  return trasGuardar(antes);
 }
 
-/** «¿Dispone de un documento que acredite su condición?» y, si es «Sí», el documento. */
+/**
+ * «¿Dispone de un documento que acredite su condición?». Solo la respuesta: si es «Sí», el
+ * documento se carga en la verificación para propuestas formales (R18).
+ */
 export async function guardarAcreditacionAccion(
   _prev: EstadoFormulario,
   fd: FormData,
 ): Promise<EstadoFormulario> {
   const bloqueo = await bloqueoPorTextos();
   if (bloqueo) return bloqueo;
-  const { sesion, completo } = await cuentaActual();
+  const { sesion, antes } = await cuentaActual();
   const datos = leer(fd);
   const p = acreditacionSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
-  const yaTiene = !!cuentaDeSesion(almacen(), sesion)?.documentos.REPRESENTACION;
-  if (p.data.acreditacion === "Sí") {
-    if (!datos.archivo && !yaTiene)
-      return {
-        errores: { archivo: "Adjunta el documento que acredita tu condición." },
-        valores: valoresDe(datos),
-      };
-    if (datos.archivo) {
-      const d = documentoPerfilSchema.safeParse({
-        documento: "REPRESENTACION",
-        archivo: datos.archivo,
-      });
-      if (!d.success) return conErrores(d.error, datos);
-      if (usaApi())
-        return guardarPerfilApi(completo, p.data, valoresDe(datos), {
-          tipo: "REPRESENTACION",
-          archivo: d.data.archivo,
-        });
-      cargarDocumento(almacen(), sesion, "REPRESENTACION", metadatos(d.data.archivo));
-    }
-  }
-  if (usaApi()) return guardarPerfilApi(completo, p.data, valoresDe(datos));
+  if (usaApi()) return guardarPerfilApi(antes, p.data, valoresDe(datos));
   guardarPerfil(almacen(), sesion, p.data);
-  return trasGuardar(completo);
+  return trasGuardar(antes);
 }
 
 /** Sube un documento del perfil o lo reemplaza con una versión nueva. */
@@ -502,17 +481,17 @@ export async function cargarDocumentoAccion(
 ): Promise<EstadoFormulario> {
   const bloqueo = await bloqueoPorTextos();
   if (bloqueo) return bloqueo;
-  const { sesion, completo } = await cuentaActual();
+  const { sesion, antes } = await cuentaActual();
   const datos = leer(fd);
   const p = documentoPerfilSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
   if (usaApi())
-    return guardarPerfilApi(completo, {}, valoresDe(datos), {
+    return guardarPerfilApi(antes, {}, valoresDe(datos), {
       tipo: p.data.documento,
       archivo: p.data.archivo,
     });
   cargarDocumento(almacen(), sesion, p.data.documento, metadatos(p.data.archivo));
-  return trasGuardar(completo);
+  return trasGuardar(antes);
 }
 
 /** Corrige nombres y apellidos (persona natural). */
@@ -522,18 +501,18 @@ export async function guardarNombresAccion(
 ): Promise<EstadoFormulario> {
   const bloqueo = await bloqueoPorTextos();
   if (bloqueo) return bloqueo;
-  const { sesion, completo } = await cuentaActual();
+  const { sesion, antes } = await cuentaActual();
   const datos = leer(fd);
   const p = nombresSchema.safeParse(datos);
   if (!p.success) return conErrores(p.error, datos);
   if (usaApi())
     return guardarPerfilApi(
-      completo,
+      antes,
       { nombres: p.data.nombres, apellidos: p.data.apellidos },
       valoresDe(datos),
     );
   actualizarNombres(almacen(), sesion, p.data.nombres, p.data.apellidos);
-  return trasGuardar(completo);
+  return trasGuardar(antes);
 }
 
 /* ---------- Seguridad ---------- */
@@ -663,7 +642,8 @@ export async function enviarParticipacionAccion(
       valores: valoresDe(datos),
       mensaje: {
         tipo: "error",
-        texto: "Para enviar una propuesta formal, completa tu perfil en Mi cuenta.",
+        texto:
+          "Para enviar una propuesta formal, completa tu perfil y carga tus documentos en Mi cuenta.",
       },
     };
   ir(`/participa/enviada?folio=${r.folio}`);

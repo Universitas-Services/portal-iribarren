@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 /*
+ * Modo oscuro (selector Claro · Oscuro · Sistema, src/lib/tema.ts): el script del <head> pone
+ * data-tema="oscuro" en <html>. Para casos sueltos, la variante `oscuro:`.
+ */
+@custom-variant oscuro (&:where([data-tema="oscuro"], [data-tema="oscuro"] *));
+
+/*
  * Paleta de la campaña «Barquisimeto suena en ti» (22-10-2026, colores de
  * barquisimetosuenaenti.com) con el logo PDUL YA Crepuscular. Los nombres de los tokens se
  * mantienen para no tocar los componentes.
@@ -28,6 +34,15 @@
   --color-exito: #28a745;
   --color-exito-oscuro: #1d6e33;
 
+  /*
+   * Colores por su papel, que cambian con el tema. `noche`, `papel` y `rojo` quedan fijos: son
+   * las bandas oscuras, el texto blanco sobre ellas y los botones.
+   */
+  --color-fuerte: #2e134d; /* títulos y etiquetas (antes text-noche) */
+  --color-tarjeta: #ffffff; /* superficie de tarjetas, campos y menús (antes bg-papel) */
+  --color-enlace: #dd1b46; /* texto rojo: enlaces e íconos (antes text-rojo) */
+  --color-enlace-fuerte: #be123c;
+
   --font-display: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-roboto), ui-sans-serif, system-ui, sans-serif;
 
@@ -39,6 +54,42 @@
 }
 
 :root {
+  color-scheme: light;
+}
+
+/*
+ * Paleta oscura: una noche más profunda que `noche` para la página, así las bandas #2e134d se
+ * siguen distinguiendo. Todo el texto cumple 4.5:1 (WCAG AA) sobre la página y las tarjetas.
+ */
+[data-tema="oscuro"] {
+  color-scheme: dark;
+  --color-superficie: #120b1f;
+  --color-tarjeta: #1d1430;
+  --color-linea: #3a2c55;
+  --color-tinta: #d6cfe3;
+  --color-fuerte: #f3eefb;
+  --color-enlace: #ff7a93;
+  --color-enlace-fuerte: #ffa0b2;
+  --color-exito-oscuro: #6fd68a;
+  --shadow-tarjeta: 0 12px 32px -16px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.06);
+  --shadow-elevada: 0 22px 44px -18px rgb(0 0 0 / 0.8), 0 0 0 1px rgb(255 255 255 / 0.08);
+  --skeleton-base: #2a1f40;
+  --skeleton-brillo: rgb(255 255 255 / 0.08);
+}
+
+/*
+ * Sobre fondos claros fijos (amarillo, naranja, la placa de los logos) el texto va oscuro en los
+ * dos temas: este bloque devuelve la paleta clara a lo que va dentro.
+ */
+.tema-claro {
+  --color-superficie: #f8fafc;
+  --color-tarjeta: #ffffff;
+  --color-linea: #e2e8f0;
+  --color-tinta: #1e293b;
+  --color-fuerte: #2e134d;
+  --color-enlace: #dd1b46;
+  --color-enlace-fuerte: #be123c;
+  --color-exito-oscuro: #1d6e33;
   color-scheme: light;
 }
 
@@ -122,7 +173,7 @@ a {
   font-family: var(--font-display);
   font-weight: 800;
   line-height: 1.2;
-  color: var(--color-noche);
+  color: var(--color-fuerte);
 }
 .prosa h2 {
   font-size: 1.5rem;
@@ -144,17 +195,17 @@ a {
   margin-top: 0.4em;
 }
 .prosa li::marker {
-  color: var(--color-rojo);
+  color: var(--color-enlace);
 }
 .prosa a {
   font-weight: 600;
-  color: var(--color-rojo);
+  color: var(--color-enlace);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 .prosa strong {
   font-weight: 700;
-  color: var(--color-noche);
+  color: var(--color-fuerte);
 }
 .prosa blockquote {
   border-left: 4px solid var(--color-naranja);
@@ -163,7 +214,7 @@ a {
   font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.45;
-  color: var(--color-noche);
+  color: var(--color-fuerte);
 }
 .prosa em {
   color: color-mix(in srgb, var(--color-tinta) 75%, transparent);
@@ -278,11 +329,11 @@ a {
 
 /* ---------- Skeleton ---------- */
 .skeleton {
-  background-color: #e9edf2;
+  background-color: var(--skeleton-base, #e9edf2);
   background-image: linear-gradient(
     100deg,
     transparent 30%,
-    rgb(255 255 255 / 0.65) 50%,
+    var(--skeleton-brillo, rgb(255 255 255 / 0.65)) 50%,
     transparent 70%
   );
   background-size: 200% 100%;
@@ -341,4 +392,9 @@ a {
   [data-seccion]:not(:first-child),
 .secciones-conoce[data-activa] [data-seccion]:not([data-visible]) {
   display: none;
+}
+
+/* Mapa (teselas de OpenStreetMap) en modo oscuro: invertidas y con el tono corregido. */
+[data-tema="oscuro"] .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92);
 }

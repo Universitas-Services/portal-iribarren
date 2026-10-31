@@ -17,8 +17,8 @@ export default function ErrorPage({ error, retry }: { error: unknown; retry: () 
 
   return (
     <section aria-labelledby="error-titulo" className="mx-auto max-w-3xl px-4 py-24 sm:px-6">
-      <div className="rounded-tarjeta bg-papel p-8 shadow-tarjeta sm:p-12">
-        <h1 id="error-titulo" className="font-display text-3xl font-extrabold text-noche">
+      <div className="rounded-tarjeta bg-tarjeta p-8 shadow-tarjeta sm:p-12">
+        <h1 id="error-titulo" className="font-display text-3xl font-extrabold text-fuerte">
           Algo no cargó como debía
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-tinta">
@@ -41,7 +41,7 @@ export default function ErrorPage({ error, retry }: { error: unknown; retry: () 
           </button>
           <Link
             href="/"
-            className="inline-flex min-h-12 items-center justify-center rounded-xl border-2 border-noche px-6 font-display font-bold text-noche transition-[background-color,color] duration-150 hover:bg-noche hover:text-papel"
+            className="inline-flex min-h-12 items-center justify-center rounded-xl border-2 border-fuerte px-6 font-display font-bold text-fuerte transition-[background-color,color] duration-150 hover:bg-noche hover:text-papel"
           >
             Volver al inicio
           </Link>

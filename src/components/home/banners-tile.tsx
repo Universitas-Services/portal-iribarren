@@ -35,7 +35,7 @@ export async function BannersTile({ className = "" }: { className?: string }) {
         <p className="font-display text-2xl font-extrabold">Novedades del PDUL</p>
         <Link
           href="/noticias"
-          className="mt-4 inline-flex min-h-11 w-fit items-center rounded-xl bg-papel px-5 font-display font-bold text-noche"
+          className="mt-4 inline-flex min-h-11 w-fit items-center rounded-xl bg-tarjeta px-5 font-display font-bold text-fuerte"
         >
           Ver las noticias
         </Link>

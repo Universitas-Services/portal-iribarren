@@ -29,7 +29,7 @@ export function BannersSkeleton({ className = "" }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={`min-h-[22rem] overflow-hidden rounded-tarjeta bg-papel p-8 shadow-tarjeta sm:p-10 ${className}`}
+      className={`min-h-[22rem] overflow-hidden rounded-tarjeta bg-tarjeta p-8 shadow-tarjeta sm:p-10 ${className}`}
     >
       <LoadingStatus label="Cargando anuncios…" />
       <Skeleton className="h-9 w-4/5" />
@@ -49,7 +49,7 @@ export function NewsRailSkeleton() {
         {Array.from({ length: 3 }, (_, i) => (
           <div
             key={i}
-            className="w-[85%] shrink-0 overflow-hidden rounded-tarjeta bg-papel shadow-tarjeta sm:w-[46%] lg:w-[31%]"
+            className="w-[85%] shrink-0 overflow-hidden rounded-tarjeta bg-tarjeta shadow-tarjeta sm:w-[46%] lg:w-[31%]"
           >
             <Skeleton className="aspect-[16/10] rounded-none" />
             <div className="p-6">

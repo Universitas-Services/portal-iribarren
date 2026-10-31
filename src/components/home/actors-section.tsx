@@ -41,9 +41,9 @@ export function ActorsSection({ actores = ACTORES_INICIAL }: { actores?: Actores
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
         <h2
           id="actores-titulo"
-          className="font-display text-[clamp(2rem,4.6vw,3.5rem)] leading-[1.04] font-extrabold tracking-[-0.03em] text-noche"
+          className="font-display text-[clamp(2rem,4.6vw,3.5rem)] leading-[1.04] font-extrabold tracking-[-0.03em] text-fuerte"
         >
-          {inicioTitulo} <span className="text-rojo">{finTitulo}</span>
+          {inicioTitulo} <span className="text-enlace">{finTitulo}</span>
         </h2>
         <p className="text-lg leading-relaxed text-tinta lg:pb-2">{actores.texto}</p>
       </div>
@@ -65,7 +65,7 @@ export function ActorsSection({ actores = ACTORES_INICIAL }: { actores?: Actores
             <p className="mt-2 max-w-sm text-lg leading-relaxed text-papel">{PRINCIPAL.detalle}</p>
             <Link
               href="/registro"
-              className="group mt-6 inline-flex min-h-12 items-center gap-2 self-start rounded-xl bg-papel px-5 font-display font-bold text-rojo transition-transform duration-150 active:scale-[0.97]"
+              className="group mt-6 inline-flex min-h-12 items-center gap-2 self-start rounded-xl bg-tarjeta px-5 font-display font-bold text-enlace transition-transform duration-150 active:scale-[0.97]"
             >
               Inscribe a tu organización
               <ArrowRight
@@ -80,12 +80,12 @@ export function ActorsSection({ actores = ACTORES_INICIAL }: { actores?: Actores
         {SECTORES.map(({ nombre, detalle, Icon }) => (
           <div
             key={nombre}
-            className="revelar flex flex-col rounded-tarjeta bg-papel p-6 shadow-tarjeta transition-[transform,box-shadow] duration-300 ease-out-expo hover:-translate-y-1 hover:shadow-elevada"
+            className="revelar flex flex-col rounded-tarjeta bg-tarjeta p-6 shadow-tarjeta transition-[transform,box-shadow] duration-300 ease-out-expo hover:-translate-y-1 hover:shadow-elevada"
           >
-            <span className="grid size-11 place-items-center rounded-full bg-naranja/15 text-rojo-oscuro">
+            <span className="grid size-11 place-items-center rounded-full bg-naranja/15 text-enlace-fuerte">
               <Icon size={22} aria-hidden="true" />
             </span>
-            <h3 className="mt-5 font-display text-lg leading-tight font-extrabold text-noche">
+            <h3 className="mt-5 font-display text-lg leading-tight font-extrabold text-fuerte">
               {nombre}
             </h3>
             <p className="mt-2 leading-relaxed text-tinta">{detalle}</p>

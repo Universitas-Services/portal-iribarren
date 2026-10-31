@@ -2,8 +2,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { PDF, PNG, ciudadanoNuevo, elegir, ingresar, saltarRecorrido } from "./utilidades";
 
 /*
- * Backlog 3.13: registrarse, verificar el correo, completar el perfil, enviar una propuesta y
- * ver el cambio de estado. El Revisor se simula con /api/desarrollo/… (solo en desarrollo).
+ * Backlog 3.13: registrarse, verificar el correo, completar el perfil, verificar la cuenta con la
+ * cédula (R18), enviar una propuesta y ver el cambio de estado. El Revisor se simula con /api/desarrollo/… (solo en desarrollo).
  */
 
 /** La línea de tiempo de estados: la lista que marca el estado actual. */
@@ -39,39 +39,48 @@ test("de registrarse a ver el cambio de estado de su propuesta", async ({ page }
     ).toBeVisible();
   });
 
-  await test.step("primer ingreso: lleva al asistente de perfil", async () => {
+  await test.step("primer ingreso: lleva a Participa, sin la propuesta formal", async () => {
     await ingresar(page, c.correo, c.contrasena);
-    await expect(page).toHaveURL(/\/mi-cuenta/);
+    await expect(page).toHaveURL(/\/participa$/);
     // Primer ingreso: el recorrido guiado se abre solo.
     await saltarRecorrido(page);
+    await expect(page.getByRole("radio", { name: "Propuesta formal" })).toBeDisabled();
+  });
+
+  await test.step("completa el perfil con el teléfono: aún sin verificar", async () => {
+    await page.goto("/mi-cuenta");
     await expect(page.getByRole("progressbar", { name: "Avance del perfil" })).toHaveAttribute(
       "aria-valuenow",
       "0",
     );
-  });
-
-  await test.step("completa el perfil: teléfono y documento de identidad", async () => {
     await page.getByLabel("Teléfono de contacto").fill("04141234567");
     await page.getByRole("button", { name: "Guardar datos" }).click();
-    await expect(page.getByRole("progressbar", { name: "Avance del perfil" })).toHaveAttribute(
-      "aria-valuenow",
-      "1",
-    );
+    await expect(page.getByText("Tu perfil está completo: ya puedes participar.")).toBeVisible();
+    await expect(page.getByText("Estado de verificación: Verificado")).toHaveCount(0);
+    await page.goto("/participa");
+    await expect(page.getByRole("radio", { name: "Propuesta formal" })).toBeDisabled();
+  });
 
+  await test.step("verificación: carga la cédula y se habilita la propuesta", async () => {
+    await page.goto("/mi-cuenta");
+    const verificacion = page.getByRole("region", {
+      name: "Verificación para propuestas formales",
+    });
+    await expect(verificacion).toContainText("necesitas una verificación extra: cargar tu cédula");
     await page.locator("#archivo-IDENTIDAD").setInputFiles(PNG);
     await page.getByRole("button", { name: "Subir documento" }).click();
     await expect(
-      page.getByText("Tu perfil está completo y verificado, ya puedes enviar propuestas formales."),
+      page.getByText("Tu cuenta está verificada: ya puedes enviar propuestas formales."),
     ).toBeVisible();
-    // La verificación es automática al completar el perfil: no espera al Revisor.
+    // La verificación es automática al cargar los documentos: no espera al Revisor.
     await expect(page.getByText("Estado de verificación: Verificado")).toBeVisible();
   });
 
   let folio = "";
   await test.step("envía una propuesta formal y recibe el folio", async () => {
     await page.getByRole("status").getByRole("link", { name: "Participa" }).click();
-    await expect(page).toHaveURL(/\/participa/);
-    await page.getByRole("radio", { name: "Propuesta formal" }).check();
+    await expect(page).toHaveURL(/\/participa\?tipo=propuesta$/);
+    await expect(page.getByRole("radio", { name: "Propuesta formal" })).toBeChecked();
     await elegir(page, /^Parroquia/, "Catedral");
     await page.getByLabel(/Comunidad, barrio o sector/).fill("Centro histórico");
     // La propuesta formal exige la ubicación: se pega un enlace de Google Maps con coordenadas.

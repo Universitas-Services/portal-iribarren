@@ -55,7 +55,7 @@ export function AgenteIus({ tour }: { tour?: ReactNode }) {
           role="dialog"
           aria-label="Asistente de Ius Urbano"
           tabIndex={-1}
-          className="w-[min(22rem,calc(100vw-2rem))] origin-bottom-right animate-[aparecer_240ms_var(--ease-out-expo)] overflow-hidden rounded-tarjeta bg-papel shadow-elevada ring-1 ring-linea outline-none"
+          className="w-[min(22rem,calc(100vw-2rem))] origin-bottom-right animate-[aparecer_240ms_var(--ease-out-expo)] overflow-hidden rounded-tarjeta bg-tarjeta shadow-elevada ring-1 ring-linea outline-none"
         >
           <div className="flex items-center gap-3 bg-noche px-4 py-3 text-papel">
             <Image
@@ -63,7 +63,7 @@ export function AgenteIus({ tour }: { tour?: ReactNode }) {
               alt=""
               width={44}
               height={44}
-              className="size-11 rounded-full bg-papel object-cover ring-2 ring-papel/30"
+              className="size-11 rounded-full bg-tarjeta object-cover ring-2 ring-papel/30"
             />
             <div className="min-w-0 flex-1">
               <p className="font-display font-bold">Ius Urbano</p>
@@ -92,7 +92,7 @@ export function AgenteIus({ tour }: { tour?: ReactNode }) {
                 className="size-7 shrink-0 rounded-full object-cover"
               />
               {escribiendo ? (
-                <p className="rounded-2xl rounded-bl-md bg-papel px-4 py-3 text-sm text-tinta/70 shadow-tarjeta">
+                <p className="rounded-2xl rounded-bl-md bg-tarjeta px-4 py-3 text-sm text-tinta/70 shadow-tarjeta">
                   <span className="sr-only">Escribiendo…</span>
                   <span aria-hidden="true" className="inline-flex gap-1">
                     <span className="size-1.5 animate-bounce rounded-full bg-tinta/40" />
@@ -102,11 +102,11 @@ export function AgenteIus({ tour }: { tour?: ReactNode }) {
                 </p>
               ) : (
                 <div className="space-y-2">
-                  <p className="rounded-2xl rounded-bl-md bg-papel px-4 py-3 text-sm leading-relaxed text-tinta shadow-tarjeta">
-                    ¡Hola! Soy la asistente de <strong className="text-noche">Ius Urbano</strong>,
+                  <p className="rounded-2xl rounded-bl-md bg-tarjeta px-4 py-3 text-sm leading-relaxed text-tinta shadow-tarjeta">
+                    ¡Hola! Soy la asistente de <strong className="text-fuerte">Ius Urbano</strong>,
                     entrenada en planificación urbana, ordenanzas y normativa urbanística.
                   </p>
-                  <p className="rounded-2xl rounded-bl-md bg-papel px-4 py-3 text-sm leading-relaxed text-tinta shadow-tarjeta">
+                  <p className="rounded-2xl rounded-bl-md bg-tarjeta px-4 py-3 text-sm leading-relaxed text-tinta shadow-tarjeta">
                     Si tienes dudas sobre el PDUL, los usos del suelo o cómo presentar tu propuesta,
                     regístrate en Ius Urbano y conversa conmigo allí.
                   </p>
@@ -149,7 +149,7 @@ export function AgenteIus({ tour }: { tour?: ReactNode }) {
           aria-label={
             abierto ? "Cerrar el asistente de Ius Urbano" : "Abrir el asistente de Ius Urbano"
           }
-          className="group relative size-13 rounded-full bg-papel p-0.5 shadow-elevada ring-1 ring-linea transition-transform duration-200 ease-out-expo hover:-translate-y-0.5 active:scale-95"
+          className="group relative size-13 rounded-full bg-tarjeta p-0.5 shadow-elevada ring-1 ring-linea transition-transform duration-200 ease-out-expo hover:-translate-y-0.5 active:scale-95"
         >
           <Image
             src="/agentes/ius-urbano.webp"

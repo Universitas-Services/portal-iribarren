@@ -8,7 +8,7 @@ import { CopiarFolio, Imprimir } from "@/components/cuenta/participacion";
 import { FichaAporte } from "@/components/participacion/aporte";
 import { getParticipacion, getUsuario } from "@/lib/auth/sesion";
 import { formatearFechaHora } from "@/lib/formato";
-import { AUTOR_ANONIMO, filasComprobante } from "@/lib/participacion";
+import { AUTOR_ANONIMO, filasComprobante, rutaPropia } from "@/lib/participacion";
 
 export const metadata: Metadata = { title: "Aporte recibido", robots: { index: false } };
 
@@ -42,7 +42,7 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
   if (!p) {
     return (
       <div className="text-center">
-        <h2 className="font-display text-2xl font-extrabold text-noche">
+        <h2 className="font-display text-2xl font-extrabold text-fuerte">
           No encontramos ese folio
         </h2>
         <p className="mt-2 text-tinta">
@@ -58,7 +58,7 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
           </Link>
           <Link
             href="/participa"
-            className="inline-flex min-h-12 items-center justify-center rounded-xl px-6 font-display font-bold text-noche ring-1 ring-linea hover:bg-superficie"
+            className="inline-flex min-h-12 items-center justify-center rounded-xl px-6 font-display font-bold text-fuerte ring-1 ring-linea hover:bg-superficie"
           >
             Ir a Participa
           </Link>
@@ -76,16 +76,16 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
         <p className="mt-5 text-sm font-semibold tracking-wide text-tinta/80 uppercase">
           Folio único
         </p>
-        <p className="mt-1 font-display text-4xl font-extrabold tracking-tight text-noche tabular-nums sm:text-5xl">
+        <p className="mt-1 font-display text-4xl font-extrabold tracking-tight text-fuerte tabular-nums sm:text-5xl">
           {p.folio}
         </p>
         <div className="mt-4">
           <CopiarFolio folio={p.folio} />
         </div>
         <p className="mt-6 flex items-start gap-2 text-left text-sm leading-relaxed text-tinta">
-          <Mail size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
+          <Mail size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-enlace" />
           <span>
-            Te enviamos el acuse de recibo a <strong className="text-noche">{u.correo}</strong>.
+            Te enviamos el acuse de recibo a <strong className="text-fuerte">{u.correo}</strong>.
             Guarda el folio: con él puedes consultar el estado de tu aporte.
           </span>
         </p>
@@ -94,6 +94,7 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
       <div className="mt-8">
         <FichaAporte
           aporte={p}
+          base={rutaPropia(p.folio)}
           extra={[
             ["Enviado por", p.autor],
             ["Fecha", formatearFechaHora(p.creadaEl)],
@@ -122,7 +123,7 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
         Sigue su estado en{" "}
         <Link
           href={`/mi-cuenta/participaciones/${p.folio}`}
-          className="font-semibold text-rojo underline underline-offset-2"
+          className="font-semibold text-enlace underline underline-offset-2"
         >
           Mis participaciones
         </Link>

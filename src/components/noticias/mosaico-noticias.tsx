@@ -43,7 +43,7 @@ function Meta({ post, claro = false }: { post: PostSummary; claro?: boolean }) {
     >
       <span
         className={`rounded-full px-2.5 py-0.5 font-display font-bold ${
-          claro ? "bg-noche/30 text-papel backdrop-blur-sm" : "bg-rojo/10 text-rojo"
+          claro ? "bg-noche/30 text-papel backdrop-blur-sm" : "bg-rojo/10 text-enlace"
         }`}
       >
         {post.categoria}
@@ -212,7 +212,9 @@ function PiezaTexto({ post }: { post: PostSummary }) {
   const oscuro = Boolean(c.textoOscuro);
   const Icono = c.Icon;
   return (
-    <article className={`${pieza} flex h-full flex-col justify-between p-6 sm:p-7 ${c.fondo}`}>
+    <article
+      className={`${pieza} flex h-full flex-col justify-between p-6 sm:p-7 ${c.fondo} ${oscuro ? "tema-claro" : ""}`}
+    >
       <Icono
         aria-hidden="true"
         strokeWidth={1}
@@ -254,7 +256,7 @@ function PiezaDocumento({ post }: { post: PostSummary }) {
     .filter(Boolean)
     .join(" · ");
   return (
-    <article className={`${pieza} flex h-full flex-col bg-papel p-5`}>
+    <article className={`${pieza} flex h-full flex-col bg-tarjeta p-5`}>
       {/* Esquina doblada de la hoja. */}
       <span
         aria-hidden="true"
@@ -269,11 +271,11 @@ function PiezaDocumento({ post }: { post: PostSummary }) {
       </div>
       <EnlaceTitulo
         post={post}
-        className="mt-3 line-clamp-3 font-display text-base leading-snug font-extrabold text-noche group-hover:text-rojo"
+        className="mt-3 line-clamp-3 font-display text-base leading-snug font-extrabold text-fuerte group-hover:text-enlace"
       />
       <div className="mt-auto flex items-end justify-between gap-3 pt-3">
         <p className="text-xs text-tinta/75">
-          <span className="font-display font-bold text-rojo">{post.categoria}</span>
+          <span className="font-display font-bold text-enlace">{post.categoria}</span>
           <br />
           <time dateTime={post.publicadoEl}>{formatearFecha(post.publicadoEl)}</time>
         </p>

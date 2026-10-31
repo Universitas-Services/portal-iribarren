@@ -27,7 +27,7 @@ export function MarcoCuenta({
       <EncabezadoPagina ancho="max-w-3xl" migas={migas} titulo={titulo} bajada={bajada} />
       <div className={`relative z-10 mx-auto -mt-16 px-4 pb-24 sm:px-6 lg:-mt-20 ${ancho}`}>
         {pestana && <PestanasCuenta activa={pestana} />}
-        <div className="rounded-tarjeta bg-papel p-6 shadow-tarjeta sm:p-10">{children}</div>
+        <div className="rounded-tarjeta bg-tarjeta p-6 shadow-tarjeta sm:p-10">{children}</div>
       </div>
     </>
   );

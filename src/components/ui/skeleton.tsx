@@ -31,7 +31,7 @@ export function SkeletonCard({ className = "", children }: Props & { children?: 
   return (
     <div
       aria-hidden="true"
-      className={`rounded-tarjeta bg-papel p-6 shadow-tarjeta sm:p-8 ${className}`}
+      className={`rounded-tarjeta bg-tarjeta p-6 shadow-tarjeta sm:p-8 ${className}`}
     >
       {children ?? (
         <>

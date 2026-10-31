@@ -19,7 +19,7 @@ export function FilaDocumento({ documento: d }: { documento: Documento }) {
     .join(" · ");
 
   return (
-    <article className="group relative grid grid-cols-[auto_1fr] gap-x-4 gap-y-4 rounded-tarjeta bg-papel p-5 shadow-tarjeta transition-[transform,box-shadow] duration-300 ease-out-expo focus-within:shadow-elevada hover:-translate-y-0.5 hover:shadow-elevada sm:grid-cols-[auto_1fr_auto] sm:items-center sm:gap-x-5 sm:p-6">
+    <article className="group relative grid grid-cols-[auto_1fr] gap-x-4 gap-y-4 rounded-tarjeta bg-tarjeta p-5 shadow-tarjeta transition-[transform,box-shadow] duration-300 ease-out-expo focus-within:shadow-elevada hover:-translate-y-0.5 hover:shadow-elevada sm:grid-cols-[auto_1fr_auto] sm:items-center sm:gap-x-5 sm:p-6">
       {/* Hoja con la esquina doblada y un sello de color con el estado. */}
       <div
         aria-hidden="true"
@@ -37,12 +37,12 @@ export function FilaDocumento({ documento: d }: { documento: Documento }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <SelloEstado estado={d.estado} corto />
-          <span className="text-xs font-semibold text-rojo">{d.categoria}</span>
+          <span className="text-xs font-semibold text-enlace">{d.categoria}</span>
         </div>
-        <h2 className="mt-2 font-display text-lg leading-snug font-extrabold text-noche">
+        <h2 className="mt-2 font-display text-lg leading-snug font-extrabold text-fuerte">
           <Link
             href={`/documentos/${d.slug}`}
-            className="group-hover:text-rojo after:absolute after:inset-0"
+            className="group-hover:text-enlace after:absolute after:inset-0"
           >
             {d.titulo}
           </Link>

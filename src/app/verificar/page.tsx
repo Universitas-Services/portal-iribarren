@@ -54,11 +54,11 @@ async function Resultado({ searchParams }: { searchParams: SearchParams }) {
       color: "bg-exito/10 text-exito-oscuro",
       titulo: "¡Listo! Tu correo está verificado",
       texto:
-        "Ya puedes iniciar sesión y opinar. Para enviar propuestas formales, completa tu perfil.",
+        "Ya puedes iniciar sesión y opinar. Para enviar propuestas formales, completa tu perfil y carga tus documentos en Mi cuenta.",
     },
     VENCIDO: {
       Icon: Clock,
-      color: "bg-amarillo/25 text-noche",
+      color: "bg-amarillo/25 text-fuerte",
       titulo: "Este enlace venció",
       texto: "Los enlaces de verificación duran 24 horas. Pide uno nuevo.",
     },
@@ -70,7 +70,7 @@ async function Resultado({ searchParams }: { searchParams: SearchParams }) {
     },
     INVALIDO: {
       Icon: CircleAlert,
-      color: "bg-rojo/10 text-rojo",
+      color: "bg-rojo/10 text-enlace",
       titulo: "El enlace no es válido",
       texto: "Revisa que lo hayas copiado completo o regístrate de nuevo.",
     },
@@ -82,7 +82,7 @@ async function Resultado({ searchParams }: { searchParams: SearchParams }) {
       <span className={`mx-auto grid size-16 place-items-center rounded-full ${v.color}`}>
         <v.Icon size={30} aria-hidden="true" />
       </span>
-      <h2 className="mt-5 font-display text-2xl font-extrabold text-noche">{v.titulo}</h2>
+      <h2 className="mt-5 font-display text-2xl font-extrabold text-fuerte">{v.titulo}</h2>
       <p className="mt-2 leading-relaxed text-tinta">{v.texto}</p>
       {estado === "VENCIDO" ? (
         <div className="text-left">

@@ -7,7 +7,7 @@ import { acomodarMosaico } from "@/lib/noticias/mosaico";
 
 function TarjetaSkeleton() {
   return (
-    <div aria-hidden="true" className="overflow-hidden rounded-tarjeta bg-papel shadow-tarjeta">
+    <div aria-hidden="true" className="overflow-hidden rounded-tarjeta bg-tarjeta shadow-tarjeta">
       <Skeleton className="aspect-[16/10] rounded-none" />
       <div className="p-6">
         <Skeleton className="h-4 w-1/2" />
@@ -20,7 +20,7 @@ function TarjetaSkeleton() {
 
 export function FiltrosSkeleton() {
   return (
-    <div aria-hidden="true" className="rounded-tarjeta bg-papel p-5 shadow-tarjeta sm:p-6">
+    <div aria-hidden="true" className="rounded-tarjeta bg-tarjeta p-5 shadow-tarjeta sm:p-6">
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-[2fr_1.2fr_1.6fr]">
         {Array.from({ length: 3 }, (_, i) => (
           <div key={i} className="col-span-2 lg:col-span-1">

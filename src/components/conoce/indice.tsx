@@ -59,8 +59,8 @@ export function Indice({ secciones }: { secciones: SeccionIndice[] }) {
                 aria-current={activa ? "location" : undefined}
                 className={`flex items-center gap-2.5 rounded-full px-3.5 py-2 text-sm font-semibold whitespace-nowrap transition-colors lg:rounded-lg lg:px-2 lg:py-1.5 ${
                   activa
-                    ? "bg-noche text-papel lg:bg-transparent lg:text-rojo"
-                    : "bg-papel text-tinta shadow-tarjeta hover:text-rojo lg:bg-transparent lg:shadow-none"
+                    ? "bg-noche text-papel lg:bg-transparent lg:text-enlace"
+                    : "bg-tarjeta text-tinta shadow-tarjeta hover:text-enlace lg:bg-transparent lg:shadow-none"
                 }`}
               >
                 <span

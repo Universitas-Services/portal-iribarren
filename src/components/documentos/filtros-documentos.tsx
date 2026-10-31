@@ -114,11 +114,11 @@ export function FiltrosDocumentos({
   return (
     <details
       ref={panel}
-      className="group rounded-tarjeta bg-papel shadow-tarjeta lg:[&::details-content]:block lg:[&::details-content]:[content-visibility:visible]"
+      className="group rounded-tarjeta bg-tarjeta shadow-tarjeta lg:[&::details-content]:block lg:[&::details-content]:[content-visibility:visible]"
     >
-      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-5 font-display font-bold text-noche lg:hidden [&::-webkit-details-marker]:hidden">
+      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-5 font-display font-bold text-fuerte lg:hidden [&::-webkit-details-marker]:hidden">
         <span className="inline-flex items-center gap-2">
-          <SlidersHorizontal size={18} aria-hidden="true" className="text-rojo" />
+          <SlidersHorizontal size={18} aria-hidden="true" className="text-enlace" />
           Filtrar documentos
         </span>
         {activos > 0 && (
@@ -159,7 +159,7 @@ export function FiltrosDocumentos({
               placeholder="Título o tema"
               value={valores.q}
               onChange={(e) => cambiar({ q: e.target.value }, true)}
-              className="h-12 w-full rounded-xl border border-linea bg-papel pr-3 pl-10 text-noche outline-none placeholder:text-tinta/70 focus-visible:border-rojo"
+              className="h-12 w-full rounded-xl border border-linea bg-tarjeta pr-3 pl-10 text-fuerte outline-none placeholder:text-tinta/70 focus-visible:border-rojo"
             />
           </div>
         </div>
@@ -181,7 +181,9 @@ export function FiltrosDocumentos({
                     cambiar({ estado: valor });
                   }}
                   className={`flex min-h-12 flex-col items-center justify-center rounded-lg px-1 font-display text-xs leading-tight font-bold transition-colors ${
-                    activa ? "bg-papel text-noche shadow-tarjeta" : "text-tinta/80 hover:text-noche"
+                    activa
+                      ? "bg-tarjeta text-fuerte shadow-tarjeta"
+                      : "text-tinta/80 hover:text-fuerte"
                   }`}
                 >
                   {label}
@@ -230,7 +232,7 @@ export function FiltrosDocumentos({
           <button
             type="button"
             onClick={() => cambiar({ q: "", categoria: "", estado: "" })}
-            className="text-sm font-semibold text-rojo underline-offset-4 hover:underline"
+            className="text-sm font-semibold text-enlace underline-offset-4 hover:underline"
           >
             Limpiar filtros
           </button>

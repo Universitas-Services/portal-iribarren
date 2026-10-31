@@ -76,7 +76,7 @@ export function Hero({
             </Link>
             <Link
               href="/registro"
-              className="inline-flex min-h-13 items-center justify-center rounded-xl bg-papel px-6 font-display font-bold text-noche transition-[background-color,transform] duration-150 ease-out-expo hover:bg-superficie active:scale-[0.97]"
+              className="inline-flex min-h-13 items-center justify-center rounded-xl bg-tarjeta px-6 font-display font-bold text-fuerte transition-[background-color,transform] duration-150 ease-out-expo hover:bg-superficie active:scale-[0.97]"
             >
               Registro municipal de actores sociales
             </Link>

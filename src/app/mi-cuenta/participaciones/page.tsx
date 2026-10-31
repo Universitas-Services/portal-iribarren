@@ -157,11 +157,11 @@ function Vacio({
   sinBoton?: boolean;
 }) {
   return (
-    <div className="mt-6 flex flex-col items-center rounded-tarjeta bg-papel px-6 py-16 text-center shadow-tarjeta first:mt-0">
-      <span className="grid size-16 place-items-center rounded-full bg-rojo/10 text-rojo">
+    <div className="mt-6 flex flex-col items-center rounded-tarjeta bg-tarjeta px-6 py-16 text-center shadow-tarjeta first:mt-0">
+      <span className="grid size-16 place-items-center rounded-full bg-rojo/10 text-enlace">
         <Icon size={30} aria-hidden="true" />
       </span>
-      <h2 className="mt-5 font-display text-2xl font-extrabold text-noche">{titulo}</h2>
+      <h2 className="mt-5 font-display text-2xl font-extrabold text-fuerte">{titulo}</h2>
       <p className="mt-2 max-w-md leading-relaxed text-tinta">{texto}</p>
       {!sinBoton && (
         <Link

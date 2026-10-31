@@ -38,8 +38,8 @@ export async function FasesPdul({ compacto = false }: { compacto?: boolean }) {
                   hecha
                     ? "bg-rojo text-papel"
                     : enCurso
-                      ? "pulso border-4 border-rojo bg-papel text-rojo"
-                      : "border-2 border-linea bg-papel text-tinta/75"
+                      ? "pulso border-4 border-rojo bg-tarjeta text-enlace"
+                      : "border-2 border-linea bg-tarjeta text-tinta/75"
                 }`}
               >
                 {hecha ? <Check size={16} /> : i + 1}
@@ -47,7 +47,7 @@ export async function FasesPdul({ compacto = false }: { compacto?: boolean }) {
               <div className="pt-1">
                 <p className="flex flex-wrap items-center gap-2">
                   <span
-                    className={`font-display font-extrabold ${compacto ? "text-base" : "text-lg"} ${enCurso ? "text-rojo" : "text-noche"}`}
+                    className={`font-display font-extrabold ${compacto ? "text-base" : "text-lg"} ${enCurso ? "text-enlace" : "text-fuerte"}`}
                   >
                     {f.nombre}
                   </span>
@@ -56,7 +56,7 @@ export async function FasesPdul({ compacto = false }: { compacto?: boolean }) {
                       enCurso
                         ? "bg-rojo text-papel"
                         : hecha
-                          ? "bg-rojo/10 text-rojo"
+                          ? "bg-rojo/10 text-enlace"
                           : "bg-superficie text-tinta/80"
                     }`}
                   >

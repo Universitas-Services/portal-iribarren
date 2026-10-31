@@ -34,16 +34,16 @@ export default function NotFound() {
               <li key={href}>
                 <Link
                   href={href}
-                  className="group flex min-h-14 items-center gap-3 rounded-xl bg-papel px-4 font-display font-bold text-noche shadow-tarjeta transition-[transform,box-shadow] duration-200 ease-out-expo hover:-translate-y-0.5 hover:shadow-elevada active:scale-[0.97]"
+                  className="group flex min-h-14 items-center gap-3 rounded-xl bg-tarjeta px-4 font-display font-bold text-fuerte shadow-tarjeta transition-[transform,box-shadow] duration-200 ease-out-expo hover:-translate-y-0.5 hover:shadow-elevada active:scale-[0.97]"
                 >
-                  <span className="grid size-9 place-items-center rounded-full bg-rojo/10 text-rojo">
+                  <span className="grid size-9 place-items-center rounded-full bg-rojo/10 text-enlace">
                     <Icon size={18} aria-hidden="true" />
                   </span>
                   {label}
                   <ArrowRight
                     size={18}
                     aria-hidden="true"
-                    className="ml-auto text-rojo transition-transform duration-200 ease-out-expo group-hover:translate-x-1"
+                    className="ml-auto text-enlace transition-transform duration-200 ease-out-expo group-hover:translate-x-1"
                   />
                 </Link>
               </li>

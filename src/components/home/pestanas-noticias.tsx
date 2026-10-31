@@ -44,7 +44,7 @@ export function PestanasNoticias({
         <div
           role="tablist"
           aria-label={etiqueta}
-          className="flex gap-1 rounded-full bg-papel p-1 shadow-tarjeta"
+          className="flex gap-1 rounded-full bg-tarjeta p-1 shadow-tarjeta"
         >
           {pestanas.map((p, i) => (
             <button
@@ -60,7 +60,7 @@ export function PestanasNoticias({
               tabIndex={i === activa ? 0 : -1}
               onClick={() => setActiva(i)}
               onKeyDown={teclado}
-              className="min-h-10 rounded-full px-4 font-display text-sm font-bold text-tinta transition-colors duration-150 hover:text-rojo aria-selected:bg-morado-activo aria-selected:text-papel"
+              className="min-h-10 rounded-full px-4 font-display text-sm font-bold text-tinta transition-colors duration-150 hover:text-enlace aria-selected:bg-morado-activo aria-selected:text-papel"
             >
               {p.etiqueta}
             </button>

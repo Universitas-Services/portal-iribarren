@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Menu, X } from "lucide-react";
 import { esActual } from "./enlaces-nav";
 import { NAV_LINKS } from "./nav-links";
+import { SelectorTemaMovil } from "./selector-tema";
 
 /** Menú móvil. `cuenta` llega del servidor (sesión) envuelta en su propio Suspense. */
 export function MobileNav({ cuenta }: { cuenta: ReactNode }) {
@@ -51,7 +52,7 @@ export function MobileNav({ cuenta }: { cuenta: ReactNode }) {
       <div
         id={panelId}
         hidden={!open}
-        className="absolute inset-x-0 top-full border-b border-linea bg-papel shadow-[0_18px_40px_-24px_rgb(46_19_77/0.45)]"
+        className="absolute inset-x-0 top-full border-b border-linea bg-tarjeta shadow-[0_18px_40px_-24px_rgb(46_19_77/0.45)]"
       >
         <nav aria-label="Principal (móvil)" className="mx-auto max-w-7xl px-4 pt-2 pb-6 sm:px-6">
           <ul className="divide-y divide-linea">
@@ -67,6 +68,9 @@ export function MobileNav({ cuenta }: { cuenta: ReactNode }) {
               </li>
             ))}
           </ul>
+          <div className="mt-5">
+            <SelectorTemaMovil />
+          </div>
           <div className="mt-5">{cuenta}</div>
         </nav>
       </div>

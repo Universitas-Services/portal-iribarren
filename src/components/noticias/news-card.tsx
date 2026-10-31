@@ -105,7 +105,7 @@ export function NewsCard({
 }) {
   const c = estiloCategoria(post.categoria);
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-tarjeta bg-papel shadow-tarjeta transition-[transform,box-shadow] duration-300 ease-out-expo hover:-translate-y-1 hover:shadow-elevada">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-tarjeta bg-tarjeta shadow-tarjeta transition-[transform,box-shadow] duration-300 ease-out-expo hover:-translate-y-1 hover:shadow-elevada">
       <div className={`relative aspect-[16/10] shrink-0 overflow-hidden ${c.fondo}`}>
         {post.portada ? (
           <Image
@@ -129,7 +129,7 @@ export function NewsCard({
 
       <div className="flex flex-1 flex-col p-6">
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-tinta/75">
-          <span className="rounded-full bg-rojo/10 px-2.5 py-0.5 font-display text-xs font-bold text-rojo-oscuro">
+          <span className="rounded-full bg-rojo/10 px-2.5 py-0.5 font-display text-xs font-bold text-enlace-fuerte">
             {post.categoria}
           </span>
           {post.ejemplo && <EtiquetaEjemplo />}
@@ -137,10 +137,10 @@ export function NewsCard({
           <span aria-hidden="true">·</span>
           <time dateTime={post.publicadoEl}>{formatearFecha(post.publicadoEl)}</time>
         </p>
-        <h3 className="mt-3 font-display text-xl leading-snug font-extrabold text-noche">
+        <h3 className="mt-3 font-display text-xl leading-snug font-extrabold text-fuerte">
           <Link
             href={`/noticias/${post.slug}`}
-            className="group-hover:text-rojo after:absolute after:inset-0"
+            className="group-hover:text-enlace after:absolute after:inset-0"
           >
             {post.titulo}
           </Link>

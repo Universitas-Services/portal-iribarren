@@ -121,7 +121,7 @@ export function SelectorFechas({
 
   return (
     <div className="relative">
-      <span id={idEtiqueta} className="mb-1.5 block font-display text-sm font-bold text-noche">
+      <span id={idEtiqueta} className="mb-1.5 block font-display text-sm font-bold text-fuerte">
         {etiqueta}
       </span>
       <button
@@ -132,14 +132,14 @@ export function SelectorFechas({
         aria-controls={idPanel}
         aria-labelledby={`${idEtiqueta} ${idPanel}-valor`}
         onClick={() => (abierto ? cerrar() : abrir())}
-        className={`flex h-12 w-full items-center gap-3 rounded-xl border bg-papel px-4 text-left transition-colors outline-none focus-visible:border-rojo ${
-          abierto ? "border-rojo" : "border-linea hover:border-noche/40"
+        className={`flex h-12 w-full items-center gap-3 rounded-xl border bg-tarjeta px-4 text-left transition-colors outline-none focus-visible:border-rojo ${
+          abierto ? "border-rojo" : "border-linea hover:border-fuerte/40"
         }`}
       >
-        <CalendarDays size={18} aria-hidden="true" className="shrink-0 text-rojo" />
+        <CalendarDays size={18} aria-hidden="true" className="shrink-0 text-enlace" />
         <span
           id={`${idPanel}-valor`}
-          className={`flex-1 truncate ${hayRango ? "font-semibold text-noche" : "text-tinta/70"}`}
+          className={`flex-1 truncate ${hayRango ? "font-semibold text-fuerte" : "text-tinta/70"}`}
         >
           {textoRango(desde, hasta)}
         </span>
@@ -159,10 +159,10 @@ export function SelectorFechas({
             id={idPanel}
             role="dialog"
             aria-label="Elegir rango de fechas"
-            className="fixed inset-x-0 bottom-0 z-50 max-h-[90dvh] overflow-y-auto rounded-t-3xl bg-papel p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-elevada sm:absolute sm:inset-x-auto sm:right-0 sm:bottom-auto sm:mt-2 sm:w-max sm:max-w-[calc(100vw-2rem)] sm:rounded-tarjeta sm:p-6"
+            className="fixed inset-x-0 bottom-0 z-50 max-h-[90dvh] overflow-y-auto rounded-t-3xl bg-tarjeta p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-elevada sm:absolute sm:inset-x-auto sm:right-0 sm:bottom-auto sm:mt-2 sm:w-max sm:max-w-[calc(100vw-2rem)] sm:rounded-tarjeta sm:p-6"
           >
             <div className="mb-4 flex items-center justify-between sm:hidden">
-              <p className="font-display text-lg font-extrabold text-noche">Elegir fechas</p>
+              <p className="font-display text-lg font-extrabold text-fuerte">Elegir fechas</p>
               <button
                 type="button"
                 onClick={cerrar}
@@ -184,7 +184,7 @@ export function SelectorFechas({
                       type="button"
                       data-atajo
                       onClick={() => aplicar(a.rango(hoy))}
-                      className="min-h-10 w-full rounded-xl bg-superficie px-3.5 text-left text-sm font-semibold whitespace-nowrap text-noche transition-colors hover:bg-rojo/10 hover:text-rojo"
+                      className="min-h-10 w-full rounded-xl bg-superficie px-3.5 text-left text-sm font-semibold whitespace-nowrap text-fuerte transition-colors hover:bg-rojo/10 hover:text-enlace"
                     >
                       {a.label}
                     </button>
@@ -216,24 +216,24 @@ export function SelectorFechas({
                   months: "flex flex-col gap-6 sm:flex-row",
                   month: "space-y-3",
                   month_caption: "flex h-10 items-center justify-center",
-                  caption_label: "font-display text-sm font-extrabold text-noche capitalize",
+                  caption_label: "font-display text-sm font-extrabold text-fuerte capitalize",
                   nav: "absolute inset-x-0 top-0 flex h-10 items-center justify-between",
                   button_previous:
-                    "grid size-10 place-items-center rounded-full text-noche hover:bg-superficie disabled:opacity-30",
+                    "grid size-10 place-items-center rounded-full text-fuerte hover:bg-superficie disabled:opacity-30",
                   button_next:
-                    "grid size-10 place-items-center rounded-full text-noche hover:bg-superficie disabled:opacity-30",
+                    "grid size-10 place-items-center rounded-full text-fuerte hover:bg-superficie disabled:opacity-30",
                   month_grid: "border-collapse",
                   weekdays: "",
                   weekday: "size-10 text-xs font-semibold text-tinta/75 capitalize",
                   week: "",
                   day: "p-0 text-center text-sm",
                   day_button:
-                    "size-10 rounded-full font-medium text-noche transition-colors hover:bg-rojo/10 focus-visible:outline-3 focus-visible:outline-rojo disabled:cursor-not-allowed disabled:text-tinta/30 disabled:hover:bg-transparent",
-                  today: "[&>button]:font-extrabold [&>button]:text-rojo",
+                    "size-10 rounded-full font-medium text-fuerte transition-colors hover:bg-rojo/10 focus-visible:outline-3 focus-visible:outline-rojo disabled:cursor-not-allowed disabled:text-tinta/30 disabled:hover:bg-transparent",
+                  today: "[&>button]:font-extrabold [&>button]:text-enlace",
                   selected: "",
                   range_start: "rounded-l-full bg-rojo/10 [&>button]:bg-rojo [&>button]:text-papel",
                   range_end: "rounded-r-full bg-rojo/10 [&>button]:bg-rojo [&>button]:text-papel",
-                  range_middle: "bg-rojo/10 [&>button]:rounded-none [&>button]:text-rojo-oscuro",
+                  range_middle: "bg-rojo/10 [&>button]:rounded-none [&>button]:text-enlace-fuerte",
                   outside: "[&>button]:font-normal [&>button]:text-tinta/70",
                   disabled: "",
                   hidden: "invisible",
@@ -251,7 +251,7 @@ export function SelectorFechas({
                 <button
                   type="button"
                   onClick={() => aplicar(undefined)}
-                  className="min-h-11 rounded-xl px-4 text-sm font-semibold text-tinta hover:text-rojo"
+                  className="min-h-11 rounded-xl px-4 text-sm font-semibold text-tinta hover:text-enlace"
                 >
                   Limpiar
                 </button>

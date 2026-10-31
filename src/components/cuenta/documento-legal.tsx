@@ -25,7 +25,10 @@ export async function DocumentoLegal({ tipo }: { tipo: TipoTextoLegal }) {
           No pudimos cargar el texto en este momento. Vuelve a intentarlo en unos minutos.
         </p>
       )}
-      <Link href="/registro" className="mt-8 inline-block font-semibold text-rojo hover:underline">
+      <Link
+        href="/registro"
+        className="mt-8 inline-block font-semibold text-enlace hover:underline"
+      >
         Volver al registro
       </Link>
     </MarcoCuenta>

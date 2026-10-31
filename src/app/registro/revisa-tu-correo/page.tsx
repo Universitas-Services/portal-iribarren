@@ -30,10 +30,10 @@ async function Contenido() {
   const aviso = await leerAviso();
   return (
     <div className="text-center">
-      <span className="mx-auto grid size-16 place-items-center rounded-full bg-rojo/10 text-rojo">
+      <span className="mx-auto grid size-16 place-items-center rounded-full bg-rojo/10 text-enlace">
         <MailCheck size={30} aria-hidden="true" />
       </span>
-      <p className="mt-5 text-lg leading-relaxed text-noche">
+      <p className="mt-5 text-lg leading-relaxed text-fuerte">
         Si los datos son correctos, te enviamos un enlace para verificar tu correo
         {aviso?.correo ? (
           <>
@@ -51,7 +51,7 @@ async function Contenido() {
       </div>
       <p className="mt-8 text-sm text-tinta">
         ¿Ya lo verificaste?{" "}
-        <Link href="/ingresar" className="font-semibold text-rojo hover:underline">
+        <Link href="/ingresar" className="font-semibold text-enlace hover:underline">
           Inicia sesión
         </Link>
       </p>

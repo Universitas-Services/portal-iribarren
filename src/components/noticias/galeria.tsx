@@ -11,7 +11,19 @@ import { CreditoImagen } from "./credito-imagen";
  * carril deslizable en teléfonos. Cada foto abre un visor a pantalla completa con <dialog>,
  * que ya atrapa el foco, cierra con Esc y devuelve el foco a la miniatura.
  */
-export function Galeria({ imagenes, titulo }: { imagenes: Imagen[]; titulo: string }) {
+export function Galeria({
+  imagenes,
+  titulo,
+  sinOptimizar = false,
+}: {
+  imagenes: Imagen[];
+  titulo: string;
+  /**
+   * Sin el optimizador de Next: para las fotos de un aporte, que pasan por una ruta del portal
+   * que redirige a una URL firmada que vence (R19) y no se deben guardar en su caché.
+   */
+  sinOptimizar?: boolean;
+}) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const [actual, setActual] = useState<number | null>(null);
   const toque = useRef<number | null>(null);
@@ -36,8 +48,9 @@ export function Galeria({ imagenes, titulo }: { imagenes: Imagen[]; titulo: stri
 
   const visibles = imagenes.slice(0, 5);
   // Retícula sin huecos (clases literales para que Tailwind las genere):
-  // 5 fotos → 1 grande + 2×2; 3-4 → 1 grande + una columna; 2 → mitades.
+  // 5 fotos → 1 grande + 2×2; 3-4 → 1 grande + una columna; 2 → mitades; 1 → la fila entera.
   const DISPOSICION = {
+    1: { lista: "sm:h-[26rem] sm:grid-cols-1", grande: "" },
     2: { lista: "sm:h-72 sm:grid-cols-2", grande: "" },
     3: {
       lista: "sm:h-[26rem] lg:h-[30rem] sm:grid-cols-3 sm:grid-rows-2",
@@ -52,7 +65,7 @@ export function Galeria({ imagenes, titulo }: { imagenes: Imagen[]; titulo: stri
       grande: "sm:col-span-2 sm:row-span-2",
     },
   } as const;
-  const disposicion = DISPOSICION[Math.min(Math.max(visibles.length, 2), 5) as 2 | 3 | 4 | 5];
+  const disposicion = DISPOSICION[Math.min(Math.max(visibles.length, 1), 5) as 1 | 2 | 3 | 4 | 5];
   const ocultas = total - visibles.length;
   const foto = actual === null ? null : imagenes[actual];
 
@@ -64,7 +77,7 @@ export function Galeria({ imagenes, titulo }: { imagenes: Imagen[]; titulo: stri
         {visibles.map((img, i) => (
           <li
             key={img.src}
-            className={`relative w-[85%] shrink-0 snap-start sm:w-auto ${
+            className={`relative shrink-0 snap-start sm:w-auto ${total === 1 ? "w-full" : "w-[85%]"} ${
               i === 0 ? disposicion.grande : ""
             }`}
           >
@@ -81,6 +94,7 @@ export function Galeria({ imagenes, titulo }: { imagenes: Imagen[]; titulo: stri
                   i === 0 ? "(min-width: 640px) 432px, 85vw" : "(min-width: 640px) 216px, 85vw"
                 }
                 loading={i === 0 ? "eager" : "lazy"}
+                unoptimized={sinOptimizar}
                 className="object-cover transition-transform duration-500 ease-out-expo group-hover:scale-[1.04]"
               />
               <span className="absolute right-3 bottom-3 grid size-10 place-items-center rounded-full bg-noche/70 text-papel opacity-90 backdrop-blur-sm transition-opacity group-hover:opacity-100">
@@ -99,7 +113,9 @@ export function Galeria({ imagenes, titulo }: { imagenes: Imagen[]; titulo: stri
         ))}
       </ul>
       <p className="mt-3 text-sm text-tinta/70 sm:hidden">
-        Desliza para ver las {total} fotos · toca una para ampliarla
+        {total === 1
+          ? "Toca la foto para ampliarla"
+          : `Desliza para ver las ${total} fotos · toca una para ampliarla`}
       </p>
 
       <dialog
@@ -147,6 +163,7 @@ export function Galeria({ imagenes, titulo }: { imagenes: Imagen[]; titulo: stri
                 alt={foto.alt}
                 fill
                 sizes="100vw"
+                unoptimized={sinOptimizar}
                 className="object-contain"
               />
               {total > 1 && (

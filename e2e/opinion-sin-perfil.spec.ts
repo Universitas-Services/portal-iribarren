@@ -2,29 +2,28 @@ import { expect, test } from "@playwright/test";
 import { elegir, ingresar } from "./utilidades";
 
 /*
- * Solo la propuesta formal exige el perfil completo (decisión del cliente, 28-10-2026). José tiene
- * el perfil vacío: opina, pero la propuesta formal queda bloqueada con lo que le falta.
+ * Solo la propuesta formal pide el perfil completo y los documentos (R18). José tiene el perfil
+ * vacío: opina, pero la opción de la propuesta formal queda deshabilitada.
  */
 
-test("con el perfil incompleto se opina; la propuesta formal pide completar el perfil", async ({
+test("con el perfil incompleto se opina; la propuesta formal queda deshabilitada", async ({
   page,
 }) => {
   test.slow();
   await ingresar(page, "jose@ejemplo.com");
-  await page.goto("/participa");
+  await expect(page).toHaveURL(/\/participa$/);
 
   const enviar = page.getByRole("button", { name: "Revisar y enviar" });
   await expect(enviar).toBeEnabled();
-  await expect(page.getByText(/primero completa tu perfil/)).toHaveCount(0);
+  await expect(page.getByRole("radio", { name: "Propuesta formal" })).toBeDisabled();
+  await expect(page.getByText(/Requiere el perfil completo y la verificación/)).toBeVisible();
 
-  await page.getByRole("radio", { name: "Propuesta formal" }).check();
-  await expect(
-    page.getByText("Para enviar una propuesta formal, primero completa tu perfil."),
-  ).toBeVisible();
-  await expect(enviar).toBeDisabled();
-
-  await page.getByRole("radio", { name: "Opinión general" }).check();
-  await expect(enviar).toBeEnabled();
+  // Si llega pidiendo la propuesta, abre en opinión y explica qué falta.
+  await page.goto("/participa?tipo=propuesta");
+  await expect(page.getByText(/primero completa tu perfil y la verificación/)).toBeVisible();
+  await expect(page.getByText("Teléfono de contacto", { exact: true })).toBeVisible();
+  await expect(page.getByText("Documento de identidad", { exact: true })).toBeVisible();
+  await expect(page.getByRole("radio", { name: "Opinión general" })).toBeChecked();
   await elegir(page, /^Parroquia/, "Catedral");
   await page.getByLabel(/Comunidad, barrio o sector/).fill("Centro histórico");
   await elegir(page, /área del plan/, "Vialidad y Transporte");

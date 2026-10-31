@@ -52,10 +52,10 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
   const Icon = vencido ? Clock : CircleAlert;
   return (
     <div className="text-center" role="status">
-      <span className="mx-auto grid size-16 place-items-center rounded-full bg-amarillo/25 text-noche">
+      <span className="mx-auto grid size-16 place-items-center rounded-full bg-amarillo/25 text-fuerte">
         <Icon size={30} aria-hidden="true" />
       </span>
-      <h2 className="mt-5 font-display text-2xl font-extrabold text-noche">
+      <h2 className="mt-5 font-display text-2xl font-extrabold text-fuerte">
         {vencido
           ? "Este enlace venció"
           : estado === "USADO"

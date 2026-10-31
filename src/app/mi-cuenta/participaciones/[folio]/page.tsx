@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
 import { FichaAporte, InsigniaEstado, LineaTiempoEstados } from "@/components/participacion/aporte";
-import { AUTOR_ANONIMO, filasComprobante, tieneSeguimiento } from "@/lib/participacion";
+import { AUTOR_ANONIMO, filasComprobante, rutaPropia, tieneSeguimiento } from "@/lib/participacion";
 import { getParticipacion, getUsuario } from "@/lib/auth/sesion";
 import { formatearFechaHora } from "@/lib/formato";
 import { FOLIOS_PRERENDER } from "@/lib/folios";
@@ -48,7 +48,7 @@ async function Contenido({ params }: { params: Params }) {
   if (!p) {
     return (
       <div className="text-center">
-        <h2 className="font-display text-2xl font-extrabold text-noche">
+        <h2 className="font-display text-2xl font-extrabold text-fuerte">
           No encontramos ese folio
         </h2>
         <p className="mt-2 text-tinta">Solo puedes ver los aportes enviados desde tu cuenta.</p>
@@ -67,7 +67,7 @@ async function Contenido({ params }: { params: Params }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold tracking-wide text-tinta/80 uppercase">Folio</p>
-          <p className="font-display text-3xl font-extrabold text-noche tabular-nums sm:text-4xl">
+          <p className="font-display text-3xl font-extrabold text-fuerte tabular-nums sm:text-4xl">
             {p.folio}
           </p>
         </div>
@@ -76,7 +76,7 @@ async function Contenido({ params }: { params: Params }) {
 
       {tieneSeguimiento(p.tipo) ? (
         <section aria-labelledby="seguimiento" className="mt-8">
-          <h2 id="seguimiento" className="mb-5 font-display text-xl font-extrabold text-noche">
+          <h2 id="seguimiento" className="mb-5 font-display text-xl font-extrabold text-fuerte">
             Seguimiento
           </h2>
           <LineaTiempoEstados historial={p.historial} />
@@ -86,7 +86,7 @@ async function Contenido({ params }: { params: Params }) {
           {p.estado === "PUBLICADA" ? (
             <>
               El equipo de la alcaldía publicó tu opinión.{" "}
-              <Link href={`/propuestas/${p.folio}`} className="font-bold text-rojo underline">
+              <Link href={`/propuestas/${p.folio}`} className="font-bold text-enlace underline">
                 Verla en Propuestas y opiniones
               </Link>
               .
@@ -99,7 +99,10 @@ async function Contenido({ params }: { params: Params }) {
 
       {p.ubicacion && (
         <section aria-labelledby="ubicacion-aporte" className="mt-10">
-          <h2 id="ubicacion-aporte" className="mb-3 font-display text-xl font-extrabold text-noche">
+          <h2
+            id="ubicacion-aporte"
+            className="mb-3 font-display text-xl font-extrabold text-fuerte"
+          >
             Ubicación
           </h2>
           <MapaPunto punto={p.ubicacion} />
@@ -112,6 +115,7 @@ async function Contenido({ params }: { params: Params }) {
       <div className="mt-10">
         <FichaAporte
           aporte={p}
+          base={rutaPropia(p.folio)}
           titulo="Lo que enviaste"
           extra={[
             ["Enviado", formatearFechaHora(p.creadaEl)],
@@ -127,7 +131,7 @@ async function Contenido({ params }: { params: Params }) {
 
       <Link
         href="/mi-cuenta/participaciones"
-        className="mt-8 inline-flex min-h-11 items-center gap-2 font-display font-bold text-rojo hover:underline"
+        className="mt-8 inline-flex min-h-11 items-center gap-2 font-display font-bold text-enlace hover:underline"
       >
         <ArrowLeft size={18} aria-hidden="true" />
         Volver a mis participaciones

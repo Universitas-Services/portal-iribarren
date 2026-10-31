@@ -200,14 +200,11 @@ export function FormRepresentante({ perfil }: { perfil: Perfil }) {
   );
 }
 
-/** Organización, paso 2: ¿tiene un documento que acredite su condición? */
-export function FormAcreditacion({
-  perfil,
-  actual,
-}: {
-  perfil: Perfil;
-  actual?: DocumentoCargado;
-}) {
+/**
+ * Organización, paso 2: ¿tiene un documento que acredite su condición? Solo la respuesta: si es
+ * «Sí», el documento se carga en la verificación para propuestas formales.
+ */
+export function FormAcreditacion({ perfil }: { perfil: Perfil }) {
   const [estado, accion] = useActionState(guardarAcreditacionAccion, inicial);
   const [respuesta, setRespuesta] = useState(
     estado.valores?.acreditacion ?? perfil.acreditacion ?? "",
@@ -216,7 +213,7 @@ export function FormAcreditacion({
     <form action={accion} noValidate className="space-y-5">
       <ResumenErrores estado={estado} />
       <fieldset aria-describedby={estado.errores?.acreditacion ? "acreditacion-error" : undefined}>
-        <legend className="mb-2 font-display text-sm font-bold text-noche">
+        <legend className="mb-2 font-display text-sm font-bold text-fuerte">
           ¿Tienes un documento que acredite tu condición de representante, vocero o persona
           autorizada?
         </legend>
@@ -224,7 +221,7 @@ export function FormAcreditacion({
           {ACREDITACION_REPRESENTANTE.map((o) => (
             <label
               key={o}
-              className="flex min-h-12 cursor-pointer items-center gap-2.5 rounded-xl border border-linea px-4 font-semibold text-noche has-[:checked]:border-rojo has-[:checked]:bg-rojo/5 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-rojo"
+              className="flex min-h-12 cursor-pointer items-center gap-2.5 rounded-xl border border-linea px-4 font-semibold text-fuerte has-[:checked]:border-rojo has-[:checked]:bg-rojo/5 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-rojo"
             >
               <input
                 type="radio"
@@ -239,20 +236,15 @@ export function FormAcreditacion({
           ))}
         </div>
         {estado.errores?.acreditacion && (
-          <p id="acreditacion-error" className="mt-1.5 text-sm text-rojo">
+          <p id="acreditacion-error" className="mt-1.5 text-sm text-enlace">
             {estado.errores.acreditacion}
           </p>
         )}
       </fieldset>
       {respuesta === "Sí" && (
-        <CampoArchivo
-          id="archivo"
-          etiqueta="Documento que acredita tu condición"
-          ayuda="Acta de asamblea, carta aval o poder. PDF, JPG o PNG de hasta 2 MB."
-          requerido={!actual}
-          actual={actual}
-          error={estado.errores?.archivo}
-        />
+        <p className="text-sm text-tinta/80">
+          Para enviar propuestas formales, lo cargarás en la verificación, más abajo.
+        </p>
       )}
       <BotonEnviar enviando="Guardando…">Guardar acreditación</BotonEnviar>
     </form>
@@ -310,18 +302,18 @@ function BotonConfirmar({ children }: { children: string }) {
 }
 
 const claseSecundario =
-  "min-h-12 flex-1 rounded-xl border-2 border-linea px-5 font-display font-bold text-noche hover:border-noche/40";
+  "min-h-12 flex-1 rounded-xl border-2 border-linea px-5 font-display font-bold text-fuerte hover:border-fuerte/40";
 
 /** Cerrar sesión en todos los dispositivos y pedir la baja de la cuenta, con confirmación. */
 export function ZonaCuenta({ bajaSolicitada }: { bajaSolicitada?: string }) {
   const [dialogo, setDialogo] = useState<"sesiones" | "baja" | null>(null);
   const cerrar = () => setDialogo(null);
   const claseOpcion =
-    "flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left font-semibold text-noche hover:bg-superficie";
+    "flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left font-semibold text-fuerte hover:bg-superficie";
   return (
     <div className="space-y-1">
       <button type="button" onClick={() => setDialogo("sesiones")} className={claseOpcion}>
-        <MonitorSmartphone size={18} aria-hidden="true" className="shrink-0 text-rojo" />
+        <MonitorSmartphone size={18} aria-hidden="true" className="shrink-0 text-enlace" />
         Cerrar sesión en todos los dispositivos
       </button>
       {bajaSolicitada ? (
@@ -331,7 +323,7 @@ export function ZonaCuenta({ bajaSolicitada }: { bajaSolicitada?: string }) {
         </p>
       ) : (
         <button type="button" onClick={() => setDialogo("baja")} className={claseOpcion}>
-          <UserX size={18} aria-hidden="true" className="shrink-0 text-rojo" />
+          <UserX size={18} aria-hidden="true" className="shrink-0 text-enlace" />
           Solicitar la baja de la cuenta
         </button>
       )}

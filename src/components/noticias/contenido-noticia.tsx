@@ -15,7 +15,7 @@ export function CuerpoNoticia({ html }: { html: string }) {
 export function BloquePuntos({ puntos }: { puntos: PuntosAnalisis }) {
   return (
     <section aria-labelledby="puntos-analisis" className="mt-10 border-t border-linea pt-8">
-      <h2 id="puntos-analisis" className="font-display text-xl font-extrabold text-noche">
+      <h2 id="puntos-analisis" className="font-display text-xl font-extrabold text-fuerte">
         {puntos.titulo || "Puntos de análisis"}
       </h2>
       <dl className="mt-6 divide-y divide-linea">
@@ -24,7 +24,7 @@ export function BloquePuntos({ puntos }: { puntos: PuntosAnalisis }) {
             key={p.titulo}
             className="grid gap-2 py-5 first:pt-0 last:pb-0 sm:grid-cols-[14rem_1fr] sm:gap-8"
           >
-            <dt className="flex items-start gap-3 font-display font-extrabold text-noche">
+            <dt className="flex items-start gap-3 font-display font-extrabold text-fuerte">
               <span
                 aria-hidden="true"
                 className="grid size-7 shrink-0 place-items-center rounded-full bg-rojo text-xs text-papel"
@@ -63,7 +63,7 @@ export function BotonNoticia({ boton }: { boton: { texto: string; href: string }
 /** Formato IMAGEN: una foto a todo el ancho con su descripción y crédito. */
 export function FiguraNoticia({ imagen }: { imagen: Imagen }) {
   return (
-    <figure className="overflow-hidden rounded-tarjeta bg-papel shadow-elevada">
+    <figure className="overflow-hidden rounded-tarjeta bg-tarjeta shadow-elevada">
       <Image
         src={imagen.src}
         alt={imagen.alt}
@@ -92,10 +92,19 @@ export function FiguraNoticia({ imagen }: { imagen: Imagen }) {
 export function VisorDocumento({
   adjunto,
   descargaUrl,
+  bajarUrl,
+  titulo,
 }: {
   adjunto: Adjunto;
   /** Enlace que cuenta la descarga (documentos del repositorio con la API, guía R8). */
   descargaUrl?: string;
+  /**
+   * Enlace que baja el archivo cuando está en otro sitio (el atributo `download` no sirve ahí);
+   * «Abrir» sigue usando `adjunto.url`. Es el soporte de un aporte con la API (R19).
+   */
+  bajarUrl?: string;
+  /** Rótulo sobre el nombre del archivo, p. ej. «Documento de soporte». */
+  titulo?: string;
 }) {
   const detalle = [
     "PDF",
@@ -111,17 +120,18 @@ export function VisorDocumento({
   return (
     <section
       aria-labelledby="documento-adjunto"
-      className="overflow-hidden rounded-tarjeta bg-papel shadow-elevada"
+      className="overflow-hidden rounded-tarjeta bg-tarjeta shadow-elevada"
     >
       <div className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
         <div className="flex items-start gap-4">
-          <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-rojo/10 text-rojo">
+          <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-rojo/10 text-enlace">
             <FileText size={28} aria-hidden="true" />
           </span>
-          <div>
+          <div className="min-w-0">
+            {titulo && <p className="text-sm text-tinta/75">{titulo}</p>}
             <h2
               id="documento-adjunto"
-              className="font-display text-lg leading-snug font-extrabold text-noche"
+              className="font-display text-lg leading-snug font-extrabold [overflow-wrap:anywhere] text-fuerte"
             >
               {adjunto.nombre}
             </h2>
@@ -133,15 +143,15 @@ export function VisorDocumento({
             href={descargaUrl ?? adjunto.url}
             target="_blank"
             rel="noopener noreferrer"
-            className={`${boton} bg-noche text-papel hover:bg-tinta`}
+            className={`${boton} bg-noche text-papel hover:bg-morado-activo`}
           >
             <ExternalLink size={18} aria-hidden="true" />
             Abrir
             <span className="sr-only">(se abre en otra pestaña)</span>
           </a>
           <a
-            href={descargaUrl ?? adjunto.url}
-            download={descargaUrl ? undefined : true}
+            href={descargaUrl ?? bajarUrl ?? adjunto.url}
+            download={descargaUrl || bajarUrl ? undefined : true}
             className={`${boton} bg-rojo text-papel hover:bg-rojo-oscuro`}
           >
             <Download size={18} aria-hidden="true" />

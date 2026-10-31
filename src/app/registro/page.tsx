@@ -65,15 +65,15 @@ async function Paso({ searchParams }: { searchParams: SearchParams }) {
     return (
       <>
         <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-linea pb-5">
-          <p className="flex items-center gap-3 font-display text-lg font-extrabold text-noche">
-            <span className="grid size-10 place-items-center rounded-full bg-rojo/10 text-rojo">
+          <p className="flex items-center gap-3 font-display text-lg font-extrabold text-fuerte">
+            <span className="grid size-10 place-items-center rounded-full bg-rojo/10 text-enlace">
               <opcion.Icon size={20} aria-hidden="true" />
             </span>
             {opcion.titulo}
           </p>
           <Link
             href="/registro"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-tinta hover:text-rojo"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-tinta hover:text-enlace"
           >
             <ArrowLeft size={16} aria-hidden="true" />
             Cambiar tipo de cuenta
@@ -89,7 +89,7 @@ async function Paso({ searchParams }: { searchParams: SearchParams }) {
         )}
         <p className="mt-6 text-center text-sm text-tinta">
           ¿Ya tienes cuenta?{" "}
-          <Link href="/ingresar" className="font-semibold text-rojo hover:underline">
+          <Link href="/ingresar" className="font-semibold text-enlace hover:underline">
             Inicia sesión
           </Link>
         </p>
@@ -99,7 +99,7 @@ async function Paso({ searchParams }: { searchParams: SearchParams }) {
 
   return (
     <>
-      <h2 className="font-display text-xl font-extrabold text-noche">¿Cómo vas a participar?</h2>
+      <h2 className="font-display text-xl font-extrabold text-fuerte">¿Cómo vas a participar?</h2>
       <ul className="mt-5 grid gap-4 sm:grid-cols-2">
         {OPCIONES.map(({ tipo, titulo, texto, Icon }) => (
           <li key={tipo}>
@@ -107,12 +107,12 @@ async function Paso({ searchParams }: { searchParams: SearchParams }) {
               href={`/registro?tipo=${tipo}`}
               className="group flex h-full flex-col rounded-2xl border-2 border-linea p-5 transition-[border-color,transform,box-shadow] duration-200 ease-out-expo hover:-translate-y-0.5 hover:border-rojo hover:shadow-tarjeta"
             >
-              <span className="grid size-12 place-items-center rounded-full bg-rojo/10 text-rojo transition-colors group-hover:bg-rojo group-hover:text-papel">
+              <span className="grid size-12 place-items-center rounded-full bg-rojo/10 text-enlace transition-colors group-hover:bg-rojo group-hover:text-papel">
                 <Icon size={24} aria-hidden="true" />
               </span>
-              <span className="mt-4 font-display text-lg font-extrabold text-noche">{titulo}</span>
+              <span className="mt-4 font-display text-lg font-extrabold text-fuerte">{titulo}</span>
               <span className="mt-1.5 flex-1 text-sm leading-relaxed text-tinta">{texto}</span>
-              <span className="mt-4 inline-flex items-center gap-1.5 font-display text-sm font-bold text-rojo">
+              <span className="mt-4 inline-flex items-center gap-1.5 font-display text-sm font-bold text-enlace">
                 Continuar
                 <ArrowRight
                   size={16}
@@ -126,7 +126,7 @@ async function Paso({ searchParams }: { searchParams: SearchParams }) {
       </ul>
       <p className="mt-8 text-center text-sm text-tinta">
         ¿Ya tienes cuenta en este u otro portal de alcaldía?{" "}
-        <Link href="/ingresar" className="font-semibold text-rojo hover:underline">
+        <Link href="/ingresar" className="font-semibold text-enlace hover:underline">
           Inicia sesión
         </Link>
       </p>

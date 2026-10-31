@@ -12,6 +12,7 @@ import { siteUrl } from "@/env";
 import { RUTAS_PRIVADAS } from "@/lib/auth/rutas-privadas";
 import { esDemo } from "@/lib/auth/sesion";
 import { INACTIVIDAD_MS } from "@/lib/plataforma-api/renovacion";
+import { SCRIPT_TEMA } from "@/lib/tema";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -55,11 +56,21 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={`${montserrat.variable} ${roboto.variable} antialiased`}>
+    // El script pone el tema guardado antes de pintar (sin parpadeo); por eso <html> acepta que su
+    // data-tema no coincida con el del servidor.
+    <html
+      lang="es"
+      data-tema="claro"
+      suppressHydrationWarning
+      className={`${montserrat.variable} ${roboto.variable} antialiased`}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
+      </head>
       <body className="flex min-h-dvh flex-col">
         <a
           href="#contenido"
-          className="sr-only z-50 bg-tinta px-4 py-3 font-medium text-papel focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+          className="sr-only z-50 bg-noche px-4 py-3 font-medium text-papel focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
         >
           Saltar al contenido
         </a>

@@ -6,7 +6,7 @@ function FilaSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="flex flex-col gap-4 rounded-tarjeta bg-papel p-5 shadow-tarjeta sm:flex-row sm:items-center sm:p-6"
+      className="flex flex-col gap-4 rounded-tarjeta bg-tarjeta p-5 shadow-tarjeta sm:flex-row sm:items-center sm:p-6"
     >
       <Skeleton className="h-16 w-13 shrink-0 rounded-md" />
       <div className="flex-1">
@@ -23,7 +23,7 @@ export function RepositorioSkeleton() {
   return (
     <div className="grid gap-6 lg:grid-cols-[17rem_1fr] lg:items-start">
       <LoadingStatus label="Cargando documentos…" />
-      <div aria-hidden="true" className="rounded-tarjeta bg-papel p-5 shadow-tarjeta">
+      <div aria-hidden="true" className="rounded-tarjeta bg-tarjeta p-5 shadow-tarjeta">
         <Skeleton className="h-12 rounded-xl" />
         <Skeleton className="mt-6 hidden h-10 rounded-xl lg:block" />
         <div className="mt-6 hidden space-y-2 lg:block">
