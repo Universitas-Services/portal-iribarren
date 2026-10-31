@@ -40,9 +40,9 @@ const pin = (L: typeof Leaflet) =>
 type Resultado = { nombre: string; punto: Ubicacion };
 
 const claseBoton =
-  "inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-linea bg-papel px-4 font-display text-sm font-bold text-noche transition-colors hover:border-noche/40 disabled:opacity-60";
+  "inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-linea bg-tarjeta px-4 font-display text-sm font-bold text-fuerte transition-colors hover:border-fuerte/40 disabled:opacity-60";
 const claseEntrada =
-  "h-11 w-full min-w-0 rounded-xl border border-linea bg-papel px-4 text-noche outline-none placeholder:text-tinta/70 hover:border-noche/40 focus-visible:border-rojo";
+  "h-11 w-full min-w-0 rounded-xl border border-linea bg-tarjeta px-4 text-fuerte outline-none placeholder:text-tinta/70 hover:border-fuerte/40 focus-visible:border-rojo";
 
 /** Mapa base con Leaflet cargado en el cliente (usa `window`). */
 function useMapa(
@@ -230,7 +230,7 @@ export function SelectorUbicacion({
 
   return (
     <fieldset id="ubicacion" aria-describedby="ubicacion-ayuda" className="min-w-0 scroll-mt-28">
-      <legend className="mb-1.5 font-display text-sm font-bold text-noche">
+      <legend className="mb-1.5 font-display text-sm font-bold text-fuerte">
         Ubicación en el mapa{" "}
         <span className="font-normal text-tinta/75">
           {obligatorio ? "(obligatoria)" : "(opcional)"}
@@ -277,7 +277,7 @@ export function SelectorUbicacion({
       {resultados.length > 0 && (
         <ul
           aria-label="Resultados de la búsqueda"
-          className="mb-3 divide-y divide-linea overflow-hidden rounded-xl border border-linea bg-papel"
+          className="mb-3 divide-y divide-linea overflow-hidden rounded-xl border border-linea bg-tarjeta"
         >
           {resultados.map((r) => (
             <li key={`${r.punto.lat},${r.punto.lng}`}>
@@ -287,9 +287,9 @@ export function SelectorUbicacion({
                   elegir(r.punto, true);
                   setResultados([]);
                 }}
-                className="flex w-full items-start gap-2 px-4 py-2.5 text-left text-sm text-noche hover:bg-superficie"
+                className="flex w-full items-start gap-2 px-4 py-2.5 text-left text-sm text-fuerte hover:bg-superficie"
               >
-                <MapPin size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
+                <MapPin size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-enlace" />
                 {r.nombre}
               </button>
             </li>
@@ -352,21 +352,21 @@ export function SelectorUbicacion({
 
       <div aria-live="polite" className="mt-3 text-sm">
         {mensaje && (
-          <p id="ubicacion-error" className="text-rojo">
+          <p id="ubicacion-error" className="text-enlace">
             {mensaje}
           </p>
         )}
         {punto && (
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-tinta">
-            <span className="inline-flex items-center gap-1.5 font-semibold text-noche">
-              <MapPin size={16} aria-hidden="true" className="text-rojo" />
+            <span className="inline-flex items-center gap-1.5 font-semibold text-fuerte">
+              <MapPin size={16} aria-hidden="true" className="text-enlace" />
               Punto marcado: {formatoCoordenadas(punto)}
             </span>
             <a
               href={enlaceGoogleMaps(punto)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 font-semibold text-rojo underline"
+              className="inline-flex items-center gap-1 font-semibold text-enlace underline"
             >
               Ver en Google Maps
               <ExternalLink size={14} aria-hidden="true" />
@@ -378,7 +378,7 @@ export function SelectorUbicacion({
                 setPunto(undefined);
                 mapa.colocar(null);
               }}
-              className="inline-flex items-center gap-1 font-semibold text-tinta/80 underline hover:text-noche"
+              className="inline-flex items-center gap-1 font-semibold text-tinta/80 underline hover:text-fuerte"
             >
               <X size={14} aria-hidden="true" />
               Quitar
@@ -411,7 +411,7 @@ export function MapaPunto({ punto }: { punto: Ubicacion }) {
           href={enlaceGoogleMaps(punto)}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 font-semibold text-rojo underline"
+          className="inline-flex items-center gap-1 font-semibold text-enlace underline"
         >
           Ver en Google Maps
           <ExternalLink size={14} aria-hidden="true" />

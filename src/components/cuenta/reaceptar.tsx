@@ -53,7 +53,7 @@ export function ModalReaceptar({ pendientes }: { pendientes: TextoLegal[] }) {
             </span>
           </label>
           {error && (
-            <p role="alert" className="text-sm font-semibold text-rojo">
+            <p role="alert" className="text-sm font-semibold text-enlace">
               {error}
             </p>
           )}
@@ -61,7 +61,7 @@ export function ModalReaceptar({ pendientes }: { pendientes: TextoLegal[] }) {
             <form action={cerrarSesionAccion}>
               <button
                 type="submit"
-                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 font-display font-semibold text-noche ring-1 ring-linea transition-colors hover:bg-superficie sm:w-auto"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 font-display font-semibold text-fuerte ring-1 ring-linea transition-colors hover:bg-superficie sm:w-auto"
               >
                 <LogOut size={16} aria-hidden="true" />
                 No acepto, cerrar sesión
@@ -97,7 +97,7 @@ export function ModalReaceptar({ pendientes }: { pendientes: TextoLegal[] }) {
           >
             <div className="flex flex-wrap items-start justify-between gap-3 p-4">
               <div>
-                <h3 id={`reaceptar-${t.tipo}`} className="font-display font-bold text-noche">
+                <h3 id={`reaceptar-${t.tipo}`} className="font-display font-bold text-fuerte">
                   {TITULO_TEXTO_LEGAL[t.tipo]}
                 </h3>
                 <p className="text-sm text-tinta/80">
@@ -109,7 +109,7 @@ export function ModalReaceptar({ pendientes }: { pendientes: TextoLegal[] }) {
                   type="button"
                   aria-expanded={abierto === t.tipo}
                   onClick={() => setAbierto(abierto === t.tipo ? undefined : t.tipo)}
-                  className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-rojo hover:bg-rojo/5"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-enlace hover:bg-rojo/5"
                 >
                   <ScrollText size={16} aria-hidden="true" />
                   {abierto === t.tipo ? "Ocultar el texto" : "Leer el texto"}
@@ -117,7 +117,7 @@ export function ModalReaceptar({ pendientes }: { pendientes: TextoLegal[] }) {
               )}
             </div>
             {t.nota && (
-              <p className="mx-4 mb-4 rounded-xl bg-superficie p-3 text-sm leading-relaxed text-noche">
+              <p className="mx-4 mb-4 rounded-xl bg-superficie p-3 text-sm leading-relaxed text-fuerte">
                 <span className="font-semibold">Qué cambió: </span>
                 {t.nota}
               </p>

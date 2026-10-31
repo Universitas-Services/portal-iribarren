@@ -41,7 +41,7 @@ export function Paginacion({
           {pagina > 1 ? (
             <Link
               href={href(pagina - 1)}
-              className={`${boton} bg-papel text-noche shadow-tarjeta hover:text-rojo`}
+              className={`${boton} bg-tarjeta text-fuerte shadow-tarjeta hover:text-enlace`}
             >
               <span className="sr-only">Página anterior</span>
               <ArrowLeft size={18} aria-hidden="true" />
@@ -65,7 +65,7 @@ export function Paginacion({
                 className={`${boton} ${
                   n === pagina
                     ? "bg-rojo text-papel"
-                    : "bg-papel text-noche shadow-tarjeta hover:text-rojo"
+                    : "bg-tarjeta text-fuerte shadow-tarjeta hover:text-enlace"
                 }`}
               >
                 <span className="sr-only">Página </span>
@@ -78,7 +78,7 @@ export function Paginacion({
           {pagina < paginas ? (
             <Link
               href={href(pagina + 1)}
-              className={`${boton} bg-papel text-noche shadow-tarjeta hover:text-rojo`}
+              className={`${boton} bg-tarjeta text-fuerte shadow-tarjeta hover:text-enlace`}
             >
               <span className="sr-only">Página siguiente</span>
               <ArrowRight size={18} aria-hidden="true" />

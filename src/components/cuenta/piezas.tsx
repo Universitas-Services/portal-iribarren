@@ -12,12 +12,12 @@ import { imagenSchema } from "@/lib/validation/schemas";
  * diálogo de confirmación y progreso del perfil.
  */
 
-const claseEtiqueta = "mb-1.5 block font-display text-sm font-bold text-noche";
+const claseEtiqueta = "mb-1.5 block font-display text-sm font-bold text-fuerte";
 
 function Error({ id, error }: { id: string; error?: string }) {
   if (!error) return null;
   return (
-    <p id={`${id}-error`} className="mt-1.5 flex items-start gap-1.5 text-sm text-rojo">
+    <p id={`${id}-error`} className="mt-1.5 flex items-start gap-1.5 text-sm text-enlace">
       <AlertCircle size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
       {error}
     </p>
@@ -120,11 +120,11 @@ export function CampoArchivo({
             ? "border-rojo bg-rojo/5"
             : encima
               ? "border-rojo bg-rojo/5"
-              : "border-linea hover:border-noche/40"
+              : "border-linea hover:border-fuerte/40"
         } ${sel ? "hidden" : ""}`}
       >
-        <Upload size={24} aria-hidden="true" className="text-rojo" />
-        <span className="font-semibold text-noche">
+        <Upload size={24} aria-hidden="true" className="text-enlace" />
+        <span className="font-semibold text-fuerte">
           {actual ? "Elige un archivo para reemplazarlo" : "Elige un archivo o arrástralo aquí"}
         </span>
         <span className="text-sm text-tinta/70">{ayuda}</span>
@@ -152,12 +152,12 @@ export function CampoArchivo({
               className="size-16 shrink-0 rounded-xl object-cover"
             />
           ) : (
-            <span className="grid size-16 shrink-0 place-items-center rounded-xl bg-rojo/10 text-rojo">
+            <span className="grid size-16 shrink-0 place-items-center rounded-xl bg-rojo/10 text-enlace">
               <FileText size={28} aria-hidden="true" />
             </span>
           )}
           <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold text-noche">{sel.nombre}</p>
+            <p className="truncate font-semibold text-fuerte">{sel.nombre}</p>
             <p className="flex items-center gap-1.5 text-sm text-exito-oscuro">
               <Check size={14} aria-hidden="true" />
               {sel.tipo === "application/pdf" ? "PDF" : "Imagen"} · {formatearPeso(sel.tamano)}
@@ -166,7 +166,7 @@ export function CampoArchivo({
           <button
             type="button"
             onClick={quitar}
-            className="grid size-11 shrink-0 place-items-center rounded-xl text-tinta/70 hover:bg-superficie hover:text-rojo"
+            className="grid size-11 shrink-0 place-items-center rounded-xl text-tinta/70 hover:bg-superficie hover:text-enlace"
           >
             <X size={20} aria-hidden="true" />
             <span className="sr-only">Quitar {sel.nombre}</span>
@@ -181,7 +181,7 @@ export function CampoArchivo({
           ) : (
             <FileText size={15} aria-hidden="true" />
           )}
-          Cargado: <span className="font-semibold text-noche">{actual.nombre}</span> · versión{" "}
+          Cargado: <span className="font-semibold text-fuerte">{actual.nombre}</span> · versión{" "}
           {actual.version}
         </p>
       )}
@@ -309,11 +309,11 @@ export function CampoImagenes({
           agregar([...e.dataTransfer.files]);
         }}
         className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-5 text-center transition-colors has-[:focus-visible]:border-rojo has-[:focus-visible]:bg-rojo/5 ${
-          mostrado || encima ? "border-rojo bg-rojo/5" : "border-linea hover:border-noche/40"
+          mostrado || encima ? "border-rojo bg-rojo/5" : "border-linea hover:border-fuerte/40"
         } ${lleno ? "hidden" : ""}`}
       >
-        <ImageIcon size={24} aria-hidden="true" className="text-rojo" />
-        <span className="font-semibold text-noche">
+        <ImageIcon size={24} aria-hidden="true" className="text-enlace" />
+        <span className="font-semibold text-fuerte">
           {fotos.length ? "Agregar más fotos" : "Elige fotos o arrástralas aquí"}
         </span>
         <span className="text-sm text-tinta/70">{ayuda}</span>
@@ -438,12 +438,12 @@ export function Dialogo({
         // Clic en el fondo: cierra.
         if (!bloqueante && e.target === ref.current) onCerrar();
       }}
-      className={`m-auto w-[calc(100%-2rem)] rounded-tarjeta bg-papel p-0 text-tinta shadow-elevada backdrop:bg-noche/60 ${largo ? "max-w-2xl" : "max-w-lg"}`}
+      className={`m-auto w-[calc(100%-2rem)] rounded-tarjeta bg-tarjeta p-0 text-tinta shadow-elevada backdrop:bg-noche/60 ${largo ? "max-w-2xl" : "max-w-lg"}`}
     >
       {largo ? (
         <div className="flex max-h-[calc(100dvh-2rem)] flex-col">
           <div className="border-b border-linea px-6 pt-6 pb-4 sm:px-8">
-            <h2 id={idTitulo} className="font-display text-xl font-extrabold text-noche">
+            <h2 id={idTitulo} className="font-display text-xl font-extrabold text-fuerte">
               {titulo}
             </h2>
             {subtitulo && <p className="mt-1 text-sm text-tinta/80">{subtitulo}</p>}
@@ -456,7 +456,7 @@ export function Dialogo({
         </div>
       ) : (
         <div className="p-6 sm:p-8">
-          <h2 id={idTitulo} className="font-display text-xl font-extrabold text-noche">
+          <h2 id={idTitulo} className="font-display text-xl font-extrabold text-fuerte">
             {titulo}
           </h2>
           {subtitulo && <p className="mt-1 text-sm text-tinta/80">{subtitulo}</p>}
@@ -474,7 +474,7 @@ export function Progreso({ pasos }: { pasos: { titulo: string; hecho: boolean }[
   return (
     <div>
       <div className="flex items-baseline justify-between gap-4">
-        <p className="font-display font-extrabold text-noche">
+        <p className="font-display font-extrabold text-fuerte">
           {hechos === pasos.length ? "Perfil completo" : "Completa tu perfil"}
         </p>
         <p className="text-sm text-tinta/80 tabular-nums">
@@ -502,12 +502,12 @@ export function Progreso({ pasos }: { pasos: { titulo: string; hecho: boolean }[
           <li key={p.titulo} className="flex items-center gap-3 text-sm">
             <span
               className={`grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold ${
-                p.hecho ? "bg-exito text-papel" : "bg-superficie text-noche ring-1 ring-linea"
+                p.hecho ? "bg-exito text-papel" : "bg-superficie text-fuerte ring-1 ring-linea"
               }`}
             >
               {p.hecho ? <Check size={14} aria-hidden="true" /> : i + 1}
             </span>
-            <span className={p.hecho ? "text-tinta/80" : "font-semibold text-noche"}>
+            <span className={p.hecho ? "text-tinta/80" : "font-semibold text-fuerte"}>
               {p.titulo}
             </span>
             <span className="sr-only">{p.hecho ? "(hecho)" : "(pendiente)"}</span>

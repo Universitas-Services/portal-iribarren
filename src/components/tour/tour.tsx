@@ -237,7 +237,7 @@ export function Tour({ conSesion, pendiente }: { conSesion: boolean; pendiente: 
               tabIndex={-1}
               key={i}
               className={[
-                "fixed inset-x-0 mx-auto max-w-md bg-papel p-5 shadow-elevada outline-none motion-safe:animate-[aparecer_240ms_var(--ease-out-expo)] sm:p-6",
+                "fixed inset-x-0 mx-auto max-w-md bg-tarjeta p-5 shadow-elevada outline-none motion-safe:animate-[aparecer_240ms_var(--ease-out-expo)] sm:p-6",
                 // Con objetivo: hoja de borde a borde en el teléfono, en el lado contrario.
                 hueco
                   ? `w-full sm:w-[calc(100%-2rem)] sm:rounded-tarjeta ${arriba ? "top-0 rounded-b-tarjeta sm:top-4" : "bottom-0 rounded-t-tarjeta sm:bottom-4"}`
@@ -245,21 +245,21 @@ export function Tour({ conSesion, pendiente }: { conSesion: boolean; pendiente: 
               ].join(" ")}
             >
               <div className="flex items-start justify-between gap-4">
-                <p className="text-sm font-semibold text-rojo tabular-nums">
+                <p className="text-sm font-semibold text-enlace tabular-nums">
                   Paso {i + 1} de {total}
                 </p>
                 <button
                   type="button"
                   onClick={cerrar}
                   aria-label="Cerrar el recorrido"
-                  className="-mt-2 -mr-2 grid size-9 shrink-0 place-items-center rounded-full text-tinta/70 transition-colors hover:bg-superficie hover:text-noche"
+                  className="-mt-2 -mr-2 grid size-9 shrink-0 place-items-center rounded-full text-tinta/70 transition-colors hover:bg-superficie hover:text-fuerte"
                 >
                   <X size={18} aria-hidden="true" />
                 </button>
               </div>
               <h2
                 id={`${id}-titulo`}
-                className="mt-1 font-display text-xl font-extrabold text-noche"
+                className="mt-1 font-display text-xl font-extrabold text-fuerte"
               >
                 {paso.titulo}
               </h2>
@@ -281,7 +281,7 @@ export function Tour({ conSesion, pendiente }: { conSesion: boolean; pendiente: 
                   <button
                     type="button"
                     onClick={cerrar}
-                    className="min-h-11 text-sm font-semibold text-tinta underline underline-offset-2 hover:text-noche"
+                    className="min-h-11 text-sm font-semibold text-tinta underline underline-offset-2 hover:text-fuerte"
                   >
                     Saltar el recorrido
                   </button>
@@ -291,7 +291,7 @@ export function Tour({ conSesion, pendiente }: { conSesion: boolean; pendiente: 
                     <button
                       type="button"
                       onClick={() => setI(i - 1)}
-                      className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-4 font-display font-semibold text-noche ring-1 ring-linea transition-colors hover:bg-superficie"
+                      className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-4 font-display font-semibold text-fuerte ring-1 ring-linea transition-colors hover:bg-superficie"
                     >
                       <ArrowLeft size={16} aria-hidden="true" />
                       Anterior

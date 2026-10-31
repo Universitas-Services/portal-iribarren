@@ -32,11 +32,11 @@ export function FaseProcedimiento({
         {numero}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block font-display text-xs font-bold tracking-wider text-rojo uppercase">
+        <span className="block font-display text-xs font-bold tracking-wider text-enlace uppercase">
           Fase {numero}
           {duracion && <span className="text-tinta/70"> · {duracion}</span>}
         </span>
-        <span className="mt-0.5 block font-display text-lg font-extrabold text-noche sm:text-xl">
+        <span className="mt-0.5 block font-display text-lg font-extrabold text-fuerte sm:text-xl">
           {nombre}
         </span>
       </span>

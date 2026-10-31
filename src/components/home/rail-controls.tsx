@@ -13,7 +13,7 @@ export function RailControls({ targetId }: { targetId: string }) {
   };
 
   const clase =
-    "grid size-11 place-items-center rounded-full bg-papel text-noche shadow-tarjeta transition-[transform,color] duration-150 hover:text-rojo active:scale-[0.94]";
+    "grid size-11 place-items-center rounded-full bg-tarjeta text-fuerte shadow-tarjeta transition-[transform,color] duration-150 hover:text-enlace active:scale-[0.94]";
 
   return (
     <div className="flex gap-2">

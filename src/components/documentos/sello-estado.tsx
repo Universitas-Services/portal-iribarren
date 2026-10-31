@@ -10,7 +10,7 @@ export const ESTADO_DOC: Record<DocEstado, { label: string; corto: string; clase
   BORRADOR: {
     label: "Borrador de trabajo",
     corto: "Borrador",
-    clase: "bg-amarillo/25 text-noche ring-amarillo/60",
+    clase: "bg-amarillo/25 text-fuerte ring-amarillo/60",
   },
 };
 

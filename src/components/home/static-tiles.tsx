@@ -34,7 +34,7 @@ export function OpinionTile({ className = "" }: { className?: string }) {
       </p>
       <Link
         href="/participa"
-        className="group mt-6 inline-flex min-h-12 items-center justify-center gap-2 self-start rounded-xl bg-papel px-5 font-display font-bold text-rojo transition-[transform,background-color] duration-150 ease-out-expo hover:bg-superficie active:scale-[0.97] sm:mt-auto sm:pt-0"
+        className="group mt-6 inline-flex min-h-12 items-center justify-center gap-2 self-start rounded-xl bg-tarjeta px-5 font-display font-bold text-enlace transition-[transform,background-color] duration-150 ease-out-expo hover:bg-superficie active:scale-[0.97] sm:mt-auto sm:pt-0"
       >
         Participar
         <ArrowRight
@@ -54,36 +54,36 @@ const ACCESOS: { href: string; label: string; detalle: string; Icon: LucideIcon;
       label: "Noticias",
       detalle: "Avances y novedades",
       Icon: Newspaper,
-      tono: "bg-rojo/10 text-rojo",
+      tono: "bg-rojo/10 text-enlace",
     },
     {
       href: "/conoce-el-pdul",
       label: "Información institucional",
       detalle: "Qué es el PDUL",
       Icon: Landmark,
-      tono: "bg-naranja/15 text-rojo-oscuro",
+      tono: "bg-naranja/15 text-enlace-fuerte",
     },
     {
       href: "/documentos",
       label: "Documentos de interés",
       detalle: "Decreto e informes",
       Icon: FileText,
-      tono: "bg-amarillo/20 text-rojo-oscuro",
+      tono: "bg-amarillo/20 text-enlace-fuerte",
     },
     {
       href: "/participa",
       label: "Tu opinión cuenta",
       detalle: "Opina y propón",
       Icon: MessageSquareText,
-      tono: "bg-noche/10 text-noche",
+      tono: "bg-fuerte/10 text-fuerte",
     },
   ];
 
 /** Accesos rápidos de la guía: íconos en círculos tintados. */
 export function AccessTile({ className = "" }: { className?: string }) {
   return (
-    <Tile aria-labelledby="accesos-titulo" className={`bg-papel p-6 sm:p-8 ${className}`}>
-      <h2 id="accesos-titulo" className="font-display text-2xl font-extrabold text-noche">
+    <Tile aria-labelledby="accesos-titulo" className={`bg-tarjeta p-6 sm:p-8 ${className}`}>
+      <h2 id="accesos-titulo" className="font-display text-2xl font-extrabold text-fuerte">
         Accede rápido
       </h2>
       <ul className="mt-5 grid grid-cols-2 gap-3">
@@ -97,7 +97,7 @@ export function AccessTile({ className = "" }: { className?: string }) {
                 <Icon size={22} aria-hidden="true" />
               </span>
               <span>
-                <span className="block font-display leading-tight font-bold text-noche group-hover:text-rojo">
+                <span className="block font-display leading-tight font-bold text-fuerte group-hover:text-enlace">
                   {label}
                 </span>
                 <span className="mt-1 block text-sm text-tinta/75">{detalle}</span>

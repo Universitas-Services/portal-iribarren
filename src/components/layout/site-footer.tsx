@@ -8,23 +8,22 @@ import { CintaMarcas } from "./cinta-marcas";
 /** Instagram tiene su ícono de marca; las demás redes, uno genérico. */
 const IconoRed = ({ red }: { red: Red }) =>
   red === "INSTAGRAM" ? (
-    <Instagram size={14} className="text-rojo" />
+    <Instagram size={14} className="text-enlace" />
   ) : (
-    <AtSign size={14} aria-hidden="true" className="text-rojo" />
+    <AtSign size={14} aria-hidden="true" className="text-enlace" />
   );
 
-const enlace = "transition-colors duration-150 hover:text-rojo hover:underline";
+const enlace = "transition-colors duration-150 hover:text-enlace hover:underline";
 
 /**
- * Footer claro y compacto (los logos de la Alcaldía no se leen sobre fondos oscuros): una cinta
- * con PDUL YA, el alcalde, los lemas de la gestión y la Alcaldía. La navegación vive solo en el
- * encabezado.
+ * Footer compacto: una cinta con PDUL YA, el alcalde, los lemas de la gestión y la Alcaldía (en
+ * modo oscuro, sus versiones para fondo oscuro). La navegación vive solo en el encabezado.
  */
 export async function SiteFooter() {
   // Dirección, contacto, redes y enlaces oficiales: los edita la alcaldía (R17).
   const { contacto, redes, enlaces } = await getSitio();
   return (
-    <footer className="mt-auto border-t border-linea bg-papel text-tinta print:hidden">
+    <footer className="mt-auto border-t border-linea bg-tarjeta text-tinta print:hidden">
       <div className="py-3 sm:py-4">
         <CintaMarcas />
       </div>
@@ -33,7 +32,7 @@ export async function SiteFooter() {
         <div className="mx-auto flex max-w-7xl flex-col gap-1.5 px-4 py-3 text-xs sm:gap-3 sm:px-6 sm:py-4 sm:text-sm lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 sm:gap-x-5">
             <address className="inline-flex items-center gap-1.5 not-italic">
-              <MapPin size={14} aria-hidden="true" className="shrink-0 text-rojo" />
+              <MapPin size={14} aria-hidden="true" className="shrink-0 text-enlace" />
               {contacto.direccion}
             </address>
             {contacto.correo && (
@@ -41,7 +40,7 @@ export async function SiteFooter() {
                 href={`mailto:${contacto.correo}`}
                 className={`inline-flex items-center gap-1.5 ${enlace}`}
               >
-                <Mail size={14} aria-hidden="true" className="text-rojo" />
+                <Mail size={14} aria-hidden="true" className="text-enlace" />
                 {contacto.correo}
               </a>
             )}
@@ -50,7 +49,7 @@ export async function SiteFooter() {
                 href={`tel:${contacto.telefono.replace(/[^\d+]/g, "")}`}
                 className={`inline-flex items-center gap-1.5 ${enlace}`}
               >
-                <Phone size={14} aria-hidden="true" className="text-rojo" />
+                <Phone size={14} aria-hidden="true" className="text-enlace" />
                 {contacto.telefono}
               </a>
             )}

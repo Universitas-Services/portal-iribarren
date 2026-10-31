@@ -75,13 +75,13 @@ export function Reacciones({
   return (
     <section
       aria-label={etiqueta}
-      className="flex flex-wrap items-center justify-between gap-4 rounded-tarjeta bg-papel p-5 shadow-tarjeta sm:px-8"
+      className="flex flex-wrap items-center justify-between gap-4 rounded-tarjeta bg-tarjeta p-5 shadow-tarjeta sm:px-8"
     >
       <p className="flex items-center gap-2 text-sm text-tinta/75">
         <Eye size={18} aria-hidden="true" />
         {resumen ? (
           <span>
-            <span className="font-semibold text-noche tabular-nums">
+            <span className="font-semibold text-fuerte tabular-nums">
               {numero.format(resumen.vistas)}
             </span>{" "}
             {resumen.vistas === 1 ? "vista" : "vistas"}
@@ -98,7 +98,9 @@ export function Reacciones({
           disabled={!resumen || pendiente}
           aria-pressed={resumen?.mia === "LIKE"}
           className={`${boton} aria-pressed:bg-rojo aria-pressed:text-papel aria-pressed:ring-rojo ${
-            resumen?.mia === "LIKE" ? "" : "bg-papel text-noche hover:bg-rojo/8 hover:text-rojo"
+            resumen?.mia === "LIKE"
+              ? ""
+              : "bg-tarjeta text-fuerte hover:bg-rojo/8 hover:text-enlace"
           }`}
         >
           <ThumbsUp size={18} aria-hidden="true" />
@@ -111,7 +113,7 @@ export function Reacciones({
           disabled={!resumen || pendiente}
           aria-pressed={resumen?.mia === "DISLIKE"}
           className={`${boton} aria-pressed:bg-noche aria-pressed:text-papel aria-pressed:ring-noche ${
-            resumen?.mia === "DISLIKE" ? "" : "bg-papel text-noche hover:bg-noche/8"
+            resumen?.mia === "DISLIKE" ? "" : "bg-tarjeta text-fuerte hover:bg-fuerte/8"
           }`}
         >
           <ThumbsDown size={18} aria-hidden="true" />
@@ -140,12 +142,12 @@ export function Reacciones({
           Para reaccionar necesitas tu cuenta.{" "}
           <Link
             href={`/ingresar?volver=${encodeURIComponent(volver)}`}
-            className="font-bold text-rojo underline"
+            className="font-bold text-enlace underline"
           >
             Inicia sesión
           </Link>{" "}
           o{" "}
-          <Link href="/registro" className="font-bold text-rojo underline">
+          <Link href="/registro" className="font-bold text-enlace underline">
             regístrate
           </Link>
           .

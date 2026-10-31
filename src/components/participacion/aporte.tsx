@@ -83,14 +83,14 @@ export function FichaAporte({
   ];
   return (
     <section aria-labelledby="ficha-aporte" className="rounded-2xl bg-superficie p-5">
-      <h2 id="ficha-aporte" className="font-display font-extrabold text-noche">
+      <h2 id="ficha-aporte" className="font-display font-extrabold text-fuerte">
         {titulo}
       </h2>
       <dl className="mt-3 grid gap-x-6 gap-y-3 sm:grid-cols-2">
         {filas.map(([k, v]) => (
           <div key={k}>
             <dt className="text-sm text-tinta/75">{k}</dt>
-            <dd className="font-semibold [overflow-wrap:anywhere] text-noche">{v}</dd>
+            <dd className="font-semibold [overflow-wrap:anywhere] text-fuerte">{v}</dd>
           </div>
         ))}
       </dl>
@@ -98,7 +98,7 @@ export function FichaAporte({
         <p className="text-sm text-tinta/75">
           {p.tipo === "PROPUESTA_FORMAL" ? "Propuesta" : "Opinión"}
         </p>
-        <p className="mt-1 leading-relaxed whitespace-pre-line text-noche">{p.descripcion}</p>
+        <p className="mt-1 leading-relaxed whitespace-pre-line text-fuerte">{p.descripcion}</p>
       </div>
       <Adjuntos aporte={p} base={base} />
       {pie && <p className="mt-4 text-sm text-tinta/80">{pie}</p>}
@@ -172,19 +172,19 @@ function Adjuntos({ aporte: p, base }: { aporte: AporteVisible; base: string }) 
         <ul className="space-y-2 text-sm text-tinta">
           {p.soporte && !soporte && (
             <li className="flex items-start gap-2">
-              <FileText size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
+              <FileText size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-enlace" />
               <span>
-                Soporte: <span className="font-semibold text-noche">{p.soporte.nombre}</span> (
+                Soporte: <span className="font-semibold text-fuerte">{p.soporte.nombre}</span> (
                 {formatearPeso(p.soporte.tamano)})
               </span>
             </li>
           )}
           {sinVer.length > 0 && (
             <li className="flex items-start gap-2">
-              <ImageIcon size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
+              <ImageIcon size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-enlace" />
               <span>
                 {sinVer.length === 1 ? "1 foto" : `${sinVer.length} fotos`}:{" "}
-                <span className="font-semibold break-words text-noche">
+                <span className="font-semibold break-words text-fuerte">
                   {sinVer.map((i) => i.nombre).join(", ")}
                 </span>
               </span>
@@ -221,7 +221,7 @@ export function LineaTiempoEstados({
                 actual
                   ? rechazo
                     ? "bg-rojo text-papel"
-                    : "border-4 border-rojo bg-papel text-rojo"
+                    : "border-4 border-rojo bg-tarjeta text-enlace"
                   : "bg-rojo text-papel"
               }`}
             >
@@ -239,7 +239,7 @@ export function LineaTiempoEstados({
                 <blockquote
                   className={`mt-2 rounded-2xl p-4 text-sm leading-relaxed ${
                     rechazo
-                      ? "bg-rojo/8 text-noche ring-1 ring-rojo/30 ring-inset"
+                      ? "bg-rojo/8 text-fuerte ring-1 ring-rojo/30 ring-inset"
                       : "bg-superficie text-tinta"
                   }`}
                 >
@@ -283,15 +283,17 @@ export function TarjetaAporte({
   metricas?: { vistas: number; likes: number };
 }) {
   return (
-    <article className="group relative flex h-full flex-col rounded-tarjeta bg-papel p-5 shadow-tarjeta transition-shadow duration-200 hover:shadow-elevada sm:p-6">
+    <article className="group relative flex h-full flex-col rounded-tarjeta bg-tarjeta p-5 shadow-tarjeta transition-shadow duration-200 hover:shadow-elevada sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="font-display text-sm font-extrabold text-noche tabular-nums">{folio}</span>
+        <span className="font-display text-sm font-extrabold text-fuerte tabular-nums">
+          {folio}
+        </span>
         {estado && <InsigniaEstado estado={estado} tipo={tipo} />}
       </div>
-      <h3 className="mt-3 font-display text-lg leading-snug font-extrabold text-noche">
+      <h3 className="mt-3 font-display text-lg leading-snug font-extrabold text-fuerte">
         <Link
           href={href}
-          className="outline-none group-hover:text-rojo after:absolute after:inset-0 after:rounded-tarjeta focus-visible:after:ring-2 focus-visible:after:ring-rojo"
+          className="outline-none group-hover:text-enlace after:absolute after:inset-0 after:rounded-tarjeta focus-visible:after:ring-2 focus-visible:after:ring-rojo"
         >
           {NOMBRE_TIPO_PARTICIPACION[tipo]} · {parroquia}
         </Link>
@@ -299,7 +301,7 @@ export function TarjetaAporte({
       <p className="mt-1 text-sm text-tinta/75">{categoriaTecnica}</p>
       <p className="mt-3 line-clamp-3 leading-relaxed text-tinta">{descripcion}</p>
       <p className="mt-auto flex flex-wrap gap-x-3 gap-y-1 pt-4 text-sm text-tinta/75">
-        {autor && <span className="font-semibold text-noche">{autor}</span>}
+        {autor && <span className="font-semibold text-fuerte">{autor}</span>}
         <time dateTime={fecha}>{formatearFechaHora(fecha)}</time>
         {metricas && (
           <>

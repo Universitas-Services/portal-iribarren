@@ -39,7 +39,7 @@ function Aceptaciones({ estado, textos }: { estado: EstadoFormulario; textos: Te
   const [abierto, setAbierto] = useState<TipoTextoLegal | null>(null);
   const v = estado.valores ?? {};
   const enlace =
-    "font-semibold text-rojo underline underline-offset-2 hover:text-rojo-oscuro cursor-pointer";
+    "font-semibold text-enlace underline underline-offset-2 hover:text-enlace-fuerte cursor-pointer";
   const leer = (tipo: TipoTextoLegal, texto: string) => (
     <button
       type="button"
@@ -263,7 +263,7 @@ export function FormReenviar({
       <button
         type="submit"
         disabled={espera > 0}
-        className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border-2 border-noche px-6 font-display font-bold text-noche transition-colors hover:bg-noche hover:text-papel disabled:cursor-not-allowed disabled:border-linea disabled:text-tinta/50 disabled:hover:bg-transparent"
+        className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border-2 border-fuerte px-6 font-display font-bold text-fuerte transition-colors hover:bg-noche hover:text-papel disabled:cursor-not-allowed disabled:border-linea disabled:text-tinta/50 disabled:hover:bg-transparent"
       >
         {espera > 0 ? `Reenviar el enlace en ${espera} s` : "Reenviar el enlace"}
       </button>
@@ -296,7 +296,7 @@ export function FormIngreso({ volver }: { volver?: string }) {
           error={estado.errores?.contrasena}
         />
         <div className="flex justify-end">
-          <Link href="/recuperar" className="text-sm font-semibold text-rojo hover:underline">
+          <Link href="/recuperar" className="text-sm font-semibold text-enlace hover:underline">
             Olvidé mi contraseña
           </Link>
         </div>

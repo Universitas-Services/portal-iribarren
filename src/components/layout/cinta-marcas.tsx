@@ -1,6 +1,10 @@
 import Image from "next/image";
 
-/** PDUL YA, el alcalde, los lemas de la gestión y la Alcaldía (archivos del cliente, 22-10-2026). */
+/**
+ * PDUL YA, el alcalde, los lemas de la gestión y la Alcaldía (archivos del cliente, 22-10-2026).
+ * Cada uno tiene su versión para el modo oscuro en /brand/oscuro (derivada del original,
+ * aprobada el 30-10-2026; se reemplaza si el diseñador entrega la oficial).
+ */
 const MARCAS = [
   { src: "/brand/pdul-ya-horizontal-divisor.png", alt: "PDUL YA", ancho: 1200, alto: 402 },
   { src: "/brand/yanys-aguero.png", alt: "Yanys Agüero, Alcalde", ancho: 512, alto: 240 },
@@ -41,7 +45,15 @@ export function CintaMarcas() {
                   alt={copia === 0 ? m.alt : ""}
                   width={m.ancho}
                   height={m.alto}
-                  className="h-12 w-auto sm:h-16"
+                  className="h-12 w-auto sm:h-16 oscuro:hidden"
+                />
+                <Image
+                  src={m.src.replace("/brand/", "/brand/oscuro/")}
+                  alt={copia === 0 ? m.alt : ""}
+                  width={m.ancho}
+                  height={m.alto}
+                  loading="lazy"
+                  className="hidden h-12 w-auto sm:h-16 oscuro:block"
                 />
               </li>
             ))}

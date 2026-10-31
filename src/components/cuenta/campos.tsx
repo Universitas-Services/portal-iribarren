@@ -14,16 +14,16 @@ import { cedulaSchema, DIGITOS_CEDULA, rifSchema } from "@/lib/validation/common
  */
 
 export const claseCampo = (error?: string, ancho = "w-full") =>
-  `h-12 ${ancho} rounded-xl border bg-papel px-4 text-noche outline-none transition-colors placeholder:text-tinta/70 focus-visible:border-rojo ${
-    error ? "border-rojo" : "border-linea hover:border-noche/40"
+  `h-12 ${ancho} rounded-xl border bg-tarjeta px-4 text-fuerte outline-none transition-colors placeholder:text-tinta/70 focus-visible:border-rojo ${
+    error ? "border-rojo" : "border-linea hover:border-fuerte/40"
   }`;
 
-const claseEtiqueta = "mb-1.5 block font-display text-sm font-bold text-noche";
+const claseEtiqueta = "mb-1.5 block font-display text-sm font-bold text-fuerte";
 
 function ErrorCampo({ id, error }: { id: string; error?: string }) {
   if (!error) return null;
   return (
-    <p id={`${id}-error`} className="mt-1.5 flex items-start gap-1.5 text-sm text-rojo">
+    <p id={`${id}-error`} className="mt-1.5 flex items-start gap-1.5 text-sm text-enlace">
       <AlertCircle size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
       {error}
     </p>
@@ -99,7 +99,7 @@ export function Campo({
         <p
           id={`${id}-ayuda`}
           aria-live="polite"
-          className={`mt-1.5 text-sm ${aviso ? "font-semibold text-noche" : "text-tinta/70"}`}
+          className={`mt-1.5 text-sm ${aviso ? "font-semibold text-fuerte" : "text-tinta/70"}`}
         >
           {aviso ?? ayuda}
         </p>
@@ -294,7 +294,7 @@ export function CampoContrasena({
           type="button"
           onClick={() => setVisible((v) => !v)}
           aria-pressed={visible}
-          className="absolute top-1/2 right-1.5 grid size-10 -translate-y-1/2 place-items-center rounded-lg text-tinta/70 hover:text-noche"
+          className="absolute top-1/2 right-1.5 grid size-10 -translate-y-1/2 place-items-center rounded-lg text-tinta/70 hover:text-fuerte"
         >
           {visible ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
           <span className="sr-only">{visible ? "Ocultar contraseña" : "Mostrar contraseña"}</span>
@@ -420,14 +420,14 @@ export function ResumenErrores({ estado }: { estado: EstadoFormulario }) {
   const m = estado.mensaje;
   const estilo =
     errores.length || m?.tipo === "error"
-      ? { caja: "bg-rojo/8 text-noche ring-rojo/30", Icon: AlertCircle, icono: "text-rojo" }
+      ? { caja: "bg-rojo/8 text-fuerte ring-rojo/30", Icon: AlertCircle, icono: "text-enlace" }
       : m?.tipo === "exito"
         ? {
-            caja: "bg-exito/10 text-noche ring-exito/30",
+            caja: "bg-exito/10 text-fuerte ring-exito/30",
             Icon: CheckCircle2,
             icono: "text-exito-oscuro",
           }
-        : { caja: "bg-superficie text-noche ring-linea", Icon: Info, icono: "text-tinta/70" };
+        : { caja: "bg-superficie text-fuerte ring-linea", Icon: Info, icono: "text-tinta/70" };
 
   return (
     <div
@@ -483,11 +483,11 @@ export function BotonEnviar({ children, enviando }: { children: ReactNode; envia
 export function AvisoDesarrollo({ enlace }: { enlace?: string }) {
   if (!enlace) return null;
   return (
-    <div className="mt-6 rounded-2xl border-2 border-dashed border-amarillo bg-amarillo/10 p-4 text-sm text-noche">
+    <div className="mt-6 rounded-2xl border-2 border-dashed border-amarillo bg-amarillo/10 p-4 text-sm text-fuerte">
       <p className="font-display font-bold">Solo en desarrollo</p>
       <p className="mt-1">
         En producción este enlace llega por correo.{" "}
-        <a href={enlace} className="font-semibold text-rojo underline">
+        <a href={enlace} className="font-semibold text-enlace underline">
           Abrir el enlace
         </a>
       </p>

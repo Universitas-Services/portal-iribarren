@@ -65,7 +65,7 @@ export async function NewsRail() {
       <li className="w-[70%] shrink-0 snap-start sm:w-[30%] lg:w-[22%]">
         <Link
           href="/noticias"
-          className="group flex h-full min-h-56 flex-col justify-between rounded-tarjeta border-2 border-dashed border-rojo/40 p-6 font-display text-rojo transition-[background-color,border-color] duration-200 hover:border-rojo hover:bg-rojo/5"
+          className="group flex h-full min-h-56 flex-col justify-between rounded-tarjeta border-2 border-dashed border-rojo/40 p-6 font-display text-enlace transition-[background-color,border-color] duration-200 hover:border-rojo hover:bg-rojo/5"
         >
           <span className="text-2xl leading-tight font-extrabold">Ver todas las noticias</span>
           <ArrowRight
@@ -82,7 +82,7 @@ export async function NewsRail() {
     <section aria-labelledby="noticias-titulo" className="revelar">
       <h2
         id="noticias-titulo"
-        className="font-display text-3xl font-extrabold text-noche sm:text-4xl"
+        className="font-display text-3xl font-extrabold text-fuerte sm:text-4xl"
       >
         Noticias y novedades
       </h2>

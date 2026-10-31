@@ -22,14 +22,14 @@ const TONO: Record<
   rojo: {
     panel: "bg-rojo-oscuro text-papel",
     texto: "text-papel/90",
-    boton: "bg-papel text-rojo-oscuro hover:bg-superficie",
+    boton: "bg-tarjeta text-enlace-fuerte hover:bg-superficie",
     Icon: Megaphone,
     icono: "text-naranja/40",
   },
   calido: {
     panel: "bg-amarillo text-noche",
-    texto: "text-noche/85",
-    boton: "bg-noche text-papel hover:bg-tinta",
+    texto: "text-fuerte/85",
+    boton: "bg-noche text-papel hover:bg-morado-activo",
     Icon: MessageSquareText,
     icono: "text-papel/45",
   },
@@ -103,7 +103,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
 
   if (banners.length === 0) return null;
   const actual = banners[index];
-  const controles = actual?.tono === "calido" && !actual.imagen ? "text-noche" : "text-papel";
+  const controles = actual?.tono === "calido" && !actual.imagen ? "text-fuerte" : "text-papel";
 
   return (
     <div

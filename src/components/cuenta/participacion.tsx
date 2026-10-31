@@ -163,7 +163,7 @@ export function FormParticipacion({
       <input type="hidden" name="idempotencia" value={idempotencia} />
 
       {pidioPropuesta && !puedeProponer && (
-        <div className="flex items-start gap-3 rounded-2xl bg-amarillo/15 p-5 text-noche ring-1 ring-amarillo/60 ring-inset">
+        <div className="flex items-start gap-3 rounded-2xl bg-amarillo/15 p-5 text-fuerte ring-1 ring-amarillo/60 ring-inset">
           <Lock size={20} aria-hidden="true" className="mt-0.5 shrink-0" />
           <div>
             <p className="font-semibold">
@@ -179,7 +179,7 @@ export function FormParticipacion({
             )}
             <Link
               href="/mi-cuenta#verificacion"
-              className="mt-3 inline-block font-semibold text-rojo underline underline-offset-2"
+              className="mt-3 inline-block font-semibold text-enlace underline underline-offset-2"
             >
               Ir a Mi cuenta
             </Link>
@@ -190,17 +190,17 @@ export function FormParticipacion({
       <ResumenErrores estado={mostrado} />
 
       <fieldset data-tour="tipo">
-        <legend className="mb-2 font-display text-sm font-bold text-noche">
+        <legend className="mb-2 font-display text-sm font-bold text-fuerte">
           ¿Qué quieres enviar?
         </legend>
         <div className="grid gap-3 sm:grid-cols-3">
           {TIPOS.map((t) => (
             <label
               key={t.valor}
-              className="flex cursor-pointer flex-col gap-2 rounded-2xl border-2 border-linea p-4 transition-colors hover:border-noche/30 has-[:checked]:border-rojo has-[:checked]:bg-rojo/5 has-[:disabled]:cursor-not-allowed has-[:disabled]:border-linea has-[:disabled]:bg-superficie has-[:disabled]:opacity-70 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-rojo has-[:focus-visible]:ring-offset-2"
+              className="flex cursor-pointer flex-col gap-2 rounded-2xl border-2 border-linea p-4 transition-colors hover:border-fuerte/30 has-[:checked]:border-rojo has-[:checked]:bg-rojo/5 has-[:disabled]:cursor-not-allowed has-[:disabled]:border-linea has-[:disabled]:bg-superficie has-[:disabled]:opacity-70 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-rojo has-[:focus-visible]:ring-offset-2"
             >
               <span className="flex items-center justify-between">
-                <t.Icon size={22} aria-hidden="true" className="text-rojo" />
+                <t.Icon size={22} aria-hidden="true" className="text-enlace" />
                 <input
                   type="radio"
                   name="tipo"
@@ -213,17 +213,17 @@ export function FormParticipacion({
                   className="size-4 accent-rojo"
                 />
               </span>
-              <span className="font-display font-extrabold text-noche">{t.titulo}</span>
+              <span className="font-display font-extrabold text-fuerte">{t.titulo}</span>
               <span id={`tipo-${t.valor}`} className="text-sm leading-snug text-tinta/80">
                 {t.texto}
                 {t.valor === "PROPUESTA_FORMAL" && !puedeProponer && (
-                  <span className="mt-1 flex items-start gap-1 font-semibold text-noche">
+                  <span className="mt-1 flex items-start gap-1 font-semibold text-fuerte">
                     <Lock size={13} aria-hidden="true" className="mt-1 shrink-0" />
                     <span>
                       Requiere el perfil completo y la verificación con documentos en{" "}
                       <Link
                         href="/mi-cuenta#verificacion"
-                        className="text-rojo underline underline-offset-2"
+                        className="text-enlace underline underline-offset-2"
                       >
                         Mi cuenta
                       </Link>
@@ -285,7 +285,7 @@ export function FormParticipacion({
       <div>
         <label
           htmlFor="descripcion"
-          className="mb-1.5 block font-display text-sm font-bold text-noche"
+          className="mb-1.5 block font-display text-sm font-bold text-fuerte"
         >
           {tipo === "PROPUESTA_FORMAL" ? "Tu propuesta" : "Tu opinión"}
         </label>
@@ -302,14 +302,14 @@ export function FormParticipacion({
           onChange={(e) => setDescripcion(e.target.value)}
           aria-invalid={errores.descripcion ? true : undefined}
           aria-describedby={`descripcion-ayuda descripcion-contador${errores.descripcion ? " descripcion-error" : ""}`}
-          className={`w-full rounded-xl border bg-papel px-4 py-3 leading-relaxed text-noche transition-colors outline-none focus-visible:border-rojo ${
-            errores.descripcion ? "border-rojo" : "border-linea hover:border-noche/40"
+          className={`w-full rounded-xl border bg-tarjeta px-4 py-3 leading-relaxed text-fuerte transition-colors outline-none focus-visible:border-rojo ${
+            errores.descripcion ? "border-rojo" : "border-linea hover:border-fuerte/40"
           }`}
         />
         <p
           id="descripcion-contador"
           className={`mt-1 text-right text-sm tabular-nums ${
-            largo > 0 && largo < DESCRIPCION_MIN ? "text-noche" : "text-tinta/70"
+            largo > 0 && largo < DESCRIPCION_MIN ? "text-fuerte" : "text-tinta/70"
           }`}
         >
           {largo < DESCRIPCION_MIN
@@ -317,7 +317,7 @@ export function FormParticipacion({
             : `${largo} / ${DESCRIPCION_MAX}`}
         </p>
         {errores.descripcion && (
-          <p id="descripcion-error" className="text-sm text-rojo">
+          <p id="descripcion-error" className="text-sm text-enlace">
             {errores.descripcion}
           </p>
         )}
@@ -360,7 +360,7 @@ export function FormParticipacion({
             : "mostrar-nombre-ayuda"
         }
       >
-        <legend className="float-left mb-1 font-display font-bold text-noche">
+        <legend className="float-left mb-1 font-display font-bold text-fuerte">
           Si la alcaldía publica tu aporte, ¿quieres que aparezca tu nombre?
         </legend>
         <p id="mostrar-nombre-ayuda" className="clear-left leading-relaxed text-tinta">
@@ -373,7 +373,7 @@ export function FormParticipacion({
           ].map((o, i) => (
             <label
               key={o.valor}
-              className="flex min-h-12 cursor-pointer items-center gap-2.5 rounded-xl border border-linea bg-papel px-4 font-semibold text-noche has-[:checked]:border-rojo has-[:checked]:bg-rojo/5 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-rojo"
+              className="flex min-h-12 cursor-pointer items-center gap-2.5 rounded-xl border border-linea bg-tarjeta px-4 font-semibold text-fuerte has-[:checked]:border-rojo has-[:checked]:bg-rojo/5 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-rojo"
             >
               <input
                 type="radio"
@@ -388,7 +388,7 @@ export function FormParticipacion({
           ))}
         </div>
         {errores.mostrarNombre && (
-          <p id="mostrarNombre-error" className="mt-1.5 text-sm text-rojo">
+          <p id="mostrarNombre-error" className="mt-1.5 text-sm text-enlace">
             {errores.mostrarNombre}
           </p>
         )}
@@ -414,12 +414,12 @@ export function FormParticipacion({
           {Object.entries(resumen ?? {}).map(([k, val]) => (
             <div key={k} className="flex gap-3">
               <dt className="w-32 shrink-0 text-tinta/75">{k}</dt>
-              <dd className="min-w-0 font-semibold break-words text-noche">{val}</dd>
+              <dd className="min-w-0 font-semibold break-words text-fuerte">{val}</dd>
             </div>
           ))}
         </dl>
-        <p className="mt-4 flex items-start gap-2 font-semibold text-noche">
-          <Lock size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
+        <p className="mt-4 flex items-start gap-2 font-semibold text-fuerte">
+          <Lock size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-enlace" />
           Una vez enviada no podrás editarla ni eliminarla.
         </p>
         <AccionesConfirmar onVolver={() => setResumen(null)} />
@@ -444,7 +444,7 @@ function AccionesConfirmar({ onVolver }: { onVolver: () => void }) {
         type="button"
         onClick={onVolver}
         disabled={pending}
-        className="min-h-12 flex-1 rounded-xl border-2 border-linea px-5 font-display font-bold text-noche hover:border-noche/40 disabled:opacity-50"
+        className="min-h-12 flex-1 rounded-xl border-2 border-linea px-5 font-display font-bold text-fuerte hover:border-fuerte/40 disabled:opacity-50"
       >
         Volver a editar
       </button>
@@ -470,7 +470,7 @@ export function CopiarFolio({ folio }: { folio: string }) {
           setCopiado(false);
         }
       }}
-      className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-papel px-4 font-semibold text-noche ring-1 ring-linea hover:ring-noche/40 print:hidden"
+      className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-tarjeta px-4 font-semibold text-fuerte ring-1 ring-linea hover:ring-fuerte/40 print:hidden"
     >
       <Copy size={16} aria-hidden="true" />
       <span aria-live="polite">{copiado ? "Copiado" : "Copiar folio"}</span>
@@ -483,7 +483,7 @@ export function Imprimir() {
     <button
       type="button"
       onClick={() => window.print()}
-      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-linea px-5 font-display font-bold text-noche hover:border-noche/40 print:hidden"
+      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-linea px-5 font-display font-bold text-fuerte hover:border-fuerte/40 print:hidden"
     >
       <Printer size={18} aria-hidden="true" />
       Imprimir comprobante

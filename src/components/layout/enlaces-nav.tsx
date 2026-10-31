@@ -18,7 +18,7 @@ export function EnlacesNav() {
           <Link
             href={l.href}
             aria-current={esActual(l.href, ruta) ? "page" : undefined}
-            className="rounded-full px-2.5 py-2 font-display text-sm font-semibold whitespace-nowrap text-tinta transition-colors duration-150 hover:text-rojo aria-[current=page]:bg-morado-activo aria-[current=page]:text-papel xl:px-3.5 xl:text-[0.9375rem]"
+            className="rounded-full px-2 py-2 font-display text-sm font-semibold whitespace-nowrap text-tinta transition-colors duration-150 hover:text-enlace aria-[current=page]:bg-morado-activo aria-[current=page]:text-papel xl:px-3.5 xl:text-[0.9375rem]"
           >
             {l.label}
           </Link>

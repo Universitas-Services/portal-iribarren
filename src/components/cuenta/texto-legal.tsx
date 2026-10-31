@@ -25,7 +25,7 @@ export function CuerpoTextoLegal({ texto }: { texto: TextoLegal }) {
   return (
     <>
       {texto.provisional && (
-        <p className="mb-5 flex items-start gap-3 rounded-2xl bg-amarillo/15 p-4 text-sm leading-relaxed text-noche ring-1 ring-amarillo/60 ring-inset">
+        <p className="mb-5 flex items-start gap-3 rounded-2xl bg-amarillo/15 p-4 text-sm leading-relaxed text-fuerte ring-1 ring-amarillo/60 ring-inset">
           <FileClock size={20} aria-hidden="true" className="mt-0.5 shrink-0" />
           El texto definitivo está en preparación por el equipo de documentación y pasará por
           revisión legal antes de publicarse.
@@ -65,7 +65,7 @@ export function ModalTextoLegal({
             href={RUTA_TEXTO_LEGAL[tipo]}
             target="_blank"
             rel="noopener"
-            className="text-sm font-semibold text-rojo underline underline-offset-2"
+            className="text-sm font-semibold text-enlace underline underline-offset-2"
           >
             Abrir en otra pestaña<span className="sr-only"> (se abre en otra pestaña)</span>
           </Link>

@@ -108,9 +108,9 @@ export function ReproductorVideo({ video, titulo }: { video: Video; titulo: stri
       >
         <Portada video={video} />
         <span className="absolute inset-0 grid place-items-center">
-          <span className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-papel px-5 font-display font-bold text-noche shadow-elevada transition-transform duration-200 ease-out-expo group-hover:scale-105">
+          <span className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-tarjeta px-5 font-display font-bold text-fuerte shadow-elevada transition-transform duration-200 ease-out-expo group-hover:scale-105">
             {esInstagram ? (
-              <Instagram size={20} className="text-rojo" />
+              <Instagram size={20} className="text-enlace" />
             ) : (
               <ExternalLink size={18} aria-hidden="true" />
             )}
@@ -123,7 +123,7 @@ export function ReproductorVideo({ video, titulo }: { video: Video; titulo: stri
   }
 
   return (
-    <figure className="overflow-hidden rounded-tarjeta bg-papel shadow-elevada">
+    <figure className="overflow-hidden rounded-tarjeta bg-tarjeta shadow-elevada">
       {reproductor}
       <figcaption className="flex flex-wrap justify-between gap-x-4 gap-y-1 px-5 py-3 text-sm text-tinta/75">
         <span>

@@ -26,7 +26,7 @@ const PESTANAS = [
 export function PestanasCuenta({ activa }: { activa: PestanaCuenta }) {
   return (
     <nav aria-label="Secciones de mi cuenta" className="mb-4">
-      <ul className="flex [scrollbar-width:none] gap-1 overflow-x-auto rounded-2xl bg-papel p-1.5 shadow-tarjeta [&::-webkit-scrollbar]:hidden">
+      <ul className="flex [scrollbar-width:none] gap-1 overflow-x-auto rounded-2xl bg-tarjeta p-1.5 shadow-tarjeta [&::-webkit-scrollbar]:hidden">
         {PESTANAS.map(({ clave, href, label, corto, Icon }) => {
           const actual = clave === activa;
           return (
@@ -35,13 +35,13 @@ export function PestanasCuenta({ activa }: { activa: PestanaCuenta }) {
                 href={href}
                 aria-current={actual ? "page" : undefined}
                 className={`flex min-h-11 items-center justify-center gap-2 rounded-xl px-2.5 font-display text-sm font-bold whitespace-nowrap transition-colors sm:px-3 ${
-                  actual ? "bg-noche text-papel" : "text-noche hover:bg-superficie"
+                  actual ? "bg-noche text-papel" : "text-fuerte hover:bg-superficie"
                 }`}
               >
                 <Icon
                   size={16}
                   aria-hidden="true"
-                  className={`hidden sm:block ${actual ? "text-amarillo" : "text-rojo"}`}
+                  className={`hidden sm:block ${actual ? "text-amarillo" : "text-enlace"}`}
                 />
                 {corto === label ? (
                   label

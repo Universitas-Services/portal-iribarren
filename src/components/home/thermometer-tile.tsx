@@ -16,8 +16,8 @@ export async function ThermometerTile({ className = "" }: { className?: string }
   // Sin fases (la API no respondió): el mosaico no muestra un «1/0».
   if (fases.length === 0)
     return (
-      <Tile aria-labelledby="proceso-titulo" className={`bg-papel p-6 sm:p-8 ${className}`}>
-        <h2 id="proceso-titulo" className="font-display text-2xl font-extrabold text-noche">
+      <Tile aria-labelledby="proceso-titulo" className={`bg-tarjeta p-6 sm:p-8 ${className}`}>
+        <h2 id="proceso-titulo" className="font-display text-2xl font-extrabold text-fuerte">
           ¿En qué etapa está el PDUL?
         </h2>
         <p className="mt-2 leading-relaxed text-tinta">
@@ -28,20 +28,20 @@ export async function ThermometerTile({ className = "" }: { className?: string }
     );
 
   return (
-    <Tile aria-labelledby="proceso-titulo" className={`bg-papel p-6 sm:p-8 ${className}`}>
+    <Tile aria-labelledby="proceso-titulo" className={`bg-tarjeta p-6 sm:p-8 ${className}`}>
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div className="max-w-md">
-          <h2 id="proceso-titulo" className="font-display text-2xl font-extrabold text-noche">
+          <h2 id="proceso-titulo" className="font-display text-2xl font-extrabold text-fuerte">
             ¿En qué etapa está el PDUL?
           </h2>
           {actual && (
             <p className="mt-2 leading-relaxed text-tinta">
-              <span className="font-display font-bold text-noche">{actual.nombre}:</span>{" "}
+              <span className="font-display font-bold text-fuerte">{actual.nombre}:</span>{" "}
               {actual.descripcion}
             </p>
           )}
         </div>
-        <p className="font-display leading-none font-extrabold text-rojo" aria-hidden="true">
+        <p className="font-display leading-none font-extrabold text-enlace" aria-hidden="true">
           <span className="text-6xl tracking-[-0.05em] tabular-nums">{faseActual + 1}</span>
           <span className="ml-1 text-2xl text-tinta/55 tabular-nums">/{fases.length}</span>
         </p>
@@ -79,8 +79,8 @@ export async function ThermometerTile({ className = "" }: { className?: string }
                   estado === "cumplida"
                     ? "bg-rojo text-papel"
                     : estado === "actual"
-                      ? "pulso border-4 border-rojo bg-papel text-rojo"
-                      : "border-2 border-linea bg-papel text-tinta/70"
+                      ? "pulso border-4 border-rojo bg-tarjeta text-enlace"
+                      : "border-2 border-linea bg-tarjeta text-tinta/70"
                 }`}
               >
                 {estado === "cumplida" ? (
@@ -92,16 +92,16 @@ export async function ThermometerTile({ className = "" }: { className?: string }
               <span
                 className={`font-display text-sm leading-snug ${
                   estado === "actual"
-                    ? "font-extrabold text-rojo"
+                    ? "font-extrabold text-enlace"
                     : estado === "cumplida"
-                      ? "font-bold text-noche"
+                      ? "font-bold text-fuerte"
                       : "font-semibold text-tinta/70"
                 }`}
               >
                 {fase.nombre}
                 <span
                   className={`mt-0.5 block font-sans text-xs font-normal ${
-                    estado === "actual" ? "text-rojo" : "text-tinta/75"
+                    estado === "actual" ? "text-enlace" : "text-tinta/75"
                   }`}
                 >
                   <span className="sr-only">: </span>

@@ -41,7 +41,7 @@ export function MenuUsuario({ nombre, corto }: { nombre: string; corto: string }
         aria-expanded={abierto}
         aria-controls={id}
         onClick={() => setAbierto((v) => !v)}
-        className="flex min-h-11 items-center gap-2.5 rounded-full py-1 pr-3 pl-1 font-display text-[0.9375rem] font-semibold text-noche transition-colors hover:bg-superficie"
+        className="flex min-h-11 items-center gap-2.5 rounded-full py-1 pr-3 pl-1 font-display text-[0.9375rem] font-semibold text-fuerte transition-colors hover:bg-superficie"
       >
         <span
           aria-hidden="true"
@@ -59,39 +59,39 @@ export function MenuUsuario({ nombre, corto }: { nombre: string; corto: string }
       {abierto && (
         <div
           id={id}
-          className="absolute right-0 mt-2 w-64 rounded-2xl bg-papel p-2 shadow-elevada ring-1 ring-linea"
+          className="absolute right-0 mt-2 w-64 rounded-2xl bg-tarjeta p-2 shadow-elevada ring-1 ring-linea"
         >
           <p className="truncate px-3 pt-2 pb-3 text-sm text-tinta/75">{nombre}</p>
           <Link
             href="/mi-cuenta"
             onClick={() => setAbierto(false)}
-            className="flex min-h-11 items-center gap-2.5 rounded-xl px-3 font-semibold text-noche hover:bg-superficie"
+            className="flex min-h-11 items-center gap-2.5 rounded-xl px-3 font-semibold text-fuerte hover:bg-superficie"
           >
-            <UserRound size={18} aria-hidden="true" className="text-rojo" />
+            <UserRound size={18} aria-hidden="true" className="text-enlace" />
             Mi cuenta
           </Link>
           <Link
             href="/mi-cuenta/participaciones"
             onClick={() => setAbierto(false)}
-            className="flex min-h-11 items-center gap-2.5 rounded-xl px-3 font-semibold text-noche hover:bg-superficie"
+            className="flex min-h-11 items-center gap-2.5 rounded-xl px-3 font-semibold text-fuerte hover:bg-superficie"
           >
-            <ClipboardList size={18} aria-hidden="true" className="text-rojo" />
+            <ClipboardList size={18} aria-hidden="true" className="text-enlace" />
             Mis participaciones
           </Link>
           <Link
             href="/mi-cuenta/seguridad"
             onClick={() => setAbierto(false)}
-            className="flex min-h-11 items-center gap-2.5 rounded-xl px-3 font-semibold text-noche hover:bg-superficie"
+            className="flex min-h-11 items-center gap-2.5 rounded-xl px-3 font-semibold text-fuerte hover:bg-superficie"
           >
-            <ShieldCheck size={18} aria-hidden="true" className="text-rojo" />
+            <ShieldCheck size={18} aria-hidden="true" className="text-enlace" />
             Seguridad y contraseña
           </Link>
           <form action={cerrarSesionAccion}>
             <button
               type="submit"
-              className="flex min-h-11 w-full items-center gap-2.5 rounded-xl px-3 font-semibold text-noche hover:bg-superficie"
+              className="flex min-h-11 w-full items-center gap-2.5 rounded-xl px-3 font-semibold text-fuerte hover:bg-superficie"
             >
-              <LogOut size={18} aria-hidden="true" className="text-rojo" />
+              <LogOut size={18} aria-hidden="true" className="text-enlace" />
               Cerrar sesión
             </button>
           </form>

@@ -58,35 +58,35 @@ export async function CuentaMovil() {
   return (
     <div className="rounded-2xl bg-superficie p-4">
       <p className="text-sm text-tinta/75">Sesión iniciada como</p>
-      <p className="truncate font-display font-extrabold text-noche">{u.nombre}</p>
+      <p className="truncate font-display font-extrabold text-fuerte">{u.nombre}</p>
       <div className="mt-3 grid grid-cols-2 gap-3">
         <Link
           href="/mi-cuenta/participaciones"
-          className="col-span-2 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-papel font-display font-semibold text-noche ring-1 ring-linea"
+          className="col-span-2 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-tarjeta font-display font-semibold text-fuerte ring-1 ring-linea"
         >
-          <ClipboardList size={18} aria-hidden="true" className="text-rojo" />
+          <ClipboardList size={18} aria-hidden="true" className="text-enlace" />
           Mis participaciones
         </Link>
         <Link
           href="/mi-cuenta/seguridad"
-          className="col-span-2 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-papel font-display font-semibold text-noche ring-1 ring-linea"
+          className="col-span-2 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-tarjeta font-display font-semibold text-fuerte ring-1 ring-linea"
         >
-          <ShieldCheck size={18} aria-hidden="true" className="text-rojo" />
+          <ShieldCheck size={18} aria-hidden="true" className="text-enlace" />
           Seguridad y contraseña
         </Link>
         <Link
           href="/mi-cuenta"
-          className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-papel font-display font-semibold text-noche ring-1 ring-linea"
+          className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-tarjeta font-display font-semibold text-fuerte ring-1 ring-linea"
         >
-          <UserRound size={18} aria-hidden="true" className="text-rojo" />
+          <UserRound size={18} aria-hidden="true" className="text-enlace" />
           Mi cuenta
         </Link>
         <form action={cerrarSesionAccion}>
           <button
             type="submit"
-            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-papel font-display font-semibold text-noche ring-1 ring-linea"
+            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-tarjeta font-display font-semibold text-fuerte ring-1 ring-linea"
           >
-            <LogOut size={18} aria-hidden="true" className="text-rojo" />
+            <LogOut size={18} aria-hidden="true" className="text-enlace" />
             Salir
           </button>
         </form>

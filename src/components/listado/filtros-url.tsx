@@ -71,7 +71,7 @@ export function FiltrosUrl({
         clearTimeout(espera.current);
         navegar(valores);
       }}
-      className="rounded-tarjeta bg-papel p-5 shadow-tarjeta sm:p-6"
+      className="rounded-tarjeta bg-tarjeta p-5 shadow-tarjeta sm:p-6"
     >
       <div className={`grid grid-cols-1 gap-3 sm:gap-4 ${columnas}`}>
         {campos.map((c) =>
@@ -91,7 +91,7 @@ export function FiltrosUrl({
             <div key={c.nombre}>
               <label
                 htmlFor={`filtro-${c.nombre}`}
-                className="mb-1.5 block font-display text-sm font-bold text-noche"
+                className="mb-1.5 block font-display text-sm font-bold text-fuerte"
               >
                 {c.etiqueta}
               </label>
@@ -110,7 +110,7 @@ export function FiltrosUrl({
                   placeholder={c.placeholder}
                   value={valores[c.nombre] ?? ""}
                   onChange={(e) => cambiar(c.nombre, e.target.value, true)}
-                  className="h-12 w-full rounded-xl border border-linea bg-papel pr-4 pl-11 text-noche transition-colors outline-none placeholder:text-tinta/70 hover:border-noche/40 focus-visible:border-rojo"
+                  className="h-12 w-full rounded-xl border border-linea bg-tarjeta pr-4 pl-11 text-fuerte transition-colors outline-none placeholder:text-tinta/70 hover:border-fuerte/40 focus-visible:border-rojo"
                 />
               </div>
             </div>
@@ -125,7 +125,7 @@ export function FiltrosUrl({
             setValores(vacios);
             navegar(vacios);
           }}
-          className="mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 font-display text-sm font-bold text-rojo hover:bg-rojo/8"
+          className="mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 font-display text-sm font-bold text-enlace hover:bg-rojo/8"
         >
           <X size={16} aria-hidden="true" />
           Quitar filtros

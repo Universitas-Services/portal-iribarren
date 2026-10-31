@@ -13,7 +13,7 @@ export function CuentaLoading() {
         </div>
       </div>
       <div className="relative z-10 mx-auto -mt-16 max-w-xl px-4 pb-24 sm:px-6 lg:-mt-20">
-        <div className="rounded-tarjeta bg-papel p-6 shadow-tarjeta sm:p-10">
+        <div className="rounded-tarjeta bg-tarjeta p-6 shadow-tarjeta sm:p-10">
           <FormularioSkeleton />
         </div>
       </div>

@@ -192,7 +192,7 @@ export function Selector({
         id={idEtiqueta}
         onClick={() => campo.current?.focus()}
         className={
-          ocultarEtiqueta ? "sr-only" : "mb-1.5 block font-display text-sm font-bold text-noche"
+          ocultarEtiqueta ? "sr-only" : "mb-1.5 block font-display text-sm font-bold text-fuerte"
         }
       >
         {etiqueta}
@@ -211,18 +211,18 @@ export function Selector({
         aria-describedby={describe || undefined}
         onClick={() => (abierto ? setAbierto(false) : abrir())}
         onKeyDown={alTeclear}
-        className={`flex h-12 cursor-pointer items-center gap-3 rounded-xl border bg-papel text-left transition-colors outline-none select-none focus-visible:border-rojo focus-visible:ring-2 focus-visible:ring-rojo/20 ${ancho} ${
+        className={`flex h-12 cursor-pointer items-center gap-3 rounded-xl border bg-tarjeta text-left transition-colors outline-none select-none focus-visible:border-rojo focus-visible:ring-2 focus-visible:ring-rojo/20 ${ancho} ${
           compacto ? "px-3" : "px-4"
-        } ${error || invalido ? "border-rojo" : abierto ? "border-rojo" : "border-linea hover:border-noche/40"}`}
+        } ${error || invalido ? "border-rojo" : abierto ? "border-rojo" : "border-linea hover:border-fuerte/40"}`}
       >
-        {Icono && <Icono size={18} aria-hidden="true" className="shrink-0 text-rojo" />}
+        {Icono && <Icono size={18} aria-hidden="true" className="shrink-0 text-enlace" />}
         <span
           id={`${base}-valor`}
           className={`min-w-0 flex-1 truncate ${
             elegida && (elegida.valor || permitirVacio)
               ? compacto
-                ? "font-display font-bold text-noche"
-                : "font-semibold text-noche"
+                ? "font-display font-bold text-fuerte"
+                : "font-semibold text-fuerte"
               : "text-tinta/70"
           }`}
         >
@@ -231,7 +231,7 @@ export function Selector({
         <ChevronDown
           size={18}
           aria-hidden="true"
-          className={`shrink-0 text-tinta/60 transition-transform duration-200 ${abierto ? "rotate-180 text-rojo" : ""}`}
+          className={`shrink-0 text-tinta/60 transition-transform duration-200 ${abierto ? "rotate-180 text-enlace" : ""}`}
         />
       </div>
       <input type="hidden" name={name} value={actual} />
@@ -245,13 +245,13 @@ export function Selector({
             ref={panel}
             className={
               compacto
-                ? "absolute left-0 z-50 mt-2 min-w-full rounded-2xl bg-papel p-1.5 shadow-elevada ring-1 ring-linea"
-                : "fixed inset-x-0 bottom-0 z-50 flex max-h-[75dvh] flex-col rounded-t-3xl bg-papel pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-elevada sm:absolute sm:inset-x-0 sm:bottom-auto sm:mt-2 sm:max-h-80 sm:rounded-2xl sm:pb-0 sm:ring-1 sm:ring-linea"
+                ? "absolute left-0 z-50 mt-2 min-w-full rounded-2xl bg-tarjeta p-1.5 shadow-elevada ring-1 ring-linea"
+                : "fixed inset-x-0 bottom-0 z-50 flex max-h-[75dvh] flex-col rounded-t-3xl bg-tarjeta pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-elevada sm:absolute sm:inset-x-0 sm:bottom-auto sm:mt-2 sm:max-h-80 sm:rounded-2xl sm:pb-0 sm:ring-1 sm:ring-linea"
             }
           >
             {!compacto && (
               <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-2 sm:hidden">
-                <p className="font-display text-lg font-extrabold text-noche">{etiqueta}</p>
+                <p className="font-display text-lg font-extrabold text-fuerte">{etiqueta}</p>
                 <button
                   type="button"
                   tabIndex={-1}
@@ -285,7 +285,7 @@ export function Selector({
                     onClick={() => elegir(i)}
                     className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 transition-colors ${
                       compacto ? "min-h-10 font-display font-bold" : "min-h-12 sm:min-h-11"
-                    } ${i === activa ? "bg-rojo/8 text-rojo" : "text-noche"} ${
+                    } ${i === activa ? "bg-rojo/8 text-enlace" : "text-fuerte"} ${
                       seleccionada ? "font-semibold" : ""
                     }`}
                   >
@@ -298,7 +298,7 @@ export function Selector({
                     <Check
                       size={18}
                       aria-hidden="true"
-                      className={`shrink-0 text-rojo ${seleccionada ? "" : "invisible"}`}
+                      className={`shrink-0 text-enlace ${seleccionada ? "" : "invisible"}`}
                     />
                   </li>
                 );
@@ -314,7 +314,7 @@ export function Selector({
         </p>
       )}
       {error && (
-        <p id={`${id}-error`} className="mt-1.5 flex items-start gap-1.5 text-sm text-rojo">
+        <p id={`${id}-error`} className="mt-1.5 flex items-start gap-1.5 text-sm text-enlace">
           <AlertCircle size={16} aria-hidden="true" className="mt-0.5 shrink-0" />
           {error}
         </p>
