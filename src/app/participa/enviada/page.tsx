@@ -8,7 +8,7 @@ import { CopiarFolio, Imprimir } from "@/components/cuenta/participacion";
 import { FichaAporte } from "@/components/participacion/aporte";
 import { getParticipacion, getUsuario } from "@/lib/auth/sesion";
 import { formatearFechaHora } from "@/lib/formato";
-import { AUTOR_ANONIMO, filasComprobante } from "@/lib/participacion";
+import { AUTOR_ANONIMO, filasComprobante, rutaPropia } from "@/lib/participacion";
 
 export const metadata: Metadata = { title: "Aporte recibido", robots: { index: false } };
 
@@ -94,6 +94,7 @@ async function Contenido({ searchParams }: { searchParams: SearchParams }) {
       <div className="mt-8">
         <FichaAporte
           aporte={p}
+          base={rutaPropia(p.folio)}
           extra={[
             ["Enviado por", p.autor],
             ["Fecha", formatearFechaHora(p.creadaEl)],

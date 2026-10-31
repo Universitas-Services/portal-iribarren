@@ -1,3 +1,4 @@
+import { rutaPublica } from "@/lib/participacion";
 import { ArrowLeft, MessageSquareText } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -100,7 +101,7 @@ async function Contenido({ params }: { params: Params }) {
       </p>
 
       <div className="mt-8">
-        <FichaAporte aporte={p} titulo="El aporte" />
+        <FichaAporte aporte={p} base={rutaPublica(p.folio)} titulo="El aporte" />
       </div>
 
       <div className="mt-8">

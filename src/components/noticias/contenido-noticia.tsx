@@ -92,10 +92,19 @@ export function FiguraNoticia({ imagen }: { imagen: Imagen }) {
 export function VisorDocumento({
   adjunto,
   descargaUrl,
+  bajarUrl,
+  titulo,
 }: {
   adjunto: Adjunto;
   /** Enlace que cuenta la descarga (documentos del repositorio con la API, guía R8). */
   descargaUrl?: string;
+  /**
+   * Enlace que baja el archivo cuando está en otro sitio (el atributo `download` no sirve ahí);
+   * «Abrir» sigue usando `adjunto.url`. Es el soporte de un aporte con la API (R19).
+   */
+  bajarUrl?: string;
+  /** Rótulo sobre el nombre del archivo, p. ej. «Documento de soporte». */
+  titulo?: string;
 }) {
   const detalle = [
     "PDF",
@@ -118,10 +127,11 @@ export function VisorDocumento({
           <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-rojo/10 text-rojo">
             <FileText size={28} aria-hidden="true" />
           </span>
-          <div>
+          <div className="min-w-0">
+            {titulo && <p className="text-sm text-tinta/75">{titulo}</p>}
             <h2
               id="documento-adjunto"
-              className="font-display text-lg leading-snug font-extrabold text-noche"
+              className="font-display text-lg leading-snug font-extrabold [overflow-wrap:anywhere] text-noche"
             >
               {adjunto.nombre}
             </h2>
@@ -140,8 +150,8 @@ export function VisorDocumento({
             <span className="sr-only">(se abre en otra pestaña)</span>
           </a>
           <a
-            href={descargaUrl ?? adjunto.url}
-            download={descargaUrl ? undefined : true}
+            href={descargaUrl ?? bajarUrl ?? adjunto.url}
+            download={descargaUrl || bajarUrl ? undefined : true}
             className={`${boton} bg-rojo text-papel hover:bg-rojo-oscuro`}
           >
             <Download size={18} aria-hidden="true" />

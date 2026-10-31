@@ -15,6 +15,28 @@ export const tieneSeguimiento = (tipo: TipoParticipacion) => tipo === "PROPUESTA
  */
 export const AUTOR_ANONIMO = "Ciudadano de Iribarren";
 
+/** Página pública de un aporte publicado. */
+export const rutaPublica = (folio: string) => `/propuestas/${encodeURIComponent(folio)}`;
+
+/** Página de un aporte en «Mis participaciones» (solo su autor). */
+export const rutaPropia = (folio: string) =>
+  `/mi-cuenta/participaciones/${encodeURIComponent(folio)}`;
+
+/**
+ * A dónde apunta un adjunto de un aporte (R19): el archivo de ejemplo en la simulación o, con la
+ * API, la ruta del portal que pide la URL firmada y redirige. Sin id ni URL no se puede ver.
+ * `base` es la página del aporte (`rutaPublica` o `rutaPropia`).
+ */
+export function urlAdjunto(
+  a: { id?: string; url?: string },
+  base: string,
+  descargar = false,
+): string | undefined {
+  if (a.url) return a.url;
+  if (!a.id) return undefined;
+  return `${base}/archivo/${encodeURIComponent(a.id)}${descargar ? "?descargar=1" : ""}`;
+}
+
 /** Cambios de estado que el Revisor puede hacer en una opinión: publicarla o despublicarla. */
 export const TRANSICIONES_OPINION: Partial<Record<EstadoParticipacion, EstadoParticipacion[]>> = {
   PENDIENTE: ["PUBLICADA"],

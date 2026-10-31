@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { FormularioSkeleton, MarcoCuenta } from "@/components/cuenta/marco-cuenta";
 import { FichaAporte, InsigniaEstado, LineaTiempoEstados } from "@/components/participacion/aporte";
-import { AUTOR_ANONIMO, filasComprobante, tieneSeguimiento } from "@/lib/participacion";
+import { AUTOR_ANONIMO, filasComprobante, rutaPropia, tieneSeguimiento } from "@/lib/participacion";
 import { getParticipacion, getUsuario } from "@/lib/auth/sesion";
 import { formatearFechaHora } from "@/lib/formato";
 import { FOLIOS_PRERENDER } from "@/lib/folios";
@@ -112,6 +112,7 @@ async function Contenido({ params }: { params: Params }) {
       <div className="mt-10">
         <FichaAporte
           aporte={p}
+          base={rutaPropia(p.folio)}
           titulo="Lo que enviaste"
           extra={[
             ["Enviado", formatearFechaHora(p.creadaEl)],

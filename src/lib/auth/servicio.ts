@@ -75,6 +75,17 @@ export type DocumentoCargado = {
   subidoEl: string;
 };
 
+/**
+ * Un archivo de una participación (foto o soporte). Con la API llega su `id` y se abre por la
+ * ruta del portal, que pide una URL firmada (guía R19). `url` y `credito` solo los traen los
+ * archivos de ejemplo de la simulación.
+ */
+export type ArchivoAporte = Omit<DocumentoCargado, "version" | "subidoEl"> & {
+  id?: string;
+  url?: string;
+  credito?: { autor: string; licencia: string; fuente: string };
+};
+
 export type Perfil = {
   /** Persona natural. */
   telefono?: string;
@@ -101,9 +112,9 @@ export type Participacion = {
   categoriaTecnica: CategoriaTecnica;
   descripcion: string;
   /** Metadatos: los archivos van a Storage en plataforma-api. */
-  imagenes: Omit<DocumentoCargado, "version" | "subidoEl">[];
+  imagenes: ArchivoAporte[];
   video?: EnlaceVideo;
-  soporte?: Omit<DocumentoCargado, "version" | "subidoEl">;
+  soporte?: ArchivoAporte;
   mostrarNombre: boolean;
   /** Nombre o razón social al momento del envío. */
   autor: string;
@@ -763,6 +774,8 @@ export function vistaPublica(p: Participacion): PropuestaPublica {
     mostrarNombre: _mostrar,
     autor: _autor,
     ubicacion: _ubicacion,
+    // El documento de soporte lo ven solo su autor y la alcaldía: puede traer datos personales.
+    soporte: _soporte,
     ...resto
   } = p;
   return {
@@ -772,10 +785,13 @@ export function vistaPublica(p: Participacion): PropuestaPublica {
   };
 }
 
-/** Una participación en la galería pública: sin cuenta, historial, ubicación ni estado. */
+/**
+ * Una participación en la galería pública: sin cuenta, historial, ubicación ni documento de
+ * soporte (R19: solo fotos y video).
+ */
 export type PropuestaPublica = Omit<
   Participacion,
-  "cuentaId" | "historial" | "mostrarNombre" | "autor" | "ubicacion" | "comprobante"
+  "cuentaId" | "historial" | "mostrarNombre" | "autor" | "ubicacion" | "comprobante" | "soporte"
 > & {
   /** El nombre, o «Ciudadano de Iribarren» si no autorizó mostrarlo. */
   autor: string;

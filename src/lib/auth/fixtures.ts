@@ -1,4 +1,12 @@
-import { cifrar, crearAlmacen, type Almacen, type Cuenta, type Participacion } from "./servicio";
+import { ENCABEZADO_INICIAL } from "@/lib/sitio";
+import {
+  cifrar,
+  crearAlmacen,
+  type Almacen,
+  type ArchivoAporte,
+  type Cuenta,
+  type Participacion,
+} from "./servicio";
 
 /**
  * Cuentas de demostración para probar cada caso del acceso simulado. Las contraseñas están
@@ -91,6 +99,28 @@ const cuentas: Omit<Cuenta, "hash">[] = [
 
 type Paso = { estado: Participacion["estado"]; fecha: string; comentario?: string };
 
+/*
+ * Archivos de ejemplo para ver los adjuntos sin plataforma-api: fotos libres de Barquisimeto (con
+ * su crédito, las mismas del encabezado del Inicio) y PDF de ejemplo de public/docs. No son los
+ * archivos que «enviaron» las personas de ejemplo.
+ */
+const FOTOS_EJEMPLO = new Map(ENCABEZADO_INICIAL.fotos.map((f) => [f.src, f.credito]));
+
+const foto = (nombre: string, tamano: number, ejemplo: string): ArchivoAporte => ({
+  nombre,
+  mime: "image/jpeg",
+  tamano,
+  url: `/fotos/${ejemplo}`,
+  credito: FOTOS_EJEMPLO.get(`/fotos/${ejemplo}`),
+});
+
+const pdf = (nombre: string, tamano: number, ejemplo: string): ArchivoAporte => ({
+  nombre,
+  mime: "application/pdf",
+  tamano,
+  url: `/docs/${ejemplo}`,
+});
+
 /**
  * Participaciones de ejemplo para «Mis participaciones» y «Propuestas publicadas». Son textos
  * inventados para mostrar cada estado; no representan aportes reales. Las opiniones quedan
@@ -108,8 +138,8 @@ const participaciones: (Omit<Participacion, "folio" | "estado" | "creadaEl"> & {
     categoriaTecnica: "Vialidad y Transporte",
     descripcion:
       "Propongo semaforizar el cruce de la avenida 20 con la calle 30 y ampliar las aceras del tramo, porque en hora pico los peatones cruzan sin protección y los comercios ocupan el paso. Adjunto un croquis con la ubicación de los semáforos y el ancho propuesto. (Ejemplo)",
-    imagenes: [{ nombre: "cruce-av20.jpg", mime: "image/jpeg", tamano: 812_000 }],
-    soporte: { nombre: "croquis-cruce-av20.pdf", mime: "application/pdf", tamano: 640_000 },
+    imagenes: [foto("cruce-av20.jpg", 812_000, "plaza-ayacucho.jpg")],
+    soporte: pdf("croquis-cruce-av20.pdf", 640_000, "plan-de-trabajo-pdul-ejemplo.pdf"),
     mostrarNombre: true,
     historial: [
       { estado: "PENDIENTE", fecha: "2026-09-22T14:10:00.000Z" },
@@ -170,8 +200,8 @@ const participaciones: (Omit<Participacion, "folio" | "estado" | "creadaEl"> & {
     descripcion:
       "En época de lluvia la quebrada se desborda y afecta varias calles. Las fotos muestran cómo quedó el sector en agosto. Propongo que el estudio de riesgos priorice esta zona. (Ejemplo)",
     imagenes: [
-      { nombre: "quebrada-1.jpg", mime: "image/jpeg", tamano: 1_200_000 },
-      { nombre: "quebrada-2.jpg", mime: "image/jpeg", tamano: 980_000 },
+      foto("quebrada-1.jpg", 1_200_000, "parque-cardenalito.jpg"),
+      foto("quebrada-2.jpg", 980_000, "estadio-gradas.jpg"),
     ],
     mostrarNombre: true,
     historial: [
@@ -209,7 +239,7 @@ const participaciones: (Omit<Participacion, "folio" | "estado" | "creadaEl"> & {
     descripcion:
       "Proponemos reservar suelo para un centro de servicios parroquial en el eje El Cují–Tamaca, donde hoy los vecinos deben viajar al centro para trámites, salud y bancos. El documento adjunto identifica tres parcelas posibles. (Ejemplo)",
     imagenes: [],
-    soporte: { nombre: "centro-servicios-elcuji.pdf", mime: "application/pdf", tamano: 1_450_000 },
+    soporte: pdf("centro-servicios-elcuji.pdf", 1_450_000, "metodologia-diagnostico-ejemplo.pdf"),
     mostrarNombre: true,
     historial: [
       { estado: "PENDIENTE", fecha: "2026-09-24T15:00:00.000Z" },
@@ -231,8 +261,8 @@ const participaciones: (Omit<Participacion, "folio" | "estado" | "creadaEl"> & {
     categoriaTecnica: "Equipamiento Urbano",
     descripcion:
       "La comunidad propone convertir el terreno baldío de la calle 3 en una plaza con cancha múltiple e iluminación. Adjuntamos el acta de asamblea donde 214 vecinos respaldan la propuesta. (Ejemplo)",
-    imagenes: [{ nombre: "terreno-calle3.jpg", mime: "image/jpeg", tamano: 1_050_000 }],
-    soporte: { nombre: "acta-asamblea-cardones.pdf", mime: "application/pdf", tamano: 720_000 },
+    imagenes: [foto("terreno-calle3.jpg", 1_050_000, "obelisco.jpg")],
+    soporte: pdf("acta-asamblea-cardones.pdf", 720_000, "minuta-mesa-tecnica-catedral-ejemplo.pdf"),
     mostrarNombre: true,
     historial: [
       { estado: "PENDIENTE", fecha: "2026-09-26T18:00:00.000Z" },

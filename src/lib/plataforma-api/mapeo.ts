@@ -257,7 +257,6 @@ export function propuestaDeApi(p: ParticipacionPublicaApi): PropuestaPublica {
     descripcion: p.descripcion,
     imagenes: p.imagenes,
     video: p.video,
-    soporte: p.soporte,
     autor: p.autor,
     estado: "PUBLICADA",
     creadaEl: p.publicadaEl,

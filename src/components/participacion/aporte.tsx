@@ -1,31 +1,36 @@
-import { Check, Eye, FileText, ImageIcon, ThumbsUp, Video } from "lucide-react";
+import { Check, Eye, FileText, ImageIcon, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 import {
   NOMBRE_TIPO_PARTICIPACION,
   type EstadoParticipacion,
   type TipoParticipacion,
 } from "@/lib/api/types";
+import type { Imagen } from "@/lib/api/types";
+import type { ArchivoAporte } from "@/lib/auth/servicio";
 import type { EnlaceVideo } from "@/lib/noticias/video";
 import { formatearFechaHora, formatearPeso } from "@/lib/formato";
-import { ESTADO_PARTICIPACION, RECIBIDA, tieneSeguimiento } from "@/lib/participacion";
+import { ESTADO_PARTICIPACION, RECIBIDA, tieneSeguimiento, urlAdjunto } from "@/lib/participacion";
+import { VisorDocumento } from "@/components/noticias/contenido-noticia";
+import { Galeria } from "@/components/noticias/galeria";
+import { ReproductorVideo } from "@/components/noticias/reproductor-video";
 
 /*
  * Piezas para mostrar un aporte: en el acuse, en «Mis participaciones» y en la galería pública.
  * Son componentes de servidor; ninguno ofrece editar ni eliminar (el aporte es inmutable).
  */
 
-type Archivo = { nombre: string; tamano: number };
-
 export type AporteVisible = {
+  folio: string;
   tipo: TipoParticipacion;
   noticia?: { slug: string; titulo: string };
   parroquia: string;
   sector: string;
   categoriaTecnica: string;
   descripcion: string;
-  imagenes: Archivo[];
+  imagenes: ArchivoAporte[];
   video?: EnlaceVideo;
-  soporte?: Archivo;
+  /** Solo en la vista del autor: la página pública no lo trae (R19). */
+  soporte?: ArchivoAporte;
 };
 
 /** Estado de un aporte. Sin `tipo` (línea de tiempo) muestra el estado tal cual. */
@@ -50,14 +55,19 @@ export function InsigniaEstado({
   );
 }
 
-/** Ficha del aporte: datos, texto y adjuntos. `extra` agrega filas (autor, fecha, estado…). */
+/**
+ * Ficha del aporte: datos, texto y adjuntos. `extra` agrega filas (autor, fecha, estado…).
+ * `base` es la página del aporte: sus adjuntos se abren por `base/archivo/[id]` (R19).
+ */
 export function FichaAporte({
   aporte,
+  base,
   extra = [],
   titulo = "Comprobante",
   pie,
 }: {
   aporte: AporteVisible;
+  base: string;
   extra?: [string, string][];
   titulo?: string;
   pie?: string;
@@ -90,9 +100,77 @@ export function FichaAporte({
         </p>
         <p className="mt-1 leading-relaxed whitespace-pre-line text-noche">{p.descripcion}</p>
       </div>
-      {(p.soporte || p.imagenes.length > 0 || p.video) && (
-        <ul className="mt-4 space-y-2 border-t border-linea pt-4 text-sm text-tinta">
-          {p.soporte && (
+      <Adjuntos aporte={p} base={base} />
+      {pie && <p className="mt-4 text-sm text-tinta/80">{pie}</p>}
+    </section>
+  );
+}
+
+/**
+ * Fotos, video y documento de soporte del aporte, como en las noticias (R19). Lo que no se puede
+ * abrir (con la API de antes de R19, sin id) se lista por su nombre, como siempre.
+ */
+function Adjuntos({ aporte: p, base }: { aporte: AporteVisible; base: string }) {
+  const fotos = p.imagenes.flatMap((a, i): Imagen[] => {
+    const src = urlAdjunto(a, base);
+    return src
+      ? [
+          {
+            src,
+            alt: `Foto ${i + 1} del aporte ${p.folio}`,
+            ancho: 1600,
+            alto: 1200,
+            credito: a.credito,
+            // Los ejemplos de la simulación usan fotos libres de la ciudad, no las del aporte.
+            ilustrativa: !!a.credito,
+          },
+        ]
+      : [];
+  });
+  const sinVer = p.imagenes.filter((a) => !urlAdjunto(a, base));
+  const soporte = p.soporte && urlAdjunto(p.soporte, base);
+  // Las fotos que pasan por la ruta del portal no van al optimizador: su URL firmada vence.
+  const sinOptimizar = p.imagenes.some((a) => !a.url);
+
+  if (!fotos.length && !sinVer.length && !p.soporte && !p.video) return null;
+  return (
+    <div className="mt-4 space-y-5 border-t border-linea pt-4">
+      {fotos.length > 0 && (
+        <Galeria imagenes={fotos} titulo={`aporte ${p.folio}`} sinOptimizar={sinOptimizar} />
+      )}
+      {p.video && <ReproductorVideo video={p.video} titulo={`Video del aporte ${p.folio}`} />}
+      {p.soporte && soporte && p.soporte.mime === "application/pdf" && (
+        <VisorDocumento
+          titulo="Documento de soporte"
+          adjunto={{
+            nombre: p.soporte.nombre,
+            url: soporte,
+            tipo: "application/pdf",
+            pesoBytes: p.soporte.tamano,
+          }}
+          bajarUrl={p.soporte.url ? undefined : urlAdjunto(p.soporte, base, true)}
+        />
+      )}
+      {p.soporte && soporte && p.soporte.mime !== "application/pdf" && (
+        <div>
+          <p className="mb-2 text-sm text-tinta/75">Documento de soporte</p>
+          <Galeria
+            imagenes={[
+              {
+                src: soporte,
+                alt: `Documento de soporte del aporte ${p.folio}`,
+                ancho: 1600,
+                alto: 1200,
+              },
+            ]}
+            titulo={`documento de soporte del aporte ${p.folio}`}
+            sinOptimizar={!p.soporte.url}
+          />
+        </div>
+      )}
+      {((p.soporte && !soporte) || sinVer.length > 0) && (
+        <ul className="space-y-2 text-sm text-tinta">
+          {p.soporte && !soporte && (
             <li className="flex items-start gap-2">
               <FileText size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
               <span>
@@ -101,38 +179,20 @@ export function FichaAporte({
               </span>
             </li>
           )}
-          {p.imagenes.length > 0 && (
+          {sinVer.length > 0 && (
             <li className="flex items-start gap-2">
               <ImageIcon size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
               <span>
-                {p.imagenes.length === 1 ? "1 foto" : `${p.imagenes.length} fotos`}:{" "}
+                {sinVer.length === 1 ? "1 foto" : `${sinVer.length} fotos`}:{" "}
                 <span className="font-semibold break-words text-noche">
-                  {p.imagenes.map((i) => i.nombre).join(", ")}
+                  {sinVer.map((i) => i.nombre).join(", ")}
                 </span>
-              </span>
-            </li>
-          )}
-          {p.video && (
-            <li className="flex items-start gap-2">
-              <Video size={16} aria-hidden="true" className="mt-0.5 shrink-0 text-rojo" />
-              <span>
-                Video en {p.video.fuente === "YOUTUBE" ? "YouTube" : "Instagram"}:{" "}
-                <a
-                  href={p.video.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-semibold break-all text-rojo underline underline-offset-2"
-                >
-                  {p.video.url}
-                  <span className="sr-only"> (se abre en otra pestaña)</span>
-                </a>
               </span>
             </li>
           )}
         </ul>
       )}
-      {pie && <p className="mt-4 text-sm text-tinta/80">{pie}</p>}
-    </section>
+    </div>
   );
 }
 

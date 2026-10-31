@@ -255,7 +255,11 @@ export type AcuseApi = {
   comprobante: ComprobanteApi;
 };
 
-type ArchivoApi = { nombre: string; mime: string; tamano: number };
+/**
+ * Un adjunto de una participación. `id` (R19) sirve para pedir su URL firmada: llega en las
+ * fotos de las dos vistas y en el soporte solo para el autor.
+ */
+type ArchivoApi = { id?: string; nombre: string; mime: string; tamano: number };
 
 /** Lo común a la vista del autor y a la galería. */
 type BaseParticipacionApi = {
@@ -267,12 +271,12 @@ type BaseParticipacionApi = {
   categoriaTecnica: string;
   descripcion: string;
   imagenes: ArchivoApi[];
-  soporte?: ArchivoApi;
   video?: { fuente: "YOUTUBE" | "INSTAGRAM"; url: string };
 };
 
 /** Lo que ve el autor de una de sus participaciones (GET /portal/me/participations/{folio}). */
 export type ParticipacionPropiaApi = BaseParticipacionApi & {
+  soporte?: ArchivoApi;
   ubicacion?: { lat: number; lng: number };
   mostrarNombre: boolean;
   autor: string;

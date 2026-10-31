@@ -131,3 +131,40 @@ export async function propuestaPublicaApi(folio: string): Promise<PropuestaPubli
     throw e;
   }
 }
+
+/* ---------- Adjuntos (guía R19) ---------- */
+
+type UrlFirmada = { url: string; expiraEl: string };
+
+/**
+ * URL firmada (5 minutos) de una foto de un aporte publicado. Pública: la API solo la da si el
+ * aporte está PUBLICADA y el archivo es una foto. Sin caché: la URL vence.
+ */
+export async function urlAdjuntoPublicoApi(folio: string, id: string) {
+  try {
+    const r = await pedirApi<UrlFirmada>(
+      `/portal/participations/${encodeURIComponent(folio.toUpperCase())}/files/${encodeURIComponent(id)}/url`,
+      { portal: true, publica: true },
+    );
+    return r.url;
+  } catch (e) {
+    if (noHay(e)) return undefined;
+    throw e;
+  }
+}
+
+/** URL firmada de una foto o del soporte de un aporte propio; `descargar` lo baja como archivo. */
+export async function urlAdjuntoPropioApi(folio: string, id: string, descargar: boolean) {
+  const t = await token();
+  if (!t) return undefined;
+  try {
+    const r = await pedirApi<UrlFirmada>(
+      `/portal/me/participations/${encodeURIComponent(folio)}/files/${encodeURIComponent(id)}/url${descargar ? "?disposicion=attachment" : ""}`,
+      { token: t, portal: true },
+    );
+    return r.url;
+  } catch (e) {
+    if (noHay(e)) return undefined;
+    throw e;
+  }
+}
